@@ -1,0 +1,18 @@
+                                 -=} tiget {=-
+                             The Git Ticket Tracker
+
+
+WIPWIPWIP
+
+
+DEPENDENCIES:
+
+ * dulwich
+
+
+STYLE:
+
+Please follow PEP 8[1].
+
+
+[1] http://www.python.org/dev/peps/pep-0008/
