@@ -1,7 +1,8 @@
 import os, stat, time
 from dulwich.repo import Repo, NotGitRepository
 from dulwich.objects import Blob, Tree, Commit
-from tiget import settings, VERSIONSTR
+from tiget import settings
+from tiget.version import VERSIONSTR
 from tiget.cmd_registry import cmd_registry, Cmd, CmdError
 
 @cmd_registry.add
@@ -47,9 +48,8 @@ class InitCmd(Cmd):
     name = 'init'
     help_text = 'initialize the repository'
 
+    @Cmd.argcount(0)
     def do(self, opts, args):
-        if len(args) > 0:
-            raise self.argcount_error()
         try:
             repo = Repo(os.getcwd())
         except NotGitRepository:
@@ -62,8 +62,8 @@ class InitCmd(Cmd):
         dirperm = stat.S_IFDIR
 
         tree = Tree()
-        version = Blob.from_string(VERSIONSTR)
-        tree.add('version', fileperm, version.id)
+        version = Blob.from_string('{0}\n',format(VERSIONSTR))
+        tree.add('VERSION', fileperm, version.id)
         tickets = Tree()
         keep = Blob.from_string('')
         tickets.add('.keep', fileperm, keep.id)
@@ -98,12 +98,13 @@ class HelpCmd(Cmd):
     name = 'help'
     help_text = 'show this help page'
 
+    @Cmd.argcount(0, 1)
     def do(self, opts, args):
-        if len(args) == 0:
+        if not args:
             for name in sorted(cmd_registry.keys()):
                 cmd = cmd_registry[name]
                 print '{0}\t- {1}'.format(cmd.name, cmd.help_text)
-        elif len(args) == 1:
+        else:
             name = args[0]
             try:
                 cmd = cmd_registry[name]
@@ -114,5 +115,18 @@ class HelpCmd(Cmd):
                 print usage
             else:
                 raise CmdError('{0}: no usage information found'.format(name))
-        else:
-            raise self.argcount_error()
+
+@cmd_registry.add
+class VersionCmd(Cmd):
+    """
+    usage: version
+
+    Prints the version. Can be used for version detection in command line
+    scripts.
+    """
+    name = 'version'
+    help_text = 'print version information'
+
+    @Cmd.argcount(0)
+    def do(self, opts, args):
+        print VERSIONSTR

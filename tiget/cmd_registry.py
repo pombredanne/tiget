@@ -1,4 +1,5 @@
 import textwrap
+from functools import wraps
 from getopt import getopt, GetoptError
 
 class CmdError(Exception):
@@ -31,6 +32,17 @@ class Cmd(object):
         if usage:
             usage = textwrap.dedent(usage).strip()
         return usage
+
+    @classmethod
+    def argcount(cls, *counts):
+        def _decorator(fn):
+            @wraps(fn)
+            def _inner(self, opts, args):
+                if not len(args) in counts:
+                    raise self.argcount_error()
+                return fn(self, opts, args)
+            return _inner
+        return _decorator
 
 class CmdRegistry(dict):
     def add(self, klass):
