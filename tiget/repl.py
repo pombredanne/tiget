@@ -1,0 +1,55 @@
+import os, sys, readline, shlex, traceback
+from tiget import settings, VERSIONSTR
+from tiget.cmd_registry import cmd_registry, CmdError
+
+
+class Repl(object):
+    def complete(self, text, state):
+        options = filter(lambda x: x.startswith(text), cmd_registry.iterkeys())
+        options += filter(lambda x: x.startswith(text), settings.aliases.iterkeys())
+        if state < len(options):
+            return options[state]
+        return None
+
+    def print_error(self, line):
+        if settings.use_color and sys.stderr.isatty():
+            line = '\33[31m{0}\33[0m'.format(line)
+        print >> sys.stderr, line
+
+    def run(self):
+        print VERSIONSTR
+        print 'Type "help" for help.'
+        print ''
+        readline.parse_and_bind('tab: complete')
+        readline.set_completer(self.complete)
+
+        while True:
+            prompt = 'tiget% '
+            if settings.use_color and sys.stdout.isatty():
+                prompt = '\33[32m{0}\33[0m'.format(prompt)
+            try:
+                line = raw_input(prompt).lstrip()
+            except KeyboardInterrupt:
+                print '^C'
+                continue
+            except EOFError:
+                print 'quit'
+                break
+            if line.startswith('!'):
+                os.system(line[1:])
+                continue
+            try:
+                line = shlex.split(line)
+            except ValueError as e:
+                self.print_error('Syntax error: {0}'.format(e))
+            if line:
+                if line[0] in settings.aliases:
+                    line = shlex.split(settings.aliases[line[0]]) + line[1:]
+                if line[0] == 'quit':
+                    break
+                try:
+                    cmd_registry.run(line)
+                except CmdError as e:
+                    self.print_error(str(e))
+                except Exception:
+                    traceback.print_exc()

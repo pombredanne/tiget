@@ -1,0 +1,16 @@
+#!/usr/bin/env python
+from tiget.repl import Repl
+from tiget.cmd_registry import cmd_registry, CmdError
+
+def main():
+    args = sys.argv[1:]
+    if not args or args[0] == 'shell':
+        Repl().run()
+        return
+    try:
+        cmd_registry.run(args)
+    except CmdError as e:
+        print e
+
+if __name__ == '__main__':
+    main()
