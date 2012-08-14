@@ -62,7 +62,7 @@ class InitCmd(Cmd):
         dirperm = stat.S_IFDIR
 
         tree = Tree()
-        version = Blob.from_string('{0}\n',format(VERSIONSTR))
+        version = Blob.from_string('{0}\n'.format(VERSIONSTR))
         tree.add('VERSION', fileperm, version.id)
         tickets = Tree()
         keep = Blob.from_string('')
