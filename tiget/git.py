@@ -1,5 +1,6 @@
-import stat, time
+import os, stat, time
 from collections import defaultdict
+from contextlib import contextmanager
 from dulwich.objects import Blob, Tree, Commit
 from dulwich.config import StackedConfig
 from dulwich.repo import Repo, NotGitRepository
@@ -17,7 +18,11 @@ def get_config_variable(section, name):
         raise GitError('{0}.{1} not found in git config'.format(section, name))
 
 class GitTransaction(object):
-    def __init__(self, repo):
+    def __init__(self):
+        try:
+            repo = Repo(os.getcwd())
+        except NotGitRepository:
+            raise GitError('no git repository found')
         self.repo = repo
         self.ref = 'refs/heads/{0}'.format(settings.branchname)
         try:
@@ -27,6 +32,15 @@ class GitTransaction(object):
         else:
             self.tree = repo.tree(repo.commit(previous_commit_id).tree)
         self.objects = defaultdict(lambda: defaultdict())
+        self.messages = []
+
+    @property
+    def is_initialized(self):
+        return self.ref in self.repo.refs
+
+    @property
+    def has_changes(self):
+        return bool(self.objects)
 
     @property
     def author(self):
@@ -67,7 +81,19 @@ class GitTransaction(object):
             self.repo.object_store.add_object(obj)
             tree.add(name, perm, obj.id)
 
-    def commit(self, message):
+    def add_message(self, message):
+        self.messages += [message]
+
+    def commit(self, message=None):
+        if not self.has_changes:
+            raise GitError('nothing changed; use rollback to abort the transaction')
+        if not message:
+            if not self.messages:
+                raise GitError('no message for commit')
+            message = '\n'.join(self.messages)
+        elif self.messages:
+            message += u'\n\n' + u'\n'.join(self.messages)
+
         self._add_objects(self.objects, self.tree)
         self.repo.object_store.add_object(self.tree)
 
@@ -81,10 +107,30 @@ class GitTransaction(object):
         self.repo.object_store.add_object(commit)
         self.repo.refs[self.ref] = commit.id
 
-def init_repo(repo):
-    transaction = GitTransaction(repo)
-    if transaction.ref in repo.refs:
-        raise GitError('already initialized')
-    transaction.add_file('/VERSION', u'{0}\n'.format(VERSIONSTR))
-    transaction.add_file('/tickets/.keep', u'')
-    transaction.commit(u'Initial commit')
+    def rollback(self):
+        self.objects = defaultdict(lambda: defaultdict())
+        self.messages = []
+
+@contextmanager
+def need_transaction():
+    transaction = settings.transaction
+    if not transaction:
+        transaction = GitTransaction()
+    try:
+        yield transaction
+    except:
+        if not settings.transaction:
+            transaction.rollback()
+        raise
+    else:
+        if not settings.transaction and transaction.has_changes:
+            if transaction.has_changes:
+                transaction.commit()
+
+def init_repo():
+    with need_transaction() as transaction:
+        if transaction.is_initialized:
+            raise GitError('already initialized')
+        transaction.add_file('/VERSION', u'{0}\n'.format(VERSIONSTR))
+        transaction.add_file('/tickets/.keep', u'')
+        transaction.add_message(u'Initialize Repository')
