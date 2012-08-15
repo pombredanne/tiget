@@ -1,3 +1,6 @@
-env
+env/
 *.swp
 *.pyc
+build/
+dist/
+tiget.egg-info/
