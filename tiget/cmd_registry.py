@@ -48,6 +48,7 @@ class Cmd(object):
 class CmdRegistry(dict):
     def add(self, klass):
         self[klass.name] = klass()
+        return klass
 
     def run(self, argv):
         name = argv.pop(0)
