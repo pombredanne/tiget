@@ -1,3 +1,0 @@
-MAJOR = 0
-MINOR = 1
-VERSIONSTR = '{0}.{1}'.format(MAJOR, MINOR)

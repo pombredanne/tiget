@@ -1,5 +1,4 @@
-from tiget import settings
-from tiget.version import VERSIONSTR
+from tiget import settings, get_version
 from tiget.cmd_registry import cmd_registry, Cmd, CmdError
 
 @cmd_registry.add
@@ -76,4 +75,4 @@ class VersionCmd(Cmd):
 
     @Cmd.argcount(0)
     def do(self, opts, args):
-        print VERSIONSTR
+        print get_version()

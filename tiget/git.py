@@ -4,8 +4,7 @@ from contextlib import contextmanager
 from dulwich.objects import Blob, Tree, Commit
 from dulwich.config import StackedConfig
 from dulwich.repo import Repo, NotGitRepository
-from tiget import settings
-from tiget.version import VERSIONSTR
+from tiget import settings, get_version
 
 class GitError(Exception):
     pass
@@ -131,6 +130,6 @@ def init_repo():
     with need_transaction() as transaction:
         if transaction.is_initialized:
             raise GitError('already initialized')
-        transaction.add_file('/VERSION', u'{0}\n'.format(VERSIONSTR))
+        transaction.add_file('/VERSION', u'{0}\n'.format(get_version()))
         transaction.add_file('/tickets/.keep', u'')
         transaction.add_message(u'Initialize Repository')

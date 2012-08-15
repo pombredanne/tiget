@@ -1,6 +1,5 @@
 import os, sys, readline, shlex, traceback
-from tiget import settings
-from tiget.version import VERSIONSTR
+from tiget import settings, get_version
 from tiget.cmd_registry import cmd_registry, CmdError
 
 
@@ -18,7 +17,7 @@ class Repl(object):
         print >> sys.stderr, line
 
     def run(self):
-        print 'tiget {0}'.format(VERSIONSTR)
+        print 'tiget {0}'.format(get_version())
         print 'Type "help" for help.'
         print ''
         readline.parse_and_bind('tab: complete')
