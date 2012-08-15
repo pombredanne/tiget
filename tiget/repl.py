@@ -22,12 +22,11 @@ class Repl(object):
         print 'Type "help" for help.'
         print ''
         readline.parse_and_bind('tab: complete')
-        readline.set_completer(self.complete)
-
         while True:
             prompt = 'tiget% '
             if settings.use_color and sys.stdout.isatty():
                 prompt = '\33[32m{0}\33[0m'.format(prompt)
+            readline.set_completer(self.complete)
             try:
                 line = raw_input(prompt).lstrip()
             except KeyboardInterrupt:
@@ -36,6 +35,8 @@ class Repl(object):
             except EOFError:
                 print 'quit'
                 break
+            finally:
+                readline.set_completer()
             if line.startswith('!'):
                 os.system(line[1:])
                 continue

@@ -10,7 +10,7 @@ setup(
     long_description='',
     license='ISC',
     keywords='TODO',
-    packages=['tiget'],
+    packages=['tiget', 'tiget.cmds'],
     scripts=['scripts/tiget'],
     classifiers=[
         'Programming Language :: Python',
