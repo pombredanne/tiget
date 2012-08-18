@@ -47,9 +47,11 @@ class HelpCmd(Cmd):
     @Cmd.argcount(0, 1)
     def do(self, opts, args):
         if not args:
-            for name in sorted(cmd_registry.keys()):
-                cmd = cmd_registry[name]
-                print '{0}\t- {1}'.format(cmd.name, cmd.help_text)
+            cmds = cmd_registry.values()
+            cmds.sort(key=lambda cmd: cmd.name)
+            longest = max(len(cmd.name) for cmd in cmds)
+            for cmd in cmds:
+                print '{0} - {1}'.format(cmd.name.ljust(longest), cmd.help_text)
         else:
             name = args[0]
             try:
