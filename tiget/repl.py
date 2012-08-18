@@ -43,6 +43,7 @@ class Repl(object):
                 line = shlex.split(line)
             except ValueError as e:
                 self.print_error('Syntax error: {0}'.format(e))
+                continue
             if line:
                 if line[0] in settings.aliases:
                     line = shlex.split(settings.aliases[line[0]]) + line[1:]
