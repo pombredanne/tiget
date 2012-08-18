@@ -28,8 +28,10 @@ class GitTransaction(object):
             previous_commit_id = repo.refs[self.ref]
         except KeyError:
             self.tree = Tree()
+            self.parents = []
         else:
             self.tree = repo.tree(repo.commit(previous_commit_id).tree)
+            self.parents = [previous_commit_id]
         self.objects = defaultdict(lambda: defaultdict())
         self.messages = []
 
@@ -98,6 +100,7 @@ class GitTransaction(object):
 
         commit = Commit()
         commit.tree = self.tree.id
+        commit.parents = self.parents
         commit.author = commit.committer = self.author.encode('utf-8')
         commit.author_time = commit.commit_time = int(time.time())
         commit.author_timezone = commit.commit_timezone = -self.timezone
