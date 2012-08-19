@@ -4,9 +4,13 @@ from uuid import uuid4
 from tiget.git import need_transaction
 
 class Field(object):
+    creation_counter = 0
+
     def __init__(self, default=None, hidden=False):
         self._default = default
         self.hidden = hidden
+        self.creation_counter = Field.creation_counter
+        Field.creation_counter += 1
 
     @property
     def default(self):
@@ -22,9 +26,16 @@ class ModelBase(type):
     def __new__(cls, name, bases, attrs):
         parents = [b for b in bases if isinstance(b, ModelBase)]
         if parents:
-            fields = attrs['fields']
+            fields = []
+            for k, v in attrs.items():
+                if isinstance(v, Field):
+                    fields += [(k, v)]
+                    del attrs[k]
+            fields.sort(key=lambda x: x[1].creation_counter)
+            fields = OrderedDict(fields)
             if not 'id' in fields:
                 fields['id'] = TextField(default=lambda: uuid4().hex, hidden=True)
+            attrs['fields'] = fields
         return super(ModelBase, cls).__new__(cls, name, bases, attrs)
 
 class Model(object):
@@ -51,7 +62,7 @@ class Model(object):
             super(Model, self).__setattr__(name, value)
 
     def serialize(self, include_hidden=False):
-        content = {}
+        content = OrderedDict()
         for name, field in self.fields.iteritems():
             if not include_hidden and field.hidden:
                 continue

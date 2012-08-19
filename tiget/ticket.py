@@ -2,10 +2,8 @@ from tiget.model import Model, TextField
 from tiget.utils import edit_content
 
 class Ticket(Model):
-    fields = {
-        'summary': TextField(),
-        'description': TextField(),
-    }
+    summary = TextField()
+    description = TextField()
 
     def edit(self):
         s = edit_content(self.serialize())
