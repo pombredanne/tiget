@@ -1,5 +1,6 @@
 from tiget.cmd_registry import cmd_registry, Cmd
 from tiget.git import init_repo, GitError
+from tiget.ticket import Ticket
 
 @cmd_registry.add
 class InitCmd(Cmd):
@@ -17,3 +18,18 @@ class InitCmd(Cmd):
             init_repo()
         except GitError as e:
             raise self.error(e)
+
+@cmd_registry.add
+class NewCmd(Cmd):
+    """
+    usage: new
+
+    Create a new ticket.
+    """
+    name = 'new'
+    help_text = 'create new ticket'
+
+    @Cmd.argcount(0)
+    def do(self, opts, args):
+        ticket = Ticket()
+        ticket.edit()
