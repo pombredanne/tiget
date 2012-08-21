@@ -1,10 +1,12 @@
 import os, stat, time
 from collections import defaultdict
-from contextlib import contextmanager
+from functools import wraps
 from dulwich.objects import Blob, Tree, Commit
 from dulwich.config import StackedConfig
 from dulwich.repo import Repo, NotGitRepository
 from tiget import settings, get_version
+
+transaction = None
 
 class GitError(Exception):
     pass
@@ -15,6 +17,13 @@ def get_config_variable(section, name):
         return c.get(section, name).decode('utf-8')
     except KeyError:
         raise GitError('{0}.{1} not found in git config'.format(section, name))
+
+def get_transaction(initialized=True):
+    if initialized and not transaction.is_initialized:
+        raise GitError('repository is not initialized')
+    elif not initialized and transaction.is_initialized:
+        raise GitError('repository is initialized')
+    return transaction
 
 class GitTransaction(object):
     def __init__(self):
@@ -113,26 +122,33 @@ class GitTransaction(object):
         self.objects = defaultdict(lambda: defaultdict())
         self.messages = []
 
-@contextmanager
-def need_transaction():
-    transaction = settings.transaction
-    if not transaction:
-        transaction = GitTransaction()
-    try:
-        yield transaction
-    except:
-        if not settings.transaction:
-            transaction.rollback()
-        raise
-    else:
-        if not settings.transaction and transaction.has_changes:
-            if transaction.has_changes:
-                transaction.commit()
+class auto_transaction(object):
+    def __call__(self, fn):
+        @wraps(fn)
+        def _inner(*args, **kwargs):
+            with self:
+                return fn(*args, **kwargs)
+        return _inner
 
+    def __enter__(self):
+        global transaction
+        self.active = not transaction
+        if self.active:
+            transaction = GitTransaction()
+        return transaction
+
+    def __exit__(self, type, value, traceback):
+        global transaction
+        if self.active:
+            if type:
+                transaction.rollback()
+            elif transaction.has_changes:
+                transaction.commit()
+            transaction = None
+
+@auto_transaction()
 def init_repo():
-    with need_transaction() as transaction:
-        if transaction.is_initialized:
-            raise GitError('already initialized')
-        transaction.add_file('/VERSION', u'{0}\n'.format(get_version()))
-        transaction.add_file('/tickets/.keep', u'')
-        transaction.add_message(u'Initialize Repository')
+    transaction = get_transaction(initialized=False)
+    transaction.add_file('/VERSION', u'{0}\n'.format(get_version()))
+    transaction.add_file('/tickets/.keep', u'')
+    transaction.add_message(u'Initialize Repository')

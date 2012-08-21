@@ -1,7 +1,6 @@
 import textwrap
 from functools import wraps
 from getopt import getopt, GetoptError
-from tiget.git import GitTransaction
 
 class CmdError(Exception):
     pass

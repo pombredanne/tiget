@@ -1,7 +1,7 @@
 import re, textwrap
 from collections import OrderedDict
 from uuid import uuid4
-from tiget.git import need_transaction
+from tiget.git import auto_transaction, get_transaction
 
 class Field(object):
     creation_counter = 0
@@ -102,14 +102,16 @@ class Model(object):
             else:
                 raise Exception('syntax error')
 
+    @property
+    def storage_name(self):
+        return self.__class__.__name__.lower() + 's'
+
+    @auto_transaction()
     def save(self):
-        with need_transaction() as transaction:
-            if not transaction.is_initialized:
-                raise Exception('git repository is not initialized')
-            pluralized = self.__class__.__name__.lower() + 's'
-            transaction.add_file('{0}/{1}'.format(pluralized, self.id), self.serialize(include_hidden=True))
-            # TODO: better commit message
-            transaction.add_message(u'Edit ticket {0}'.format(self.id))
+        transaction = get_transaction(initialized=True)
+        transaction.add_file('{0}/{1}'.format(self.storage_name, self.id), self.serialize(include_hidden=True))
+        # TODO: better commit message
+        transaction.add_message(u'Edit ticket {0}'.format(self.id))
 
     @classmethod
     def get(instance_id):
