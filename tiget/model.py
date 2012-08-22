@@ -108,8 +108,9 @@ class Model(object):
 
     @auto_transaction()
     def save(self):
-        transaction = get_transaction(initialized=True)
-        transaction.add_file('{0}/{1}'.format(self.storage_name, self.id), self.serialize(include_hidden=True))
+        transaction = get_transaction()
+        path = '/{0}/{1}'.format(self.storage_name, self.id)
+        transaction.add_blob(path, self.serialize(include_hidden=True))
         # TODO: better commit message
         transaction.add_message(u'Edit ticket {0}'.format(self.id))
 

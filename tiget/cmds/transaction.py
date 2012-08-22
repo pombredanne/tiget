@@ -1,6 +1,6 @@
-from tiget import settings
+from tiget import git
 from tiget.cmd_registry import cmd_registry, Cmd
-from tiget.git import GitError, GitTransaction
+from tiget.git import GitError
 
 @cmd_registry.add
 class BeginCmd(Cmd):
@@ -12,9 +12,9 @@ class BeginCmd(Cmd):
 
     @Cmd.argcount(0)
     def do(self, opts, args):
-        if settings.transaction:
+        if git.transaction:
             raise self.error('there is already a transaction running')
-        settings.transaction = GitTransaction()
+        git.transaction = git.Transaction()
 
 @cmd_registry.add
 class CommitCmd(Cmd):
@@ -26,16 +26,16 @@ class CommitCmd(Cmd):
 
     @Cmd.argcount(0, 1)
     def do(self, opts, args):
-        if not settings.transaction:
+        if not git.transaction:
             raise self.error('no transaction running')
         message = None
         if args:
             message = args[0]
         try:
-            settings.transaction.commit(message)
+            git.transaction.commit(message)
         except GitError as e:
             raise self.error(e)
-        settings.transaction = None
+        git.transaction = None
 
 @cmd_registry.add
 class RollbackCmd(Cmd):
@@ -47,7 +47,7 @@ class RollbackCmd(Cmd):
 
     @Cmd.argcount(0)
     def do (self, opts, args):
-        if not settings.transaction:
+        if not git.transaction:
             raise self.error('no transaction running')
-        settings.transaction.rollback()
-        settings.transaction = None
+        git.transaction.rollback()
+        git.transaction = None

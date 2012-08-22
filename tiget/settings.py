@@ -7,4 +7,3 @@ aliases = {
 }
 use_color = True
 branchname = 'tiget'
-transaction = None

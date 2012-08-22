@@ -25,7 +25,7 @@ def get_transaction(initialized=True):
         raise GitError('repository is initialized')
     return transaction
 
-class GitTransaction(object):
+class Transaction(object):
     def __init__(self):
         try:
             repo = Repo(os.getcwd())
@@ -64,14 +64,31 @@ class GitTransaction(object):
             return time.altzone
         return time.timezone
 
-    def add_file(self, path, content):
-        blob = Blob.from_string(content.encode('utf-8'))
-        path = path.lstrip('/').split('/')
-        filename = path.pop()
+    def split_path(self, path):
+        return path.lstrip('/').split('/')
+
+    def get_dir(self, path):
         directory = self.objects
         for name in path:
             directory = directory[name]
-        directory[filename] = blob
+        return directory
+
+    def add_blob(self, path, content):
+        path = self.split_path(path)
+        filename = path.pop()
+        directory = self.get_dir(path)
+        directory[filename] = Blob.from_string(content.encode('utf-8'))
+
+    def get_file(self, path):
+        path = self.split_path(path)
+        filename = path.pop()
+        directory = self.get_dir(path)
+        return directory[filename]
+
+    def list_files(self, path):
+        path = self.split_path(path)
+        directory = self.get_dir(path)
+        return directory
 
     def _add_objects(self, objects, tree):
         for name, obj in objects.iteritems():
@@ -134,7 +151,7 @@ class auto_transaction(object):
         global transaction
         self.active = not transaction
         if self.active:
-            transaction = GitTransaction()
+            transaction = Transaction()
         return transaction
 
     def __exit__(self, type, value, traceback):
@@ -149,6 +166,6 @@ class auto_transaction(object):
 @auto_transaction()
 def init_repo():
     transaction = get_transaction(initialized=False)
-    transaction.add_file('/VERSION', u'{0}\n'.format(get_version()))
-    transaction.add_file('/tickets/.keep', u'')
+    transaction.add_blob('/VERSION', u'{0}\n'.format(get_version()))
+    transaction.add_blob('/tickets/.keep', u'')
     transaction.add_message(u'Initialize Repository')
