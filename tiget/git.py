@@ -166,5 +166,4 @@ class auto_transaction(object):
 def init_repo():
     transaction = get_transaction(initialized=False)
     transaction.add_blob('/VERSION', u'{0}\n'.format(get_version()))
-    transaction.add_blob('/tickets/.keep', u'')
     transaction.add_message(u'Initialize Repository')
