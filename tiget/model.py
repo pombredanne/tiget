@@ -115,7 +115,7 @@ class Model(object):
         transaction.add_message(u'Edit ticket {0}'.format(self.id))
 
     @classmethod
-    def get(instance_id):
+    def get(cls, instance_id):
         raise NotImplementedError
 
     @classmethod
