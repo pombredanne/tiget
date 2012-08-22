@@ -2,7 +2,6 @@ import os, stat, time
 from collections import defaultdict
 from functools import wraps
 from dulwich.objects import Blob, Tree, Commit
-from dulwich.config import StackedConfig
 from dulwich.repo import Repo, NotGitRepository
 from tiget import settings, get_version
 
@@ -10,13 +9,6 @@ transaction = None
 
 class GitError(Exception):
     pass
-
-def get_config_variable(section, name):
-    c = StackedConfig(StackedConfig.default_backends())
-    try:
-        return c.get(section, name).decode('utf-8')
-    except KeyError:
-        raise GitError('{0}.{1} not found in git config'.format(section, name))
 
 def get_transaction(initialized=True):
     if initialized and not transaction.is_initialized:
@@ -52,10 +44,17 @@ class Transaction(object):
     def has_changes(self):
         return bool(self.objects)
 
+    def get_config_variable(self, section, name):
+        c = self.repo.get_config_stack()
+        try:
+            return c.get(section, name).decode('utf-8')
+        except KeyError:
+            raise GitError('{0}.{1} not found in git config'.format(section, name))
+
     @property
     def author(self):
-        name = get_config_variable('user', 'name')
-        email = get_config_variable('user', 'email')
+        name = self.get_config_variable('user', 'name')
+        email = self.get_config_variable('user', 'email')
         return u'{0} <{1}>'.format(name, email)
 
     @property
