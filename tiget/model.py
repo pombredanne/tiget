@@ -102,14 +102,14 @@ class Model(object):
             else:
                 raise Exception('syntax error')
 
-    @property
-    def storage_name(self):
-        return self.__class__.__name__.lower() + 's'
+    @classmethod
+    def get_storage_name(cls):
+        return cls.__name__.lower() + 's'
 
     @auto_transaction()
     def save(self):
         transaction = get_transaction()
-        path = '/{0}/{1}'.format(self.storage_name, self.id)
+        path = '/{0}/{1}'.format(self.get_storage_name(), self.id)
         transaction.add_blob(path, self.serialize(include_hidden=True))
         # TODO: better commit message
         transaction.add_message(u'Edit ticket {0}'.format(self.id))
