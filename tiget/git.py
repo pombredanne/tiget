@@ -117,10 +117,10 @@ class Transaction(object):
             names += directory.keys()
         return names
 
-    def _add_objects(self, objects, tree):
+    def _store_objects(self, objects, tree):
         for name, obj in objects.iteritems():
             perm = stat.S_IFREG | 0644
-            if not isinstance(obj, Blob):
+            if isinstance(obj, Tree):
                 perm = stat.S_IFDIR
                 try:
                     p, tid = tree[name]
@@ -130,10 +130,12 @@ class Transaction(object):
                     if not p & stat.S_IFDIR:
                         raise GitError('{0} is not a directory'.format(name))
                     t = self.repo.tree(tid)
-                self._add_objects(obj, t)
+                self._store_objects(obj, t)
                 obj = t
-            self.repo.object_store.add_object(obj)
+            else:
+                self.repo.object_store.add_object(obj)
             tree.add(name, perm, obj.id)
+        self.repo.object_store.add_object(tree)
 
     def add_message(self, message):
         self.messages += [message]
@@ -148,8 +150,7 @@ class Transaction(object):
         elif self.messages:
             message += u'\n\n' + u'\n'.join(self.messages)
 
-        self._add_objects(self.objects, self.tree)
-        self.repo.object_store.add_object(self.tree)
+        self._store_objects(self.objects, self.tree)
 
         commit = Commit()
         commit.tree = self.tree.id
