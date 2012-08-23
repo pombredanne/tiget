@@ -9,11 +9,9 @@ transaction = None
 class GitError(Exception):
     pass
 
-def get_transaction(initialized=True):
-    if initialized and not transaction.is_initialized:
-        raise GitError('repository is not initialized')
-    elif not initialized and transaction.is_initialized:
-        raise GitError('repository is initialized')
+def get_transaction():
+    if not transaction:
+        raise GitError('need transaction')
     return transaction
 
 class Transaction(object):
@@ -34,10 +32,6 @@ class Transaction(object):
             self.parents = [previous_commit_id]
         self.objects = {}
         self.messages = []
-
-    @property
-    def is_initialized(self):
-        return self.ref in self.repo.refs
 
     @property
     def has_changes(self):
@@ -190,9 +184,3 @@ class auto_transaction(object):
             elif transaction.has_changes:
                 transaction.commit()
             transaction = None
-
-@auto_transaction()
-def init_repo():
-    transaction = get_transaction(initialized=False)
-    transaction['/VERSION'] = u'{0}\n'.format(get_version())
-    transaction.add_message(u'Initialize Repository')
