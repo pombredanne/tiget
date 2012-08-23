@@ -46,4 +46,5 @@ class NewCmd(Cmd):
     @auto_transaction()
     def do(self, opts, args):
         ticket = Ticket()
-        ticket.edit()
+        ticket.open_in_editor()
+        ticket.save()

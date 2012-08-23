@@ -2,7 +2,7 @@ import os
 from tempfile import NamedTemporaryFile
 import subprocess
 
-def edit_content(content):
+def open_in_editor(content):
     try:
         editor = os.environ['EDITOR']
     except KeyError:
