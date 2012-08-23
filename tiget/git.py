@@ -194,5 +194,5 @@ class auto_transaction(object):
 @auto_transaction()
 def init_repo():
     transaction = get_transaction(initialized=False)
-    transaction['/VERSION'], = u'{0}\n'.format(get_version())
+    transaction['/VERSION'] = u'{0}\n'.format(get_version())
     transaction.add_message(u'Initialize Repository')
