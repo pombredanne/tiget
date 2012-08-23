@@ -120,7 +120,9 @@ class Transaction(object):
     def _store_objects(self, objects, tree):
         for name, obj in objects.iteritems():
             perm = stat.S_IFREG | 0644
-            if isinstance(obj, Tree):
+            if isinstance(obj, Blob):
+                self.repo.object_store.add_object(obj)
+            else:
                 perm = stat.S_IFDIR
                 try:
                     p, tid = tree[name]
@@ -132,8 +134,6 @@ class Transaction(object):
                     t = self.repo.tree(tid)
                 self._store_objects(obj, t)
                 obj = t
-            else:
-                self.repo.object_store.add_object(obj)
             tree.add(name, perm, obj.id)
         self.repo.object_store.add_object(tree)
 
