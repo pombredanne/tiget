@@ -66,28 +66,58 @@ class Transaction(object):
     def split_path(self, path):
         return path.lstrip('/').split('/')
 
-    def get_dir(self, path):
+    def __setitem__(self, key, value):
+        path = self.split_path(key)
+        filename = path.pop()
         directory = self.objects
         for name in path:
             directory = directory[name]
-        return directory
+        directory[filename] = Blob.from_string(value.encode('utf-8'))
 
-    def add_blob(self, path, content):
+    def _get_dir(self, path):
+        directory = self.objects
+        tree = self.tree
+        for name in path:
+            if tree:
+                t = None
+                if name in tree:
+                    p, tid = tree[name]
+                    if p & stat.S_IFDIR:
+                        t = self.repo.tree(tid)
+                tree = t
+            if directory:
+                if name in directory:
+                    directory = directory[name]
+                else:
+                    directory = None
+            if not tree and not directory:
+                break
+        return directory, tree
+
+    def get_blob(self, path):
         path = self.split_path(path)
         filename = path.pop()
-        directory = self.get_dir(path)
-        directory[filename] = Blob.from_string(content.encode('utf-8'))
+        directory, tree = self._get_dir(path)
+        blob = None
+        if directory and filename in directory:
+            blob = directory[filename]
+        elif tree and filename in tree:
+            p, bid = tree[filename]
+            if p & stat.S_IFREG:
+                blob = self.repo.get_blob(bid)
+        if not blob:
+            raise GitError('blob not found')
+        return blob.data.decode('utf-8')
 
-    def get_file(self, path):
+    def list_blobs(self, path):
         path = self.split_path(path)
-        filename = path.pop()
-        directory = self.get_dir(path)
-        return directory[filename]
-
-    def list_files(self, path):
-        path = self.split_path(path)
-        directory = self.get_dir(path)
-        return directory
+        directory, tree = self._get_dir(path)
+        names = []
+        if tree:
+            names += [entry.path for entry in tree.items()]
+        if directory:
+            names += directory.keys()
+        return names
 
     def _add_objects(self, objects, tree):
         for name, obj in objects.iteritems():
@@ -165,5 +195,5 @@ class auto_transaction(object):
 @auto_transaction()
 def init_repo():
     transaction = get_transaction(initialized=False)
-    transaction.add_blob('/VERSION', u'{0}\n'.format(get_version()))
+    transaction['/VERSION'], = u'{0}\n'.format(get_version())
     transaction.add_message(u'Initialize Repository')

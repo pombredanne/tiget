@@ -30,7 +30,8 @@ class ListCmd(Cmd):
     @Cmd.argcount(0)
     @auto_transaction()
     def do(self, opts, args):
-        pass
+        for ticket in Ticket.all():
+            print '{0} | {1}'.format(ticket.id, ticket.summary)
 
 @cmd_registry.add
 class NewCmd(Cmd):

@@ -110,7 +110,7 @@ class Model(object):
     def save(self):
         transaction = get_transaction()
         path = '/{0}/{1}'.format(self.get_storage_name(), self.id)
-        transaction.add_blob(path, self.serialize(include_hidden=True))
+        transaction[path] = self.serialize(include_hidden=True)
         # TODO: better commit message
         transaction.add_message(u'Edit ticket {0}'.format(self.id))
 
@@ -119,5 +119,13 @@ class Model(object):
         raise NotImplementedError
 
     @classmethod
-    def all():
-        raise NotImplementedError
+    def all(cls):
+        transaction = get_transaction()
+        path = '/{0}'.format(cls.get_storage_name())
+        instances = []
+        for name in transaction.list_blobs(path):
+            instance = cls()
+            path = '/{0}/{1}'.format(cls.get_storage_name(), name)
+            instance.deserialize(transaction.get_blob(path))
+            instances += [instance]
+        return instances
