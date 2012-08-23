@@ -1,5 +1,4 @@
 import os, stat, time
-from collections import defaultdict
 from functools import wraps
 from dulwich.objects import Blob, Tree, Commit
 from dulwich.repo import Repo, NotGitRepository
@@ -33,7 +32,7 @@ class Transaction(object):
         else:
             self.tree = repo.tree(repo.commit(previous_commit_id).tree)
             self.parents = [previous_commit_id]
-        self.objects = defaultdict(lambda: defaultdict())
+        self.objects = {}
         self.messages = []
 
     @property
@@ -71,6 +70,8 @@ class Transaction(object):
         filename = path.pop()
         directory = self.objects
         for name in path:
+            if not name in directory:
+                directory[name] = {}
             directory = directory[name]
         directory[filename] = Blob.from_string(value.encode('utf-8'))
 
@@ -86,10 +87,7 @@ class Transaction(object):
                         t = self.repo.tree(tid)
                 tree = t
             if directory:
-                if name in directory:
-                    directory = directory[name]
-                else:
-                    directory = None
+                directory = directory.get(name)
             if not tree and not directory:
                 break
         return directory, tree
@@ -165,7 +163,7 @@ class Transaction(object):
         self.repo.refs[self.ref] = commit.id
 
     def rollback(self):
-        self.objects = defaultdict(lambda: defaultdict())
+        self.objects = {}
         self.messages = []
 
 class auto_transaction(object):
