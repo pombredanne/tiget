@@ -30,8 +30,11 @@ class ListCmd(Cmd):
     @Cmd.argcount(0)
     @auto_transaction()
     def do(self, opts, args):
-        for ticket in Ticket.all():
-            print '{0} | {1}'.format(ticket.id, ticket.summary)
+        try:
+            for ticket in Ticket.all():
+                print '{0} | {1}'.format(ticket.id, ticket.summary)
+        except GitError as e:
+            raise self.error(e)
 
 @cmd_registry.add
 class NewCmd(Cmd):
@@ -46,6 +49,9 @@ class NewCmd(Cmd):
     @Cmd.argcount(0)
     @auto_transaction()
     def do(self, opts, args):
-        ticket = Ticket()
-        ticket.open_in_editor()
-        ticket.save()
+        try:
+            ticket = Ticket()
+            ticket.open_in_editor()
+            ticket.save()
+        except GitError as e:
+            raise self.error(e)
