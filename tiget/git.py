@@ -29,15 +29,13 @@ class Transaction(object):
         except KeyError:
             self.tree = Tree()
             self.parents = []
+            self.is_initialized = False
         else:
             self.tree = repo.tree(repo.commit(previous_commit_id).tree)
             self.parents = [previous_commit_id]
+            self.is_initialized = True
         self.objects = {}
         self.messages = []
-
-    @property
-    def is_initialized(self):
-        return self.ref in self.repo.refs
 
     @property
     def has_changes(self):
@@ -196,3 +194,4 @@ def init_repo():
     transaction = get_transaction(initialized=False)
     transaction['/VERSION'] = u'{0}\n'.format(get_version())
     transaction.add_message(u'Initialize Repository')
+    transaction.is_initialized = True
