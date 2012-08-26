@@ -3,10 +3,7 @@ from tempfile import NamedTemporaryFile
 import subprocess
 
 def open_in_editor(content):
-    try:
-        editor = os.environ['EDITOR']
-    except KeyError:
-        editor = 'vi'
+    editor = os.environ.get('EDITOR', 'vi')
     with NamedTemporaryFile(prefix='tiget') as f:
         f.write(content.encode('utf-8'))
         f.seek(0)
