@@ -1,7 +1,7 @@
-import re, textwrap
 from collections import OrderedDict
 from uuid import uuid4
 from tiget.git import auto_transaction, get_transaction
+from tiget.utils import serialize, deserialize
 
 class Field(object):
     creation_counter = 0
@@ -66,41 +66,14 @@ class Model(object):
         for name, field in self.fields.iteritems():
             if not include_hidden and field.hidden:
                 continue
-            content[name] = self.data.get(name, field.default)
-        s = u''
-        for k, v in content.iteritems():
-            value = v or u''
-            s += u'{0}: {1}\n'.format(k, value.replace(u'\n', u'\n    '))
-        return s
+            value = self.data.get(name, field.default)
+            content[name] = value
+        return serialize(content)
 
     def deserialize(self, s):
-        lines = []
-        backlog = None
-        def _flush():
-            if backlog:
-                line = backlog[0]
-                if len(backlog) > 1:
-                    line += u'\n' + textwrap.dedent(u'\n'.join(backlog[1:]))
-                lines.append(line)
-        for line in s.splitlines():
-            if line.startswith(u' ') or not line:
-                if not backlog:
-                    raise Exception('syntax error')
-                backlog += [line]
-            else:
-                _flush()
-                backlog = [line]
-        _flush()
-        for line in lines:
-            if line.startswith(u'#'):
-                continue
-            m = re.match(r'\A(\w+):\s?(.*)\Z', line, re.MULTILINE | re.DOTALL)
-            if m:
-                name = m.group(1)
-                value = m.group(2)
-                self.data[name] = value
-            else:
-                raise Exception('syntax error')
+        content = deserialize(s)
+        for k, v in content.iteritems():
+            self.data[name] = value
 
     @classmethod
     def get_storage_name(cls):
