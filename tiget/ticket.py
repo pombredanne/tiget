@@ -6,5 +6,5 @@ class Ticket(Model):
     description = TextField()
 
     def open_in_editor(self):
-        s = open_in_editor(self.serialize())
-        self.deserialize(s)
+        s = open_in_editor(self.dumps())
+        self.loads(s)

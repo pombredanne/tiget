@@ -1,7 +1,7 @@
 from collections import OrderedDict
 from uuid import UUID, uuid4
 from tiget.git import auto_transaction, get_transaction
-from tiget.utils import serialize, deserialize
+from tiget.utils import serializer
 
 class Field(object):
     creation_counter = 0
@@ -22,10 +22,10 @@ class Field(object):
     def clean(self, value):
         return value
 
-    def serialize(self, value):
+    def dumps(self, value):
         return value
 
-    def deserialize(self, s):
+    def loads(self, s):
         return s
 
 class FieldProxy(object):
@@ -50,10 +50,10 @@ class UUIDField(Field):
             raise ValueError('not a UUID')
         return value
 
-    def serialize(self, value):
+    def dumps(self, value):
         return value.hex.decode('ascii')
 
-    def deserialize(self, s):
+    def loads(self, s):
         return UUID(s)
 
 class TextField(Field):
@@ -94,21 +94,21 @@ class Model(object):
         hex_id = getattr(self.id, 'hex', None)
         return '{0}: {1}'.format(self.__class__.__name__, hex_id)
 
-    def serialize(self, include_hidden=False):
+    def dumps(self, include_hidden=False):
         content = OrderedDict()
         for name, field in self._fields.iteritems():
             if field.hidden and not include_hidden:
                 continue
             value = self._data.get(name, field.default)
-            content[name] = field.serialize(value)
-        return serialize(content)
+            content[name] = field.dumps(value)
+        return serializer.dumps(content)
 
-    def deserialize(self, s):
-        content = deserialize(s)
+    def loads(self, s):
+        content = serializer.loads(s)
         for name, field in self._fields.iteritems():
             if name in content:
                 value = content.pop(name)
-                self._data[name] = field.deserialize(value)
+                self._data[name] = field.loads(value)
         # TODO: raise exception on invalid content
 
     @classmethod
@@ -121,7 +121,7 @@ class Model(object):
             self.id = uuid4()
         transaction = get_transaction()
         path = '/{0}/{1}'.format(self.get_storage_name(), self.id.hex)
-        transaction[path] = self.serialize(include_hidden=True)
+        transaction[path] = self.dumps(include_hidden=True)
         # TODO: better commit message
         transaction.add_message(u'Edit ticket {0}'.format(self.id.hex))
 
@@ -133,7 +133,7 @@ class Model(object):
         transaction = get_transaction()
         path = '/{0}/{1}'.format(cls.get_storage_name(), instance_id)
         instance = cls()
-        instance.deserialize(transaction.get_blob(path))
+        instance.loads(transaction.get_blob(path))
         return instance
 
     @classmethod
