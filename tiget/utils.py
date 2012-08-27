@@ -25,7 +25,7 @@ def deserialize(s):
             continue
         m = re.match(r'(\w+):\s?(.*?)$(.+)?', paragraph, re.MULTILINE | re.DOTALL)
         if not m:
-            raise Exception('syntax error')
+            raise ValueError('syntax error')
         key = m.group(1)
         value = m.group(2)
         if m.group(3):

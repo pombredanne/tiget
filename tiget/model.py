@@ -1,5 +1,5 @@
 from collections import OrderedDict
-from uuid import uuid4
+from uuid import UUID, uuid4
 from tiget.git import auto_transaction, get_transaction
 from tiget.utils import serialize, deserialize
 
@@ -19,61 +19,97 @@ class Field(object):
             default = default()
         return default
 
+    def clean(self, value):
+        return value
+
+    def serialize(self, value):
+        return value
+
+    def deserialize(self, s):
+        return s
+
+class FieldProxy(object):
+    def __init__(self, name, field):
+        self.name = name
+        self.field = field
+
+    def __get__(self, instance, owner):
+        if instance is None:
+            return self
+        return instance._data.get(self.name, self.field.default)
+
+    def __set__(self, instance, value):
+        if value is None:
+            del instance._data[self.name]
+            return
+        instance._data[self.name] = self.field.clean(value)
+
+class UUIDField(Field):
+    def clean(self, value):
+        if not isinstance(value, UUID):
+            raise ValueError('not a UUID')
+        return value
+
+    def serialize(self, value):
+        return value.hex.decode('ascii')
+
+    def deserialize(self, s):
+        return UUID(s)
+
 class TextField(Field):
-    pass
+    def clean(self, value):
+        if not isinstance(value, unicode):
+            raise ValueError('not a unicode string')
+        return value
 
 class ModelBase(type):
     def __new__(cls, name, bases, attrs):
         parents = [b for b in bases if isinstance(b, ModelBase)]
         if parents:
+            attrs['id'] = UUIDField(hidden=True)
             fields = []
             for k, v in attrs.items():
                 if isinstance(v, Field):
                     fields += [(k, v)]
-                    del attrs[k]
+                    attrs[k] = FieldProxy(k, v)
             fields.sort(key=lambda x: x[1].creation_counter)
             fields = OrderedDict(fields)
-            if not 'id' in fields:
-                fields['id'] = TextField(default=lambda: uuid4().hex, hidden=True)
-            attrs['fields'] = fields
+            attrs['_fields'] = fields
         return super(ModelBase, cls).__new__(cls, name, bases, attrs)
 
 class Model(object):
     __metaclass__ = ModelBase
 
+    class ValidationError(Exception): pass
+
     def __init__(self, **kwargs):
-        self.data = {}
-        for k, v in kwargs.iteritems():
-            if not k in self.fields.keys():
-                raise Exception('field "{0}" does not exist'.format(k))
-            self.data[k] = v
-            transaction.add_message(u'Initialize Repository')
+        self._data = {}
+        for name, field in self._fields.iteritems():
+            value = kwargs.pop(name, None)
+            if not value is None:
+                self._data[name] = field.clean(value)
+        # TODO: raise exception on invalid kwargs
 
-    def __getattr__(self, name):
-        field = self.fields.get(name, None)
-        if field:
-            return self.data.get(name, field.default)
-        raise AttributeError
-
-    def __setattr__(self, name, value):
-        if name in self.fields:
-            self.data[name] = value
-        else:
-            super(Model, self).__setattr__(name, value)
+    def __repr__(self):
+        hex_id = getattr(self.id, 'hex', None)
+        return '{0}: {1}'.format(self.__class__.__name__, hex_id)
 
     def serialize(self, include_hidden=False):
         content = OrderedDict()
-        for name, field in self.fields.iteritems():
-            if not include_hidden and field.hidden:
+        for name, field in self._fields.iteritems():
+            if field.hidden and not include_hidden:
                 continue
-            value = self.data.get(name, field.default)
-            content[name] = value
+            value = self._data.get(name, field.default)
+            content[name] = field.serialize(value)
         return serialize(content)
 
     def deserialize(self, s):
         content = deserialize(s)
-        for k, v in content.iteritems():
-            self.data[name] = value
+        for name, field in self._fields.iteritems():
+            if name in content:
+                value = content.pop(name)
+                self._data[name] = field.deserialize(value)
+        # TODO: raise exception on invalid content
 
     @classmethod
     def get_storage_name(cls):
@@ -81,24 +117,31 @@ class Model(object):
 
     @auto_transaction()
     def save(self):
+        if not self.id:
+            self.id = uuid4()
         transaction = get_transaction()
-        path = '/{0}/{1}'.format(self.get_storage_name(), self.id)
+        path = '/{0}/{1}'.format(self.get_storage_name(), self.id.hex)
         transaction[path] = self.serialize(include_hidden=True)
         # TODO: better commit message
-        transaction.add_message(u'Edit ticket {0}'.format(self.id))
+        transaction.add_message(u'Edit ticket {0}'.format(self.id.hex))
 
     @classmethod
+    @auto_transaction()
     def get(cls, instance_id):
-        raise NotImplementedError
+        if isinstance(instance_id, UUID):
+            instance_id = instance_id.hex
+        transaction = get_transaction()
+        path = '/{0}/{1}'.format(cls.get_storage_name(), instance_id)
+        instance = cls()
+        instance.deserialize(transaction.get_blob(path))
+        return instance
 
     @classmethod
+    @auto_transaction()
     def all(cls):
         transaction = get_transaction()
         path = '/{0}'.format(cls.get_storage_name())
         instances = []
-        for name in transaction.list_blobs(path):
-            instance = cls()
-            path = '/{0}/{1}'.format(cls.get_storage_name(), name)
-            instance.deserialize(transaction.get_blob(path))
-            instances += [instance]
+        for instance_id in transaction.list_blobs(path):
+            instances += [cls.get(instance_id)]
         return instances

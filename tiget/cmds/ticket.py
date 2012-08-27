@@ -32,7 +32,7 @@ class ListCmd(Cmd):
     def do(self, opts, args):
         try:
             for ticket in Ticket.all():
-                print '{0} | {1}'.format(ticket.id, ticket.summary)
+                print '{0} | {1}'.format(ticket.id.hex, ticket.summary)
         except GitError as e:
             raise self.error(e)
 
