@@ -4,3 +4,5 @@ env/
 build/
 dist/
 tiget.egg-info/
+.coverage
+htmlcov/
