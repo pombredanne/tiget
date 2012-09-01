@@ -1,4 +1,5 @@
 import os, re, textwrap
+import fcntl, termios, struct
 from tempfile import NamedTemporaryFile
 import subprocess
 
@@ -10,6 +11,9 @@ def open_in_editor(content):
         os.system('{0} {1}'.format(editor, f.name))
         content = f.read().decode('utf-8')
     return content
+
+def get_termsize(fd=1):
+    return struct.unpack('hh', fcntl.ioctl(fd, termios.TIOCGWINSZ, '1234'))
 
 class Serializer(object):
     ITEM_SEPARATOR = re.compile(r'\n(?!\s)')
