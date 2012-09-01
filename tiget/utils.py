@@ -31,12 +31,13 @@ class Serializer(object):
                 continue
             m = self.ITEM_MATCHER.match(item)
             if not m:
+                # TODO: add line number to exception message
                 raise ValueError('syntax error')
             value = m.group('value')
             value2 = m.group('value2')
             if m.group('value2'):
                 value += textwrap.dedent(m.group('value2'))
-            data[m.group('key')] = value
+            data[m.group('key')] = value or None
         return data
 
 serializer = Serializer()
