@@ -4,6 +4,27 @@ from tiget.ticket import Ticket
 from tiget.table import Table
 
 @cmd_registry.add
+class EditCmd(Cmd):
+    """
+    usage: edit TICKET_ID
+
+    Edit ticket with id TICKET_ID.
+    """
+    name = 'edit'
+    help_text = 'edit ticket'
+
+    @Cmd.argcount(1)
+    @auto_transaction()
+    def do(self, opts, args):
+        ticket_id = args[0]
+        try:
+            ticket = Ticket.get(ticket_id)
+        except Ticket.DoesNotExist() as e:
+            raise self.error(e)
+        ticket.open_in_editor()
+        ticket.save()
+
+@cmd_registry.add
 class InitCmd(Cmd):
     """
     usage: init
