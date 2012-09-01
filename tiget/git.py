@@ -5,6 +5,7 @@ from dulwich.repo import Repo, NotGitRepository
 from tiget import settings, get_version
 
 transaction = None
+repository_path = None
 
 class GitError(Exception):
     pass
@@ -19,7 +20,7 @@ def get_transaction(initialized=True):
 class Transaction(object):
     def __init__(self):
         try:
-            repo = Repo(os.getcwd())
+            repo = Repo(repository_path or os.getcwd())
         except NotGitRepository:
             raise GitError('no git repository found')
         self.repo = repo
