@@ -32,7 +32,8 @@ class Table(object):
             return u'| ' + u' | '.join(cells) + u' |\n'
 
         def _render_separator():
-            return u'+-' + u'-+-'.join(u'-' * widths[i] for i in xrange(len(self.columns))) + u'-+\n'
+            cells = [u'-' * widths[i] for i in xrange(len(self.columns))]
+            return u'+-' + u'-+-'.join(cells) + u'-+\n'
 
         s = _render_separator()
         s += _render_row(self.columns, header=True)
