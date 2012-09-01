@@ -1,28 +1,43 @@
 from collections import namedtuple
 from tiget.utils import get_termsize
 
+CENTER = lambda x, width: x.center(width)
+LJUST = lambda x, width: x.ljust(width)
+RJUST = lambda x, width: x.rjust(width)
+
 class Table(object):
     def __init__(self, *args):
         self.columns = args
         self.rows = []
+        self.col_width = [len(col) for col in args]
+        self.styles = [LJUST] * len(args)
 
     def add_row(self, *args):
-        assert len(args) == len(self.columns)
+        # FIXME: check number of arguments
         self.rows.append(args)
-    
-    def get_widths(self):
-        widths = []
-        for i, col in enumerate(self.columns):
-            width = len(col)
-            for row in self.rows:
-                linelen = max(len(line) for line in row[i].splitlines())
-                width = max(linelen, width)
-            widths += [width]
-        return widths
+        for i, col in enumerate(args):
+            linelen = max(len(line) for line in col.splitlines())
+            self.col_width[i] = max(linelen, self.col_width[i])
 
     def render(self):
-        widths = self.get_widths()
-        print u' | '.join(col.center(widths[i]) for i, col in enumerate(self.columns))
-        print u'-+-'.join(u'-' * widths[i] for i in xrange(len(self.columns)))
+        widths = self.col_width
+
+        def _format(col, value, header):
+            style = CENTER if header else self.styles[col]
+            width = widths[col]
+            return style(value, width)
+
+        def _render_row(row, header=False):
+            cells = [_format(col, value, header) for col, value in enumerate(row)]
+            return u'| ' + u' | '.join(cells) + u' |\n'
+
+        def _render_separator():
+            return u'+-' + u'-+-'.join(u'-' * widths[i] for i in xrange(len(self.columns))) + u'-+\n'
+
+        s = _render_separator()
+        s += _render_row(self.columns, header=True)
+        s += _render_separator()
         for row in self.rows:
-            print u' | '.join(col.ljust(widths[i]) for i, col in enumerate(row))
+            s += _render_row(row)
+        s += _render_separator()
+        return s

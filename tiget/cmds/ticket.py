@@ -34,7 +34,7 @@ class ListCmd(Cmd):
         table = Table(u'id', u'summary')
         for ticket in Ticket.all():
             table.add_row(ticket.id.hex, ticket.summary)
-        table.render()
+        print table.render()
 
 @cmd_registry.add
 class NewCmd(Cmd):
