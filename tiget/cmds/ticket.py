@@ -1,6 +1,7 @@
 from tiget.cmd_registry import cmd_registry, Cmd
 from tiget.git import init_repo, GitError, auto_transaction
 from tiget.ticket import Ticket
+from tiget.table import Table
 
 @cmd_registry.add
 class InitCmd(Cmd):
@@ -30,11 +31,10 @@ class ListCmd(Cmd):
     @Cmd.argcount(0)
     @auto_transaction()
     def do(self, opts, args):
-        try:
-            for ticket in Ticket.all():
-                print '{0} | {1}'.format(ticket.id.hex, ticket.summary)
-        except GitError as e:
-            raise self.error(e)
+        table = Table(u'id', u'summary')
+        for ticket in Ticket.all():
+            table.add_row(ticket.id.hex, ticket.summary)
+        table.render()
 
 @cmd_registry.add
 class NewCmd(Cmd):
