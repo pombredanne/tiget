@@ -29,6 +29,10 @@ class TestSerializer(object):
         data = serializer.loads(u'')
         eq_(len(data), 0)
 
+    def test_loads_blankline_with_space(self):
+        data = serializer.loads(u' ')
+        eq_(len(data), 0)
+
     @raises(ValueError)
     def test_loads_broken(self):
         data = serializer.loads(u'I am broken')

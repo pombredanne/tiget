@@ -90,8 +90,8 @@ class Transaction(object):
                 break
         return directory, tree
 
-    def get_blob(self, path):
-        path = self.split_path(path)
+    def __getitem__(self, key):
+        path = self.split_path(key)
         filename = path.pop()
         directory, tree = self._get_dir(path)
         blob = None

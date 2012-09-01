@@ -27,7 +27,7 @@ class Serializer(object):
     def loads(self, s):
         data = {}
         for item in self.ITEM_SEPARATOR.split(s):
-            if item.startswith(u'#') or item == u'':
+            if item.startswith(u'#') or not item.strip():
                 continue
             m = self.ITEM_MATCHER.match(item)
             if not m:
