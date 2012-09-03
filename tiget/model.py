@@ -71,8 +71,7 @@ class TextField(Field):
 
 
 class ObjectDoesNotExist(Exception): pass
-class ValidationError(Exception): pass
-class SerializationError(Exception): pass
+class InvalidObject(Exception): pass
 
 class ModelBase(type):
     def __new__(cls, name, bases, attrs):
@@ -95,8 +94,7 @@ class ModelBase(type):
 
         module = attrs['__module__']
         attrs['DoesNotExist'] = type('DoesNotExist', (ObjectDoesNotExist,), {'__module__': module})
-        attrs['ValidationError'] = type('ValidationError', (ValidationError,), {'__module__': module})
-        attrs['SerializationError'] = type('SerializationError', (SerializationError,), {'__module__': module})
+        attrs['InvalidObject'] = type('InvalidObject', (InvalidObject,), {'__module__': module})
 
         return super_new(cls, name, bases, attrs)
 
@@ -111,23 +109,15 @@ class Model(object):
                 value = field.clean(value)
             self._data[name] = value
         for k in kwargs.iterkeys():
-            raise TypeError('\'{0}\' is an invalid field name for {1}'.format(k, self.__class__.__name__))
+            raise self.invalid_field(k)
 
     def __repr__(self):
         hex_id = getattr(self.id, 'hex', None)
         return '{0}: {1}'.format(self.__class__.__name__, hex_id)
 
-    def update(self, **kwargs):
-        for name, field in self._fields.iteritems():
-            if name in kwargs:
-                value = kwargs.pop(name)
-                self._data[name] = value
-            value = kwargs.pop(name, field.default)
-            if not value is None:
-                value = field.clean(value)
-            self._data[name] = value
-        for k in kwargs.iterkeys():
-            raise TypeError('\'{0}\' is an invalid field name for {1}'.format(k, self.__class__.__name__))
+    def invalid_field(name):
+        message = '\'{0}\' is an invalid field name for {1}'
+        return TypeError(message.format(name, self.__class__.__name__))
 
     def dumps(self, include_hidden=False):
         content = OrderedDict()
@@ -142,10 +132,12 @@ class Model(object):
         try:
             content = serializer.loads(s)
         except ValueError as e:
-            raise self.SerializationError(str(e))
+            raise self.InvalidObject(str(e))
         for name, value in content.iteritems():
-            # FIXME: raise error if field does not exist
-            field = self._fields[name]
+            try:
+                field = self._fields[name]
+            except KeyError:
+                raise self.invalid_field(name)
             self._data[name] = field.loads(value)
 
     @property
