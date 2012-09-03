@@ -30,18 +30,16 @@ class Serializer(object):
 
     def loads(self, s):
         data = {}
+        lineno = 0
         for item in self.ITEM_SEPARATOR.split(s):
-            if item.startswith(u'#') or not item.strip():
-                continue
-            m = self.ITEM_MATCHER.match(item)
-            if not m:
-                # TODO: add line number to exception message
-                raise ValueError('syntax error')
-            value = m.group('value')
-            value2 = m.group('value2')
-            if m.group('value2'):
-                value += textwrap.dedent(m.group('value2'))
-            data[m.group('key')] = value or None
+            if not item.startswith(u'#') and item.strip():
+                m = self.ITEM_MATCHER.match(item)
+                if not m:
+                    raise ValueError('syntax error on line {0}'.format(lineno+1))
+                value = m.group('value')
+                value += textwrap.dedent(m.group('value2') or u'')
+                data[m.group('key')] = value or None
+            lineno += item.count(u'\n') + 1
         return data
 
 serializer = Serializer()

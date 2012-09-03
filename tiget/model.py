@@ -142,7 +142,7 @@ class Model(object):
         try:
             content = serializer.loads(s)
         except ValueError as e:
-            raise self.SerializationError()
+            raise self.SerializationError(str(e))
         for name, value in content.iteritems():
             # FIXME: raise error if field does not exist
             field = self._fields[name]
