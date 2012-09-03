@@ -2,8 +2,10 @@ import textwrap
 from functools import wraps
 from getopt import getopt, GetoptError
 
+
 class CmdError(Exception):
     pass
+
 
 class Cmd(object):
     name = NotImplemented
@@ -43,6 +45,7 @@ class Cmd(object):
                 return fn(self, opts, args)
             return _inner
         return _decorator
+
 
 class CmdRegistry(dict):
     def add(self, klass):

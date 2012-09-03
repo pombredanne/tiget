@@ -3,6 +3,7 @@ from uuid import UUID, uuid4
 from tiget.git import auto_transaction, get_transaction
 from tiget.utils import serializer
 
+
 class Field(object):
     allowed_type = None
     creation_counter = 0
@@ -43,7 +44,9 @@ class Field(object):
 
     def clean(self, value):
         if not value is None and not isinstance(value, self.allowed_type):
-            raise ValueError('{0} must be of type {1}'.format(self.name, self.allowed_type.__name__))
+            type_name = self.allowed_type.__name__
+            raise ValueError(
+                '{0} must be of type {1}'.format(self.name, type.name))
         if value is None and not self.null:
             raise ValueError('{0} must not be None'.format(self.name))
         return value
@@ -58,6 +61,7 @@ class Field(object):
             return self.allowed_type(s)
         return None
 
+
 class UUIDField(Field):
     allowed_type = UUID
 
@@ -66,11 +70,12 @@ class UUIDField(Field):
             return value.hex.decode('ascii')
         return None
 
+
 class TextField(Field):
     allowed_type = unicode
 
 
-class ObjectDoesNotExist(Exception): pass
+class DoesNotExist(Exception): pass
 class InvalidObject(Exception): pass
 
 class ModelBase(type):
@@ -93,10 +98,12 @@ class ModelBase(type):
         attrs['_storage_name'] = name.lower() + 's'
 
         module = attrs['__module__']
-        attrs['DoesNotExist'] = type('DoesNotExist', (ObjectDoesNotExist,), {'__module__': module})
-        attrs['InvalidObject'] = type('InvalidObject', (InvalidObject,), {'__module__': module})
+        for name in ('DoesNotExist', 'InvalidObject'):
+            exc_class = globals()[name]
+            attrs[name] = type(name, (exc_class,), {'__module__': module})
 
         return super_new(cls, name, bases, attrs)
+
 
 class Model(object):
     __metaclass__ = ModelBase

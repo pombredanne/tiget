@@ -3,6 +3,7 @@ import fcntl, termios, struct
 from tempfile import NamedTemporaryFile
 import subprocess
 
+
 def open_in_editor(content):
     editor = os.environ.get('EDITOR', 'vi')
     with NamedTemporaryFile(prefix='tiget') as f:
@@ -12,8 +13,10 @@ def open_in_editor(content):
         content = f.read().decode('utf-8')
     return content
 
+
 def get_termsize(fd=1):
     return struct.unpack('hh', fcntl.ioctl(fd, termios.TIOCGWINSZ, '1234'))
+
 
 class Serializer(object):
     ITEM_SEPARATOR = re.compile(r'\n(?!\s)')
@@ -35,7 +38,8 @@ class Serializer(object):
             if not item.startswith(u'#') and item.strip():
                 m = self.ITEM_MATCHER.match(item)
                 if not m:
-                    raise ValueError('syntax error on line {0}'.format(lineno+1))
+                    raise ValueError(
+                        'syntax error on line {0}'.format(lineno + 1))
                 value = m.group('value')
                 value += textwrap.dedent(m.group('value2') or u'')
                 data[m.group('key')] = value or None

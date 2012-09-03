@@ -3,6 +3,7 @@ from tiget.git import init_repo, GitError, auto_transaction
 from tiget.ticket import Ticket
 from tiget.table import Table
 
+
 @cmd_registry.add
 class EditCmd(Cmd):
     """
@@ -24,6 +25,7 @@ class EditCmd(Cmd):
         ticket.open_in_editor()
         ticket.save()
 
+
 @cmd_registry.add
 class InitCmd(Cmd):
     """
@@ -41,6 +43,7 @@ class InitCmd(Cmd):
         except GitError as e:
             raise self.error(e)
 
+
 @cmd_registry.add
 class ListCmd(Cmd):
     """
@@ -56,6 +59,7 @@ class ListCmd(Cmd):
         for ticket in Ticket.all():
             table.add_row(ticket.id.hex, ticket.summary)
         print table.render()
+
 
 @cmd_registry.add
 class NewCmd(Cmd):

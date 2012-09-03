@@ -5,6 +5,7 @@ CENTER = lambda x, width: x.center(width)
 LJUST = lambda x, width: x.ljust(width)
 RJUST = lambda x, width: x.rjust(width)
 
+
 class Table(object):
     def __init__(self, *args):
         self.columns = args
@@ -22,13 +23,12 @@ class Table(object):
     def render(self):
         widths = self.col_width
 
-        def _format(col, value, header):
-            style = CENTER if header else self.styles[col]
-            width = widths[col]
-            return style(value, width)
-
         def _render_row(row, header=False):
-            cells = [_format(col, value, header) for col, value in enumerate(row)]
+            cells = []
+            for col, value in enumerate(row):
+                style = CENTER if header else self.styles[col]
+                width = widths[col]
+                cells += [style(value, width)]
             return u'| ' + u' | '.join(cells) + u' |\n'
 
         def _render_separator():

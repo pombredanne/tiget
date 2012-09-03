@@ -1,6 +1,7 @@
 from nose.tools import ok_, eq_, raises
 from tiget.utils import serializer
 
+
 class TestSerializer(object):
     def test_loads_none(self):
         data = serializer.loads(u'none: ')

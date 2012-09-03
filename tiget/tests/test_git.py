@@ -5,6 +5,7 @@ from subprocess import call, check_call, check_output
 from tiget import settings, git
 from tiget.git import init_repo, get_transaction, auto_transaction
 
+
 class GitTestcase(object):
     def setup(self):
         self.repo = mkdtemp()
@@ -22,13 +23,15 @@ class GitTestcase(object):
 
     def assert_commit_count(self, count):
         cmd = 'git log --oneline {0} | wc -l'.format(settings.branchname)
-        eq_(check_output(cmd, cwd=self.repo, shell=True), str(count)+'\n')
+        eq_(check_output(cmd, cwd=self.repo, shell=True), str(count) + '\n')
+
 
 class TestGit(GitTestcase):
     def test_init_repo(self):
         init_repo()
         ref = 'refs/heads/{0}'.format(settings.branchname)
-        check_call(['git', 'show-ref', '--verify', '--quiet', ref], cwd=self.repo)
+        check_call(
+            ['git', 'show-ref', '--verify', '--quiet', ref], cwd=self.repo)
         self.assert_commit_count(1)
         self.assert_file_exists('VERSION')
 
@@ -52,8 +55,9 @@ class TestGit(GitTestcase):
         self.assert_file_exists('foo')
 
     def test_transaction_rollback(self):
-        init_repo()
         class TestException(Exception): pass
+
+        init_repo()
         with assert_raises(TestException):
             with auto_transaction():
                 transaction = get_transaction()

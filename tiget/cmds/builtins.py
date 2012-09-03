@@ -1,6 +1,7 @@
 from tiget import settings, get_version
 from tiget.cmd_registry import cmd_registry, Cmd, CmdError
 
+
 @cmd_registry.add
 class AliasCmd(Cmd):
     """
@@ -33,6 +34,7 @@ class AliasCmd(Cmd):
             else:
                 raise self.argcount_error()
 
+
 @cmd_registry.add
 class HelpCmd(Cmd):
     """
@@ -51,7 +53,8 @@ class HelpCmd(Cmd):
             cmds.sort(key=lambda cmd: cmd.name)
             longest = max(len(cmd.name) for cmd in cmds)
             for cmd in cmds:
-                print '{0} - {1}'.format(cmd.name.ljust(longest), cmd.help_text)
+                cmd_name = cmd.name.ljust(longest)
+                print '{0} - {1}'.format(cmd_name, cmd.help_text)
         else:
             name = args[0]
             try:
@@ -63,6 +66,7 @@ class HelpCmd(Cmd):
                 print usage
             else:
                 raise CmdError('{0}: no usage information found'.format(name))
+
 
 @cmd_registry.add
 class VersionCmd(Cmd):

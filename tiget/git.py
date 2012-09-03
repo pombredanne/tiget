@@ -7,8 +7,10 @@ from tiget import settings, get_version
 transaction = None
 repository_path = None
 
+
 class GitError(Exception):
     pass
+
 
 def get_transaction(initialized=True):
     if initialized and not transaction.is_initialized:
@@ -16,6 +18,7 @@ def get_transaction(initialized=True):
     elif not initialized and transaction.is_initialized:
         raise GitError('repository is initialized')
     return transaction
+
 
 class Transaction(object):
     def __init__(self):
@@ -47,7 +50,8 @@ class Transaction(object):
         try:
             return c.get(section, name).decode('utf-8')
         except KeyError:
-            raise GitError('{0}.{1} not found in git config'.format(section, name))
+            raise GitError(
+                '{0}.{1} not found in git config'.format(section, name))
 
     @property
     def author(self):
@@ -141,7 +145,8 @@ class Transaction(object):
 
     def commit(self, message=None):
         if not self.has_changes:
-            raise GitError('nothing changed; use rollback to abort the transaction')
+            raise GitError(
+                'nothing changed; use rollback to abort the transaction')
         if not message:
             if not self.messages:
                 raise GitError('no message for commit')
@@ -166,6 +171,7 @@ class Transaction(object):
         self.objects = {}
         self.messages = []
 
+
 class auto_transaction(object):
     def __call__(self, fn):
         @wraps(fn)
@@ -189,6 +195,7 @@ class auto_transaction(object):
             elif transaction.has_changes:
                 transaction.commit()
             transaction = None
+
 
 @auto_transaction()
 def init_repo():

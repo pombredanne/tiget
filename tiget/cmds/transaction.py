@@ -2,6 +2,7 @@ from tiget import git
 from tiget.cmd_registry import cmd_registry, Cmd
 from tiget.git import GitError
 
+
 @cmd_registry.add
 class BeginCmd(Cmd):
     """
@@ -15,6 +16,7 @@ class BeginCmd(Cmd):
         if git.transaction:
             raise self.error('there is already a transaction running')
         git.transaction = git.Transaction()
+
 
 @cmd_registry.add
 class CommitCmd(Cmd):
@@ -37,6 +39,7 @@ class CommitCmd(Cmd):
             raise self.error(e)
         git.transaction = None
 
+
 @cmd_registry.add
 class RollbackCmd(Cmd):
     """
@@ -46,7 +49,7 @@ class RollbackCmd(Cmd):
     help_text = 'roll back transaction'
 
     @Cmd.argcount(0)
-    def do (self, opts, args):
+    def do(self, opts, args):
         if not git.transaction:
             raise self.error('no transaction running')
         git.transaction.rollback()
