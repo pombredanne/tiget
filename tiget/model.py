@@ -1,5 +1,6 @@
 from collections import OrderedDict
 from uuid import UUID, uuid4
+
 from tiget.git import auto_transaction, get_transaction
 from tiget.utils import serializer
 
@@ -98,9 +99,9 @@ class ModelBase(type):
         attrs['_storage_name'] = name.lower() + 's'
 
         module = attrs['__module__']
-        for name in ('DoesNotExist', 'InvalidObject'):
-            exc_class = globals()[name]
-            attrs[name] = type(name, (exc_class,), {'__module__': module})
+        for exc in ('DoesNotExist', 'InvalidObject'):
+            exc_class = globals()[exc]
+            attrs[exc] = type(exc, (exc_class,), {'__module__': module})
 
         return super_new(cls, name, bases, attrs)
 

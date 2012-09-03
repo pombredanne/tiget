@@ -3,8 +3,7 @@ from functools import wraps
 from getopt import getopt, GetoptError
 
 
-class CmdError(Exception):
-    pass
+class CmdError(Exception): pass
 
 
 class Cmd(object):

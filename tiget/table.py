@@ -1,4 +1,5 @@
 from collections import namedtuple
+
 from tiget.utils import get_termsize
 
 CENTER = lambda x, width: x.center(width)

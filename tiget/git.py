@@ -1,8 +1,13 @@
-import os, stat, time
+import os
+import stat
+import time
 from functools import wraps
+
 from dulwich.objects import Blob, Tree, Commit
 from dulwich.repo import Repo, NotGitRepository
-from tiget import settings, get_version
+
+from tiget import get_version
+from tiget import settings
 
 transaction = None
 repository_path = None

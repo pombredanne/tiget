@@ -1,7 +1,11 @@
-import os, re, textwrap
-import fcntl, termios, struct
-from tempfile import NamedTemporaryFile
+import os
+import re
+import textwrap
+import fcntl
+import termios
+import struct
 import subprocess
+from tempfile import NamedTemporaryFile
 
 
 def open_in_editor(content):

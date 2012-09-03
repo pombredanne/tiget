@@ -1,4 +1,9 @@
-import os, sys, readline, shlex, traceback
+import os
+import sys
+import readline
+import shlex
+import traceback
+
 from tiget import settings, get_version
 from tiget.cmd_registry import cmd_registry, CmdError
 
