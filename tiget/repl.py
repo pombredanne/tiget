@@ -5,10 +5,10 @@ from tiget.cmd_registry import cmd_registry, CmdError
 
 class Repl(object):
     def complete(self, text, state):
-        options = filter(lambda x: x.startswith(text), cmd_registry.iterkeys())
-        options += filter(lambda x: x.startswith(text), settings.aliases.iterkeys())
+        cmds = cmd_registry.keys() + settings.aliases.keys()
+        options = [cmd for cmd in cmds if cmd.startswith(text)]
         if state < len(options):
-            return options[state]
+            return options[state] + ' '
         return None
 
     def print_error(self, line):
