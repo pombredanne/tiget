@@ -1,6 +1,6 @@
-from tiget.cmd_registry import cmd_registry, Cmd
+from tiget.cmds.registry import cmd_registry, Cmd
 from tiget.git import init_repo, GitError, auto_transaction
-from tiget.ticket import Ticket
+from tiget.models import Ticket
 from tiget.table import Table
 
 
