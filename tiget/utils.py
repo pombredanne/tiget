@@ -5,6 +5,7 @@ import fcntl
 import termios
 import struct
 import subprocess
+from collections import namedtuple
 from tempfile import NamedTemporaryFile
 
 
@@ -18,8 +19,11 @@ def open_in_editor(content):
     return content
 
 
+TerminalGeometry = namedtuple('TerminalGeometry', ('lines', 'cols'))
+
 def get_termsize(fd=1):
-    return struct.unpack('hh', fcntl.ioctl(fd, termios.TIOCGWINSZ, '1234'))
+    geometry = struct.unpack('hh', fcntl.ioctl(fd, termios.TIOCGWINSZ, '1234'))
+    return TerminalGeometry(*geometry)
 
 
 class Serializer(object):

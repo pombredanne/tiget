@@ -24,7 +24,7 @@ class Table(object):
     def render(self):
         unscaled = sum(self.col_width)
         available_width = (
-            get_termsize()[1] -
+            get_termsize().cols -
             (len(self.col_width) - 1) * 3 - 4)
         ratio = max(1, float(available_width) / unscaled)
         widths = [int(math.floor(w * ratio)) for w in self.col_width]
