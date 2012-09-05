@@ -1,4 +1,4 @@
-from collections import namedtuple
+import math
 
 from tiget.utils import get_termsize
 
@@ -22,7 +22,12 @@ class Table(object):
             self.col_width[i] = max(linelen, self.col_width[i])
 
     def render(self):
-        widths = self.col_width
+        unscaled = sum(self.col_width)
+        available_width = (
+            get_termsize()[1] -
+            (len(self.col_width) - 1) * 3 - 4)
+        ratio = max(1, float(available_width) / unscaled)
+        widths = [int(math.floor(w * ratio)) for w in self.col_width]
 
         def _render_row(row, header=False):
             cells = []
