@@ -1,4 +1,5 @@
-from tiget.model import Model, TextField
+from tiget.models.base import Model
+from tiget.models.fields import TextField
 from tiget.utils import open_in_editor
 
 

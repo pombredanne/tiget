@@ -1,5 +1,5 @@
 from tiget import git
-from tiget.cmd_registry import cmd_registry, Cmd
+from tiget.cmds.registry import cmd_registry, Cmd
 from tiget.git import GitError
 
 

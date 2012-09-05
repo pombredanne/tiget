@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 import sys
+
 from tiget.repl import Repl
-from tiget.cmd_registry import cmd_registry, CmdError
+from tiget.cmds.registry import cmd_registry, CmdError
+
 
 def main():
     args = sys.argv[1:]
@@ -12,6 +14,7 @@ def main():
         cmd_registry.run(args)
     except CmdError as e:
         print e
+
 
 if __name__ == '__main__':
     main()

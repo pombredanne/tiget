@@ -3,77 +3,7 @@ from uuid import UUID, uuid4
 
 from tiget.git import auto_transaction, get_transaction
 from tiget.utils import serializer
-
-
-class Field(object):
-    allowed_type = None
-    creation_counter = 0
-
-    def __init__(self, default=None, hidden=False, null=False):
-        self._default = default
-        self.hidden = hidden
-        self.null = null
-        self._name = None
-        self.creation_counter = Field.creation_counter
-        Field.creation_counter += 1
-
-    def __get__(self, instance, owner):
-        if instance is None:
-            return self
-        return instance._data[self.name]
-
-    def __set__(self, instance, value):
-        instance._data[self.name] = self.clean(value)
-
-    @property
-    def name(self):
-        if not self._name:
-            raise RuntimeError('{0} is not bound'.format(self.name))
-        return self._name
-
-    def bind(self, name):
-        if self._name:
-            raise RuntimeError('{0} is already bound'.format(self.name))
-        self._name = name
-
-    @property
-    def default(self):
-        default = self._default
-        if hasattr(default, '__call__'):
-            default = default()
-        return default
-
-    def clean(self, value):
-        if not value is None and not isinstance(value, self.allowed_type):
-            type_name = self.allowed_type.__name__
-            raise ValueError(
-                '{0} must be of type {1}'.format(self.name, type.name))
-        if value is None and not self.null:
-            raise ValueError('{0} must not be None'.format(self.name))
-        return value
-
-    def dumps(self, value):
-        if not value is None:
-            value = unicode(value)
-        return value
-
-    def loads(self, s):
-        if not s is None:
-            return self.allowed_type(s)
-        return None
-
-
-class UUIDField(Field):
-    allowed_type = UUID
-
-    def dumps(self, value):
-        if not value is None:
-            return value.hex.decode('ascii')
-        return None
-
-
-class TextField(Field):
-    allowed_type = unicode
+from tiget.models.fields import Field, UUIDField
 
 
 class DoesNotExist(Exception): pass
@@ -161,7 +91,8 @@ class Model(object):
         transaction = get_transaction()
         transaction[self.path] = self.dumps(include_hidden=True)
         # TODO: create informative commit message
-        transaction.add_message(u'Edit ticket {0}'.format(self.id.hex))
+        transaction.add_message(
+            u'Edit {0} {1}'.format(self.__class__.__name__, self.id.hex))
 
     @auto_transaction()
     def delete(self):

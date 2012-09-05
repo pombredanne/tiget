@@ -1,5 +1,5 @@
 from tiget import settings, get_version
-from tiget.cmd_registry import cmd_registry, Cmd, CmdError
+from tiget.cmds.registry import cmd_registry, Cmd, CmdError
 
 
 @cmd_registry.add
