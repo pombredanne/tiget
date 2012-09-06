@@ -1,4 +1,5 @@
 import math
+from textwrap import wrap
 
 from tiget.utils import get_termsize
 
@@ -26,25 +27,30 @@ class Table(object):
         available_width = (
             get_termsize().cols -
             (len(self.col_width) - 1) * 3 - 4)
-        ratio = max(1, float(available_width) / unscaled)
-        widths = [int(math.floor(w * ratio)) for w in self.col_width]
+        ratio = min(1, float(available_width) / unscaled)
+        widths = [max(1, int(math.floor(w * ratio))) for w in self.col_width]
 
         def _render_row(row, header=False):
             cells = []
-            for col, value in enumerate(row):
-                style = CENTER if header else self.styles[col]
-                width = widths[col]
-                cells += [style(value, width)]
-            return u'| ' + u' | '.join(cells) + u' |\n'
+            for value, width in zip(row, widths):
+                cells += [wrap(value, width)]
+            lines = []
+            while any(cells):
+                values = []
+                for cell, width, style in zip(cells, widths, self.styles):
+                    if header:
+                        style = CENTER
+                    value = style(cell.pop(0) if cell else u'', width)
+                    values += [value]
+                lines += [u'| ' + u' | '.join(values) + u' |']
+            return u'\n'.join(lines) + u'\n'
 
-        def _render_separator():
-            cells = [u'-' * widths[i] for i in xrange(len(self.columns))]
-            return u'+-' + u'-+-'.join(cells) + u'-+\n'
+        separator = u'+-' + u'-+-'.join(u'-' * w for w in widths) + u'-+\n'
 
-        s = _render_separator()
+        s = separator
         s += _render_row(self.columns, header=True)
-        s += _render_separator()
+        s += separator
         for row in self.rows:
             s += _render_row(row)
-        s += _render_separator()
+        s += separator
         return s
