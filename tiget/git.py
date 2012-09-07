@@ -2,6 +2,7 @@ import os
 import stat
 import time
 from functools import wraps
+from collections import namedtuple
 
 from dulwich.objects import Blob, Tree, Commit
 from dulwich.repo import Repo, NotGitRepository
@@ -25,6 +26,8 @@ def get_transaction(initialized=True):
     return transaction
 
 
+MemoryTree = namedtuple('MemoryTree', ['tree', 'childs', 'blobs'])
+
 class Transaction(object):
     def __init__(self):
         try:
@@ -36,19 +39,16 @@ class Transaction(object):
         try:
             previous_commit_id = repo.refs[self.ref]
         except KeyError:
-            self.tree = Tree()
+            tree = Tree()
             self.parents = []
             self.is_initialized = False
         else:
-            self.tree = repo.tree(repo.commit(previous_commit_id).tree)
+            tree = repo.tree(repo.commit(previous_commit_id).tree)
             self.parents = [previous_commit_id]
             self.is_initialized = True
-        self.objects = {}
+        self.has_changes = False
+        self.memory_tree = MemoryTree(tree, {}, {})
         self.messages = []
-
-    @property
-    def has_changes(self):
-        return bool(self.objects)
 
     def get_config_variable(self, section, name):
         c = self.repo.get_config_stack()
@@ -73,77 +73,59 @@ class Transaction(object):
     def split_path(self, path):
         return path.lstrip('/').split('/')
 
-    def __setitem__(self, key, value):
-        path = self.split_path(key)
-        filename = path.pop()
-        directory = self.objects
+    def get_memory_tree(self, path):
+        memory_tree = self.memory_tree
         for name in path:
-            if not name in directory:
-                directory[name] = {}
-            directory = directory[name]
-        directory[filename] = Blob.from_string(value.encode('utf-8'))
-
-    def _get_dir(self, path):
-        directory = self.objects
-        tree = self.tree
-        for name in path:
-            if tree:
-                t = None
-                if name in tree:
-                    p, tid = tree[name]
+            if not name in memory_tree.childs:
+                tree = Tree()
+                if name in memory_tree.tree:
+                    p, tid = memory_tree.tree[name]
                     if p & stat.S_IFDIR:
-                        t = self.repo.tree(tid)
-                tree = t
-            if directory:
-                directory = directory.get(name)
-            if not tree and not directory:
-                break
-        return directory, tree
+                        tree = self.repo.tree(tid)
+                memory_tree.childs[name] = MemoryTree(tree, {}, {})
+            memory_tree = memory_tree.childs[name]
+        return memory_tree
 
-    def __getitem__(self, key):
+    def get_blob(self, key):
         path = self.split_path(key)
         filename = path.pop()
-        directory, tree = self._get_dir(path)
+        memory_tree = self.get_memory_tree(path)
         blob = None
-        if directory and filename in directory:
-            blob = directory[filename]
-        elif tree and filename in tree:
-            p, bid = tree[filename]
-            if p & stat.S_IFREG:
-                blob = self.repo.get_blob(bid)
+        if filename in memory_tree.blobs:
+            blob = memory_tree.blobs[filename]
+        elif filename in memory_tree.tree:
+            perm, blob_id = memory_tree.tree[filename]
+            if perm & stat.S_IFREG:
+                blob = self.repo.get_blob(blob_id)
         if not blob:
             raise GitError('blob not found')
         return blob.data.decode('utf-8')
 
+    def set_blob(self, key, value):
+        path = self.split_path(key)
+        filename = path.pop()
+        memory_tree = self.get_memory_tree(path)
+        memory_tree.blobs[filename] = Blob.from_string(value.encode('utf-8'))
+        self.has_changes = True
+
     def list_blobs(self, path):
         path = self.split_path(path)
-        directory, tree = self._get_dir(path)
-        names = []
-        if tree:
-            names += [entry.path for entry in tree.items()]
-        if directory:
-            names += directory.keys()
+        memory_tree = self.get_memory_tree(path)
+        names = [entry.path for entry in memory_tree.tree.items()]
+        names += memory_tree.blobs.keys()
         return names
 
-    def _store_objects(self, objects, tree):
-        for name, obj in objects.iteritems():
-            perm = stat.S_IFREG | 0644
-            if isinstance(obj, Blob):
-                self.repo.object_store.add_object(obj)
-            else:
-                perm = stat.S_IFDIR
-                try:
-                    p, tid = tree[name]
-                except KeyError:
-                    t = Tree()
-                else:
-                    if not p & stat.S_IFDIR:
-                        raise GitError('{0} is not a directory'.format(name))
-                    t = self.repo.tree(tid)
-                self._store_objects(obj, t)
-                obj = t
-            tree.add(name, perm, obj.id)
-        self.repo.object_store.add_object(tree)
+    def _store_objects(self, memory_tree):
+        perm = stat.S_IFREG | 0644
+        for name, blob in memory_tree.blobs.iteritems():
+            self.repo.object_store.add_object(blob)
+            memory_tree.tree.add(name, perm, blob.id)
+        for name, child in memory_tree.childs.iteritems():
+            if not child.childs and not child.blobs:
+                continue
+            self._store_objects(child)
+            memory_tree.tree.add(name, stat.S_IFDIR, child.tree.id)
+        self.repo.object_store.add_object(memory_tree.tree)
 
     def add_message(self, message):
         self.messages += [message]
@@ -159,10 +141,10 @@ class Transaction(object):
         elif self.messages:
             message += u'\n\n' + u'\n'.join(self.messages)
 
-        self._store_objects(self.objects, self.tree)
+        self._store_objects(self.memory_tree)
 
         commit = Commit()
-        commit.tree = self.tree.id
+        commit.tree = self.memory_tree.tree.id
         commit.parents = self.parents
         commit.author = commit.committer = self.author.encode('utf-8')
         commit.author_time = commit.commit_time = int(time.time())
@@ -173,7 +155,7 @@ class Transaction(object):
         self.repo.refs[self.ref] = commit.id
 
     def rollback(self):
-        self.objects = {}
+        self.memory_tree = {}
         self.messages = []
 
 
@@ -205,6 +187,6 @@ class auto_transaction(object):
 @auto_transaction()
 def init_repo():
     transaction = get_transaction(initialized=False)
-    transaction['/VERSION'] = u'{0}\n'.format(get_version())
+    transaction.set_blob('/VERSION', u'{0}\n'.format(get_version()))
     transaction.add_message(u'Initialize Repository')
     transaction.is_initialized = True

@@ -89,7 +89,7 @@ class Model(object):
         if not self.id:
             self.id = uuid4()
         transaction = get_transaction()
-        transaction[self.path] = self.dumps(include_hidden=True)
+        transaction.set_blob(self.path, self.dumps(include_hidden=True))
         # TODO: create informative commit message
         transaction.add_message(
             u'Edit {0} {1}'.format(self.__class__.__name__, self.id.hex))
@@ -106,7 +106,7 @@ class Model(object):
         transaction = get_transaction()
         instance = cls(id=instance_id)
         try:
-            blob = transaction[instance.path]
+            blob = transaction.get_blob(instance.path)
         except GitError:
             raise self.DoesNotExist()
         instance.loads(blob)
