@@ -1,7 +1,7 @@
 from collections import OrderedDict
 from uuid import UUID, uuid4
 
-from tiget.git import auto_transaction, get_transaction
+from tiget.git import auto_transaction, get_transaction, GitError
 from tiget.utils import serializer
 from tiget.models.fields import Field, UUIDField
 
