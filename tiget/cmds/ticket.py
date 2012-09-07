@@ -20,7 +20,7 @@ class EditCmd(Cmd):
         ticket_id = args[0]
         try:
             ticket = Ticket.get(ticket_id)
-        except Ticket.DoesNotExist() as e:
+        except Ticket.DoesNotExist as e:
             raise self.error(e)
         ticket.open_in_editor()
         ticket.save()
