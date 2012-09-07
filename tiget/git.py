@@ -99,13 +99,13 @@ class Transaction(object):
                 blob = self.repo.get_blob(blob_id)
         if not blob:
             raise GitError('blob not found')
-        return blob.data.decode('utf-8')
+        return blob.data
 
     def set_blob(self, key, value):
         path = self.split_path(key)
         filename = path.pop()
         memory_tree = self.get_memory_tree(path)
-        memory_tree.blobs[filename] = Blob.from_string(value.encode('utf-8'))
+        memory_tree.blobs[filename] = Blob.from_string(value)
         self.has_changes = True
 
     def list_blobs(self, path):
@@ -187,6 +187,7 @@ class auto_transaction(object):
 @auto_transaction()
 def init_repo():
     transaction = get_transaction(initialized=False)
-    transaction.set_blob('/VERSION', u'{0}\n'.format(get_version()))
+    version_string = u'{0}\n'.format(get_version())
+    transaction.set_blob('/VERSION', version_string.encode('utf-8'))
     transaction.add_message(u'Initialize Repository')
     transaction.is_initialized = True

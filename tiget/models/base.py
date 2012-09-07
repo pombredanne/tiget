@@ -89,7 +89,8 @@ class Model(object):
         if not self.id:
             self.id = uuid4()
         transaction = get_transaction()
-        transaction.set_blob(self.path, self.dumps(include_hidden=True))
+        serialized = self.dumps(include_hidden=True)
+        transaction.set_blob(self.path, serialized.encode('utf-8'))
         # TODO: create informative commit message
         transaction.add_message(
             u'Edit {0} {1}'.format(self.__class__.__name__, self.id.hex))
@@ -106,7 +107,7 @@ class Model(object):
         transaction = get_transaction()
         instance = cls(id=instance_id)
         try:
-            blob = transaction.get_blob(instance.path)
+            blob = transaction.get_blob(instance.path).decode('utf-8')
         except GitError:
             raise self.DoesNotExist()
         instance.loads(blob)
