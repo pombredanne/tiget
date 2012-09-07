@@ -111,8 +111,12 @@ class Transaction(object):
     def list_blobs(self, path):
         path = self.split_path(path)
         memory_tree = self.get_memory_tree(path)
-        names = [entry.path for entry in memory_tree.tree.items()]
-        names += memory_tree.blobs.keys()
+        names = set()
+        for entry in memory_tree.tree.items():
+            if entry.mode & stat.S_IFREG:
+                names.add(entry.path)
+        names = set(entry.path for entry in memory_tree.tree.items())
+        names.update(memory_tree.blobs.keys())
         return names
 
     def _store_objects(self, memory_tree):
