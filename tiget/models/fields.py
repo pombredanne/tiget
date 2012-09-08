@@ -4,10 +4,11 @@ __all__ = ['UUIDField', 'TextField']
 
 
 class Field(object):
-    allowed_type = None
+    field_type = None
     creation_counter = 0
 
     def __init__(self, default=None, hidden=False, null=False):
+        # TODO: implement unique constraints
         self._default = default
         self.hidden = hidden
         self.null = null
@@ -42,8 +43,8 @@ class Field(object):
         return default
 
     def clean(self, value):
-        if not value is None and not isinstance(value, self.allowed_type):
-            type_name = self.allowed_type.__name__
+        if not value is None and not isinstance(value, self.field_type):
+            type_name = self.field_type.__name__
             raise ValueError(
                 '{0} must be of type {1}'.format(self.name, type_name))
         if value is None and not self.null:
@@ -57,12 +58,12 @@ class Field(object):
 
     def loads(self, s):
         if not s is None:
-            return self.allowed_type(s)
+            return self.field_type(s)
         return None
 
 
 class UUIDField(Field):
-    allowed_type = UUID
+    field_type = UUID
 
     def dumps(self, value):
         if not value is None:
@@ -71,4 +72,4 @@ class UUIDField(Field):
 
 
 class TextField(Field):
-    allowed_type = unicode
+    field_type = unicode
