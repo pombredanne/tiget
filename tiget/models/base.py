@@ -113,7 +113,7 @@ class Model(object):
         try:
             blob = transaction.get_blob(instance.path).decode('utf-8')
         except GitError:
-            raise self.DoesNotExist()
+            raise cls.DoesNotExist()
         instance.loads(blob)
         return instance
 
