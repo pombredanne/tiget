@@ -105,7 +105,7 @@ class Model(object):
 
     @classmethod
     @auto_transaction()
-    def get(cls, instance_id):
+    def get_obj(cls, instance_id):
         if not isinstance(instance_id, UUID):
             instance_id = UUID(instance_id)
         transaction = get_transaction()
@@ -124,5 +124,32 @@ class Model(object):
         path = '/{0}'.format(cls._storage_name)
         instances = []
         for instance_id in transaction.list_blobs(path):
-            instances += [cls.get(instance_id)]
+            instances += [cls.get_obj(instance_id)]
         return instances
+
+    @classmethod
+    def filter(cls, **kwargs):
+        obj_id = kwargs.pop('id', None)
+        if obj_id:
+            try:
+                objs = [cls.get_obj(obj_id)]
+            except cls.DoesNotExist:
+                objs = []
+        else:
+            objs = cls.all()
+        filtered = []
+        # TODO: use incidces for filtering
+        for obj in objs:
+            if all(obj._data[k] == v for k, v in kwargs.iteritems()):
+                filtered += [obj]
+        return filtered
+
+    @classmethod
+    def get(cls, **kwargs):
+        objs = cls.filter(**kwargs)
+        if len(objs) == 1:
+            return objs[0]
+        elif not objs:
+            raise cls.DoesNotExist()
+        else:
+            raise cls.MultipleObjectsReturned()
