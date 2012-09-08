@@ -1,6 +1,6 @@
 from uuid import UUID
 
-__all__ = ['UUIDField', 'TextField']
+__all__ = ['UUIDField', 'TextField', 'ForeignKey']
 
 
 class Field(object):
@@ -73,3 +73,19 @@ class UUIDField(Field):
 
 class TextField(Field):
     field_type = unicode
+
+
+class ForeignKey(Field):
+    def __init__(self, foreign_model, **kwargs):
+        super(ForeignKey, self).__init__(**kwargs)
+        self.field_type = foreign_model
+
+    def dumps(self, value):
+        if not value is None:
+            return value.id.hex.decode('ascii')
+        return None
+
+    def loads(self, s):
+        if not s is None:
+            return self.field_type.get(id=s)
+        return None
