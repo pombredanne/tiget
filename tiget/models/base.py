@@ -7,7 +7,11 @@ from tiget.models.fields import Field, UUIDField
 
 
 class DoesNotExist(Exception): pass
+class MultipleObjectsReturned(Exception): pass
 class InvalidObject(Exception): pass
+
+MODEL_EXCEPTIONS = (DoesNotExist, MultipleObjectsReturned, InvalidObject)
+
 
 class ModelBase(type):
     def __new__(cls, name, bases, attrs):
@@ -26,12 +30,12 @@ class ModelBase(type):
         fields = OrderedDict(fields)
         attrs['_fields'] = fields
 
-        attrs['_storage_name'] = name.lower() + 's'
-
         module = attrs['__module__']
-        for exc in ('DoesNotExist', 'InvalidObject'):
-            exc_class = globals()[exc]
+        for exc_class in MODEL_EXCEPTIONS:
+            exc = exc_class.__name__
             attrs[exc] = type(exc, (exc_class,), {'__module__': module})
+
+        attrs['_storage_name'] = attrs.pop('storage_name', name.lower() + 's')
 
         return super_new(cls, name, bases, attrs)
 
