@@ -19,7 +19,7 @@ class EditCmd(Cmd):
     def do(self, opts, args):
         ticket_id = args[0]
         try:
-            ticket = Ticket.get(ticket_id)
+            ticket = Ticket.get(id=ticket_id)
         except Ticket.DoesNotExist as e:
             raise self.error(e)
         ticket.open_in_editor()
