@@ -57,7 +57,7 @@ class Model(object):
         hex_id = getattr(self.id, 'hex', None)
         return '{0}: {1}'.format(self.__class__.__name__, hex_id)
 
-    def invalid_field(name):
+    def invalid_field(self, name):
         message = '\'{0}\' is an invalid field name for {1}'
         return TypeError(message.format(name, self.__class__.__name__))
 
