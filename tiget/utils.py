@@ -55,3 +55,21 @@ class Serializer(object):
         return data
 
 serializer = Serializer()
+
+
+RESERVED_CHARS = u'/\\|?*<>:+[]"\u0000%'
+
+def quote_filename(name):
+    quoted = ''
+    for c in name:
+        if c in RESERVED_CHARS:
+            for byte in c.encode('utf-8'):
+                quoted += '%' + byte.encode('hex')
+        else:
+            quoted += c.encode('utf-8')
+    return quoted
+
+
+def unquote_filename(name):
+    raw = re.sub(r'%([\da-f]{2})', lambda m: m.group(1).decode('hex'), name)
+    return raw.decode('utf-8')
