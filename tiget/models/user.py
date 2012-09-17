@@ -4,7 +4,7 @@ from tiget.git import auto_transaction, get_transaction
 
 
 class User(Model):
-    email = TextField()
+    email = TextField(primary_key=True)
     name = TextField(null=True)
 
     @classmethod

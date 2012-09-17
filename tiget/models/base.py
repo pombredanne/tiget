@@ -2,7 +2,7 @@ from collections import OrderedDict
 from uuid import UUID, uuid4
 
 from tiget.git import auto_transaction, get_transaction, GitError
-from tiget.utils import serializer
+from tiget.utils import serializer, quote_filename, unquote_filename
 from tiget.models.fields import Field, UUIDField
 
 
@@ -14,36 +14,49 @@ MODEL_EXCEPTIONS = (DoesNotExist, MultipleObjectsReturned, InvalidObject)
 
 
 class ModelBase(type):
-    def __new__(cls, name, bases, attrs):
+    def __new__(cls, cls_name, bases, attrs):
         super_new = super(ModelBase, cls).__new__
         parents = [b for b in bases if isinstance(b, ModelBase)]
         if not parents:
-            return super_new(cls, name, bases, attrs)
+            return super_new(cls, cls_name, bases, attrs)
 
-        attrs['id'] = UUIDField(hidden=True, null=True)
         fields = []
         for k, v in attrs.items():
             if isinstance(v, Field):
                 fields += [(k, v)]
-                v.bind(k)
         fields.sort(key=lambda x: x[1].creation_counter)
         fields = OrderedDict(fields)
-        attrs['_fields'] = fields
 
+        pk_fields = [f for f in fields.itervalues() if f.primary_key]
+        if len(pk_fields) > 1:
+            raise RuntimeError('more than one primary key specified')
+        elif not pk_fields:
+            id_field = UUIDField(
+                hidden=True, primary_key=True, default=lambda: uuid4())
+            attrs['id'] = id_field
+            fields['id'] = id_field
+            pk_fields = [id_field]
+
+        for name, field in fields.iteritems():
+            field.bind(name)
+
+        attrs['_primary_key'] = pk_fields[0].name
+        attrs['_fields'] = fields
+        attrs['_storage_name'] = cls_name.lower() + 's'
         module = attrs['__module__']
         for exc_class in MODEL_EXCEPTIONS:
-            exc = exc_class.__name__
-            attrs[exc] = type(exc, (exc_class,), {'__module__': module})
-
-        attrs['_storage_name'] = attrs.pop('storage_name', name.lower() + 's')
-
-        return super_new(cls, name, bases, attrs)
+            name = exc_class.__name__
+            attrs[name] = type(name, (exc_class,), {'__module__': module})
+        return super_new(cls, cls_name, bases, attrs)
 
 
 class Model(object):
     __metaclass__ = ModelBase
 
     def __init__(self, **kwargs):
+        pk = kwargs.pop('pk', None)
+        if not pk is None:
+            kwargs[self._primary_key] = pk
         self._data = {}
         for name, field in self._fields.iteritems():
             value = kwargs.pop(name, field.default)
@@ -54,8 +67,8 @@ class Model(object):
             raise self.invalid_field(k)
 
     def __repr__(self):
-        hex_id = getattr(self.id, 'hex', None)
-        return '{0}: {1}'.format(self.__class__.__name__, hex_id)
+        pk = self._data[self._primary_key]
+        return '{0}: {1}'.format(self.__class__.__name__, pk)
 
     def invalid_field(self, name):
         message = '\'{0}\' is an invalid field name for {1}'
@@ -84,20 +97,21 @@ class Model(object):
 
     @property
     def path(self):
-        return '/{0}/{1}'.format(self._storage_name, self.id.hex)
+        pk = self._data[self._primary_key]
+        if pk is None:
+            raise ValueError('pk must not be None')
+        pk = self._fields[self._primary_key].dumps(pk)
+        return '/{0}/{1}'.format(self._storage_name, quote_filename(pk))
 
     @auto_transaction()
     def save(self):
         for name, field in self._fields.iteritems():
             field.clean(self._data[name])
-        if not self.id:
-            self.id = uuid4()
         transaction = get_transaction()
         serialized = self.dumps(include_hidden=True)
         transaction.set_blob(self.path, serialized.encode('utf-8'))
         # TODO: create informative commit message
-        transaction.add_message(
-            u'Edit {0} {1}'.format(self.__class__.__name__, self.id.hex))
+        transaction.add_message(u'Edit {}'.format(self))
 
     @auto_transaction()
     def delete(self):
@@ -105,11 +119,10 @@ class Model(object):
 
     @classmethod
     @auto_transaction()
-    def get_obj(cls, instance_id):
-        if not isinstance(instance_id, UUID):
-            instance_id = UUID(instance_id)
+    def get_obj(cls, pk):
+        pk = cls._fields[cls._primary_key].loads(pk)
         transaction = get_transaction()
-        instance = cls(id=instance_id)
+        instance = cls(pk=pk)
         try:
             blob = transaction.get_blob(instance.path).decode('utf-8')
         except GitError:
@@ -123,16 +136,19 @@ class Model(object):
         transaction = get_transaction()
         path = '/{0}'.format(cls._storage_name)
         instances = []
-        for instance_id in transaction.list_blobs(path):
-            instances += [cls.get_obj(instance_id)]
+        for pk in transaction.list_blobs(path):
+            instances += [cls.get_obj(unquote_filename(pk))]
         return instances
 
     @classmethod
     def filter(cls, **kwargs):
-        obj_id = kwargs.pop('id', None)
-        if obj_id:
+        pk = kwargs.pop('pk', None)
+        if not pk is None:
+            kwargs[cls._primary_key] = pk
+        pk = kwargs.pop(cls._primary_key, None)
+        if not pk is None:
             try:
-                objs = [cls.get_obj(obj_id)]
+                objs = [cls.get_obj(pk)]
             except cls.DoesNotExist:
                 objs = []
         else:

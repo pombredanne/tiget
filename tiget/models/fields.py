@@ -7,11 +7,12 @@ class Field(object):
     field_type = None
     creation_counter = 0
 
-    def __init__(self, default=None, hidden=False, null=False):
+    def __init__(self, default=None, hidden=False, null=False, primary_key=False):
         # TODO: implement unique constraints
         self._default = default
         self.hidden = hidden
         self.null = null
+        self.primary_key = primary_key
         self._name = None
         self.creation_counter = Field.creation_counter
         Field.creation_counter += 1
@@ -82,10 +83,11 @@ class ForeignKey(Field):
 
     def dumps(self, value):
         if not value is None:
-            return value.id.hex.decode('ascii')
+            pk_field = value._fields[value._primary_key]
+            return pk_field.dumps(value._data[value._primary_key])
         return None
 
     def loads(self, s):
         if not s is None:
-            return self.field_type.get(id=s)
+            return self.field_type.get(pk=s)
         return None
