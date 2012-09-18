@@ -4,6 +4,8 @@ import readline
 import shlex
 import traceback
 
+from colors import red, green
+
 from tiget import settings, get_version
 from tiget.cmds.registry import cmd_registry, CmdError
 
@@ -18,7 +20,7 @@ class Repl(object):
 
     def print_error(self, line):
         if settings.use_color and sys.stderr.isatty():
-            line = '\33[31m{0}\33[0m'.format(line)
+            line = red(line)
         print >> sys.stderr, line
 
     def run(self):
@@ -29,7 +31,7 @@ class Repl(object):
         while True:
             prompt = 'tiget% '
             if settings.use_color and sys.stdout.isatty():
-                prompt = '\33[32m{0}\33[0m'.format(prompt)
+                prompt = green(prompt)
             readline.set_completer(self.complete)
             try:
                 line = raw_input(prompt).lstrip()
