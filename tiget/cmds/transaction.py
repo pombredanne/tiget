@@ -1,9 +1,8 @@
 from tiget import git
-from tiget.cmds.registry import cmd_registry, Cmd
+from tiget.cmds.base import Cmd
 from tiget.git import GitError
 
 
-@cmd_registry.add
 class BeginCmd(Cmd):
     """
     usage: begin
@@ -18,7 +17,6 @@ class BeginCmd(Cmd):
         git.transaction = git.Transaction()
 
 
-@cmd_registry.add
 class CommitCmd(Cmd):
     """
     usage: commit [MESSAGE]
@@ -40,7 +38,6 @@ class CommitCmd(Cmd):
         git.transaction = None
 
 
-@cmd_registry.add
 class RollbackCmd(Cmd):
     """
     usage: rollback

@@ -1,8 +1,7 @@
 from tiget import settings, get_version
-from tiget.cmds.registry import cmd_registry, Cmd, CmdError
+from tiget.cmds.base import commands, Cmd, CmdError
 
 
-@cmd_registry.add
 class AliasCmd(Cmd):
     """
     usage: alias [-d] ALIAS [CMD]
@@ -35,7 +34,6 @@ class AliasCmd(Cmd):
                 raise self.argcount_error()
 
 
-@cmd_registry.add
 class HelpCmd(Cmd):
     """
     usage: help [CMD]
@@ -49,7 +47,7 @@ class HelpCmd(Cmd):
     @Cmd.argcount(0, 1)
     def do(self, opts, args):
         if not args:
-            cmds = cmd_registry.values()
+            cmds = commands.values()
             cmds.sort(key=lambda cmd: cmd.name)
             longest = max(len(cmd.name) for cmd in cmds)
             for cmd in cmds:
@@ -58,7 +56,7 @@ class HelpCmd(Cmd):
         else:
             name = args[0]
             try:
-                cmd = cmd_registry[name]
+                cmd = commands[name]
             except KeyError:
                 raise CmdError('{0}: command not found'.format(name))
             usage = cmd.usage
@@ -68,7 +66,6 @@ class HelpCmd(Cmd):
                 raise CmdError('{0}: no usage information found'.format(name))
 
 
-@cmd_registry.add
 class VersionCmd(Cmd):
     """
     usage: version

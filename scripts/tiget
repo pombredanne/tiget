@@ -2,7 +2,7 @@
 import sys
 
 from tiget.repl import Repl
-from tiget.cmds.registry import cmd_registry, CmdError
+from tiget.cmds import run, CmdError
 
 
 def main():
@@ -11,7 +11,7 @@ def main():
         Repl().run()
         return
     try:
-        cmd_registry.run(args)
+        run(args)
     except CmdError as e:
         print e
 

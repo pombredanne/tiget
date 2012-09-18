@@ -7,12 +7,12 @@ import traceback
 from colors import red, green
 
 from tiget import settings, get_version
-from tiget.cmds.registry import cmd_registry, CmdError
+from tiget.cmds import commands, CmdError, run
 
 
 class Repl(object):
     def complete(self, text, state):
-        cmds = cmd_registry.keys() + settings.aliases.keys()
+        cmds = commands.keys() + settings.aliases.keys()
         options = [cmd for cmd in cmds if cmd.startswith(text)]
         if state < len(options):
             return options[state] + ' '
@@ -57,7 +57,7 @@ class Repl(object):
                 if line[0] == 'quit':
                     break
                 try:
-                    cmd_registry.run(line)
+                    run(line)
                 except CmdError as e:
                     self.print_error(str(e))
                 except Exception:

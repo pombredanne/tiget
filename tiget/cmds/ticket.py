@@ -1,10 +1,9 @@
-from tiget.cmds.registry import cmd_registry, Cmd
+from tiget.cmds.base import Cmd
 from tiget.git import init_repo, GitError, auto_transaction
 from tiget.models import Ticket
 from tiget.table import Table
 
 
-@cmd_registry.add
 class EditCmd(Cmd):
     """
     usage: edit TICKET_ID
@@ -26,7 +25,6 @@ class EditCmd(Cmd):
         ticket.save()
 
 
-@cmd_registry.add
 class InitCmd(Cmd):
     """
     usage: init
@@ -44,7 +42,6 @@ class InitCmd(Cmd):
             raise self.error(e)
 
 
-@cmd_registry.add
 class ListCmd(Cmd):
     """
     usage: list
@@ -61,7 +58,6 @@ class ListCmd(Cmd):
         print table.render()
 
 
-@cmd_registry.add
 class NewCmd(Cmd):
     """
     usage: new

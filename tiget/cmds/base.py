@@ -3,10 +3,24 @@ from functools import wraps
 from getopt import getopt, GetoptError
 
 
+commands = {}
+
+
 class CmdError(Exception): pass
 
 
+class CmdBase(type):
+    def __new__(cls, cls_name, bases, attrs):
+        parents = [b for b in bases if isinstance(b, CmdBase)]
+        klass = super(CmdBase, cls).__new__(cls, cls_name, bases, attrs)
+        if parents:
+            commands[klass.name] = klass()
+        return klass
+
+
 class Cmd(object):
+    __metaclass__ = CmdBase
+
     name = NotImplemented
     help_text = NotImplemented
     options = ''
@@ -44,19 +58,3 @@ class Cmd(object):
                 return fn(self, opts, args)
             return _inner
         return _decorator
-
-
-class CmdRegistry(dict):
-    def add(self, klass):
-        self[klass.name] = klass()
-        return klass
-
-    def run(self, argv):
-        name = argv.pop(0)
-        try:
-            cmd = self[name]
-        except KeyError:
-            raise CmdError('{0}: command not found'.format(name))
-        cmd.run(*argv)
-
-cmd_registry = CmdRegistry()
