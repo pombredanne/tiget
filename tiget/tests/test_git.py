@@ -19,19 +19,19 @@ class GitTestcase(object):
         shutil.rmtree(self.repo)
 
     def assert_file_exists(self, file):
-        cmd = 'git ls-tree --name-only -r {0} | grep -q ^{1}$'.format(
+        cmd = 'git ls-tree --name-only -r {} | grep -q ^{}$'.format(
             settings.branchname, file)
         check_call(cmd, cwd=self.repo, shell=True)
 
     def assert_commit_count(self, count):
-        cmd = 'git log --oneline {0} | wc -l'.format(settings.branchname)
+        cmd = 'git log --oneline {} | wc -l'.format(settings.branchname)
         eq_(check_output(cmd, cwd=self.repo, shell=True), str(count) + '\n')
 
 
 class TestGit(GitTestcase):
     def test_init_repo(self):
         init_repo()
-        ref = 'refs/heads/{0}'.format(settings.branchname)
+        ref = 'refs/heads/{}'.format(settings.branchname)
         check_call(
             ['git', 'show-ref', '--verify', '--quiet', ref], cwd=self.repo)
         self.assert_commit_count(1)

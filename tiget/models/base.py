@@ -68,10 +68,10 @@ class Model(object):
 
     def __repr__(self):
         pk = self._data[self._primary_key]
-        return '{0}: {1}'.format(self.__class__.__name__, pk)
+        return '{}: {}'.format(self.__class__.__name__, pk)
 
     def invalid_field(self, name):
-        message = '\'{0}\' is an invalid field name for {1}'
+        message = '\'{}\' is an invalid field name for {}'
         return TypeError(message.format(name, self.__class__.__name__))
 
     def dumps(self, include_hidden=False):
@@ -101,7 +101,7 @@ class Model(object):
         if pk is None:
             raise ValueError('pk must not be None')
         pk = self._fields[self._primary_key].dumps(pk)
-        return '/{0}/{1}'.format(self._storage_name, quote_filename(pk))
+        return '/{}/{}'.format(self._storage_name, quote_filename(pk))
 
     @auto_transaction()
     def save(self):
@@ -134,7 +134,7 @@ class Model(object):
     @auto_transaction()
     def all(cls):
         transaction = get_transaction()
-        path = '/{0}'.format(cls._storage_name)
+        path = '/{}'.format(cls._storage_name)
         instances = []
         for pk in transaction.list_blobs(path):
             instances += [cls.get_obj(unquote_filename(pk))]

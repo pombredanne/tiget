@@ -36,7 +36,7 @@ class Cmd(object):
         self.do(opts, args)
 
     def error(self, message):
-        return CmdError('{0}: {1}'.format(self.name, message))
+        return CmdError('{}: {}'.format(self.name, message))
 
     def argcount_error(self):
         return self.error('wrong number of arguments')

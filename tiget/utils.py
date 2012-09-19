@@ -14,7 +14,7 @@ def open_in_editor(content):
     with NamedTemporaryFile(prefix='tiget') as f:
         f.write(content.encode('utf-8'))
         f.seek(0)
-        os.system('{0} {1}'.format(editor, f.name))
+        os.system('{} {}'.format(editor, f.name))
         content = f.read().decode('utf-8')
     return content
 
@@ -36,7 +36,7 @@ class Serializer(object):
         s = u''
         for k, v in data.iteritems():
             value = v or u''
-            s += u'{0}: {1}\n'.format(k, value.replace(u'\n', u'\n    '))
+            s += u'{}: {}\n'.format(k, value.replace(u'\n', u'\n    '))
         return s
 
     def loads(self, s):
@@ -47,7 +47,7 @@ class Serializer(object):
                 m = self.ITEM_MATCHER.match(item)
                 if not m:
                     raise ValueError(
-                        'syntax error on line {0}'.format(lineno + 1))
+                        'syntax error on line {}'.format(lineno + 1))
                 value = m.group('value')
                 value += textwrap.dedent(m.group('value2') or u'')
                 data[m.group('key')] = value or None

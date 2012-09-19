@@ -6,35 +6,56 @@ import traceback
 
 from colors import red, green
 
-from tiget import settings, get_version
+from tiget import get_version, settings, aliases
 from tiget.cmds import commands, CmdError, run
 
 
-class Repl(object):
+class Interpreter(object):
+    def print_error(self, line):
+        if settings.color and sys.stderr.isatty():
+            line = red(line)
+        print >> sys.stderr, line
+
+    def run(self, line):
+        if line[0] in aliases:
+            line = shlex.split(aliases[line[0]]) + line[1:]
+        try:
+            run(line)
+        except CmdError as e:
+            self.print_error(str(e))
+        except Exception:
+            traceback.print_exc()
+
+    def exec_line(self, line):
+        try:
+            line = shlex.split(line)
+        except ValueError as e:
+            self.print_error('Syntax error: {}'.format(e))
+        else:
+            if line:
+                self.run(line)
+
+
+class Repl(Interpreter):
     def complete(self, text, state):
-        cmds = commands.keys() + settings.aliases.keys()
+        cmds = commands.keys() + aliases.keys()
         options = [cmd for cmd in cmds if cmd.startswith(text)]
         if state < len(options):
             return options[state] + ' '
         return None
 
-    def print_error(self, line):
-        if settings.use_color and sys.stderr.isatty():
-            line = red(line)
-        print >> sys.stderr, line
-
-    def run(self):
-        print 'tiget {0}'.format(get_version())
+    def run_loop(self):
+        print 'tiget {}'.format(get_version())
         print 'Type "help" for help.'
         print ''
         readline.parse_and_bind('tab: complete')
         while True:
             prompt = 'tiget% '
-            if settings.use_color and sys.stdout.isatty():
+            if settings.color and sys.stdout.isatty():
                 prompt = green(prompt)
             readline.set_completer(self.complete)
             try:
-                line = raw_input(prompt).lstrip()
+                line = raw_input(prompt).strip()
             except KeyboardInterrupt:
                 print '^C'
                 continue
@@ -46,19 +67,6 @@ class Repl(object):
             if line.startswith('!'):
                 os.system(line[1:])
                 continue
-            try:
-                line = shlex.split(line)
-            except ValueError as e:
-                self.print_error('Syntax error: {0}'.format(e))
-                continue
-            if line:
-                if line[0] in settings.aliases:
-                    line = shlex.split(settings.aliases[line[0]]) + line[1:]
-                if line[0] == 'quit':
-                    break
-                try:
-                    run(line)
-                except CmdError as e:
-                    self.print_error(str(e))
-                except Exception:
-                    traceback.print_exc()
+            elif line in ('quit', 'exit'):
+                break
+            self.exec_line(line)

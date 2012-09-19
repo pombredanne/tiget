@@ -28,12 +28,12 @@ class Field(object):
     @property
     def name(self):
         if not self._name:
-            raise RuntimeError('{0} is not bound'.format(self.name))
+            raise RuntimeError('{} is not bound'.format(self.name))
         return self._name
 
     def bind(self, name):
         if self._name:
-            raise RuntimeError('{0} is already bound'.format(self.name))
+            raise RuntimeError('{} is already bound'.format(self.name))
         self._name = name
 
     @property
@@ -47,9 +47,9 @@ class Field(object):
         if not value is None and not isinstance(value, self.field_type):
             type_name = self.field_type.__name__
             raise ValueError(
-                '{0} must be of type {1}'.format(self.name, type_name))
+                '{} must be of type {}'.format(self.name, type_name))
         if value is None and not self.null:
-            raise ValueError('{0} must not be None'.format(self.name))
+            raise ValueError('{} must not be None'.format(self.name))
         return value
 
     def dumps(self, value):

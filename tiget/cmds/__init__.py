@@ -8,5 +8,5 @@ def run(argv):
     try:
         cmd = commands[name]
     except KeyError:
-        raise CmdError('{0}: command not found'.format(name))
+        raise CmdError('{}: command not found'.format(name))
     cmd.run(*argv)

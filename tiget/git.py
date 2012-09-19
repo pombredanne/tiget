@@ -7,8 +7,7 @@ from collections import namedtuple
 from dulwich.objects import Blob, Tree, Commit
 from dulwich.repo import Repo, NotGitRepository
 
-from tiget import get_version
-from tiget import settings
+from tiget import get_version, settings
 
 transaction = None
 repository_path = None
@@ -35,7 +34,7 @@ class Transaction(object):
         except NotGitRepository:
             raise GitError('no git repository found')
         self.repo = repo
-        self.ref = 'refs/heads/{0}'.format(settings.branchname)
+        self.ref = 'refs/heads/{}'.format(settings.branchname)
         try:
             previous_commit_id = repo.refs[self.ref]
         except KeyError:
@@ -56,13 +55,13 @@ class Transaction(object):
             return c.get(section, name).decode('utf-8')
         except KeyError:
             raise GitError(
-                '{0}.{1} not found in git config'.format(section, name))
+                '{}.{} not found in git config'.format(section, name))
 
     @property
     def author(self):
         name = self.get_config_variable('user', 'name')
         email = self.get_config_variable('user', 'email')
-        return u'{0} <{1}>'.format(name, email)
+        return u'{} <{}>'.format(name, email)
 
     @property
     def timezone(self):
@@ -191,7 +190,20 @@ class auto_transaction(object):
 @auto_transaction()
 def init_repo():
     transaction = get_transaction(initialized=False)
-    version_string = u'{0}\n'.format(get_version())
+    version_string = u'{}\n'.format(get_version())
     transaction.set_blob('/VERSION', version_string.encode('utf-8'))
     transaction.add_message(u'Initialize Repository')
     transaction.is_initialized = True
+
+'''
+alias ?=help ls=list man=help
+set color branchname=tiget
+
+create model milestone name:text:key description:text:null
+create model user email:text:key name:text:null
+create model ticket                             \
+    summary:text                                \
+    description:text:null                       \
+    milestone:foreignkey(milestone):null        \
+    owner:foreignkey(user):null
+'''

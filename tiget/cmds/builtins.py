@@ -1,37 +1,42 @@
-from tiget import settings, get_version
+import pipes
+from tiget import get_version, settings, aliases
+
 from tiget.cmds.base import commands, Cmd, CmdError
 
 
 class AliasCmd(Cmd):
     """
-    usage: alias [-d] ALIAS [CMD]
+    usage: alias ALIAS=CMD ...
     """
     name = 'alias'
     help_text = 'define or list aliases'
-    options = 'd'
 
     def do(self, opts, args):
-        delete = False
-        for opt, optarg in opts:
-            if opt == '-d':
-                delete = True
-        if delete:
-            if not len(args) == 1:
-                raise self.argcount_error()
-            alias = args[0]
+        for arg in args:
             try:
-                del settings.aliases[alias]
+                alias, cmd = arg.split('=', 1)
+            except ValueError:
+                raise CmdError('= not found in {}'.format(arg))
+            aliases[alias] = cmd
+        if not args:
+            for alias in sorted(aliases.keys()):
+                cmd = aliases[alias]
+                print '{}: {}'.format(alias, cmd)
+
+
+class UnaliasCmd(Cmd):
+    """
+    usage: unalias ALIAS ...
+    """
+    name = 'unalias'
+    help_text = 'remove aliases'
+
+    def do(self, opts, args):
+        for alias in args:
+            try:
+                del aliases[alias]
             except KeyError:
-                raise CmdError('{0}: alias not found'.format(alias))
-        else:
-            if len(args) == 0:
-                for alias in sorted(settings.aliases.keys()):
-                    cmd = settings.aliases[alias]
-                    print '{0}: {1}'.format(alias, cmd)
-            elif len(args) == 2:
-                settings.aliases[args[0]] = args[1]
-            else:
-                raise self.argcount_error()
+                raise CmdError('{}: alias not found'.format(alias))
 
 
 class HelpCmd(Cmd):
@@ -52,18 +57,47 @@ class HelpCmd(Cmd):
             longest = max(len(cmd.name) for cmd in cmds)
             for cmd in cmds:
                 cmd_name = cmd.name.ljust(longest)
-                print '{0} - {1}'.format(cmd_name, cmd.help_text)
+                print '{} - {}'.format(cmd_name, cmd.help_text)
         else:
             name = args[0]
             try:
                 cmd = commands[name]
             except KeyError:
-                raise CmdError('{0}: command not found'.format(name))
+                raise CmdError('{}: command not found'.format(name))
             usage = cmd.usage
             if usage:
                 print usage
             else:
-                raise CmdError('{0}: no usage information found'.format(name))
+                raise CmdError('{}: no usage information found'.format(name))
+
+
+class SetCmd(Cmd):
+    """
+    usage: set VAR=VALUE ...
+    """
+    name = 'set'
+    help_text = 'set variable VAR to VALUE'
+
+    def do(self, opts, args):
+        for var in args:
+            try:
+                var, value = var.split('=', 1)
+                settings[var] = value
+            except ValueError:
+                if var.startswith('no'):
+                    settings[var[2:]] = False
+                else:
+                    settings[var] = True
+        if not args:
+            for key in sorted(settings.keys()):
+                value = settings[key]
+                if value is True:
+                    value = 'on'
+                elif value is False:
+                    value = 'off'
+                else:
+                    value = pipes.quote(value)
+                print '{}: {}'.format(key, value)
 
 
 class VersionCmd(Cmd):

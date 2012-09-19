@@ -1,3 +1,6 @@
+from UserDict import UserDict
+
+
 VERSION = (0, 1, 'alpha', 0)
 
 
@@ -8,3 +11,12 @@ def get_version():
     elif VERSION[3] > 0:
         version += '.post' + str(VERSION[3])
     return version
+
+
+class _Settings(UserDict):
+    def __getattr__(self, key):
+        return self[key]
+
+
+settings = _Settings(color=True, branchname='tiget')
+aliases = {'?': 'help', 'man': 'help', 'ls': 'list'}
