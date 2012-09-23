@@ -22,7 +22,10 @@ def open_in_editor(content):
 TerminalGeometry = namedtuple('TerminalGeometry', ('lines', 'cols'))
 
 def get_termsize(fd=1):
-    geometry = struct.unpack('hh', fcntl.ioctl(fd, termios.TIOCGWINSZ, '1234'))
+    try:
+        geometry = struct.unpack('hh', fcntl.ioctl(fd, termios.TIOCGWINSZ, '1234'))
+    except IOError:
+        geometry = (25, 80)
     return TerminalGeometry(*geometry)
 
 
