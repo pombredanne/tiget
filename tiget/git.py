@@ -194,16 +194,3 @@ def init_repo():
     transaction.set_blob('/VERSION', version_string.encode('utf-8'))
     transaction.add_message(u'Initialize Repository')
     transaction.is_initialized = True
-
-'''
-alias ?=help ls=list man=help
-set color branchname=tiget
-
-create model milestone name:text:key description:text:null
-create model user email:text:key name:text:null
-create model ticket                             \
-    summary:text                                \
-    description:text:null                       \
-    milestone:foreignkey(milestone):null        \
-    owner:foreignkey(user):null
-'''
