@@ -1,9 +1,14 @@
+import shlex
+
+from tiget import aliases
 from tiget.cmds import builtins
 from tiget.cmds import transaction
 from tiget.cmds import ticket
 from tiget.cmds.base import commands, CmdError
 
 def run(argv):
+    if argv[0] in aliases:
+        argv = shlex.split(aliases[argv[0]]) + argv[1:]
     name = argv.pop(0)
     try:
         cmd = commands[name]

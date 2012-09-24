@@ -1,4 +1,5 @@
 import os
+import sys
 import re
 import textwrap
 import fcntl
@@ -7,6 +8,10 @@ import struct
 import subprocess
 from collections import namedtuple
 from tempfile import NamedTemporaryFile
+
+from colors import red
+
+from tiget import settings
 
 
 def open_in_editor(content):
@@ -76,3 +81,9 @@ def quote_filename(name):
 def unquote_filename(name):
     raw = re.sub(r'%([\da-f]{2})', lambda m: m.group(1).decode('hex'), name)
     return raw.decode('utf-8')
+
+
+def print_error(line):
+    if settings.color:
+        line = red(line)
+    print >> sys.stderr, line
