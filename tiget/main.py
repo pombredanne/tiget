@@ -2,7 +2,7 @@ import sys
 from subprocess import list2cmdline
 
 from tiget.script import Script, Repl
-from tiget import settings
+from tiget.settings import settings
 
 
 def main():

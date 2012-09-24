@@ -11,7 +11,7 @@ from tempfile import NamedTemporaryFile
 
 from colors import red
 
-from tiget import settings
+from tiget.settings import settings
 
 
 def open_in_editor(content):

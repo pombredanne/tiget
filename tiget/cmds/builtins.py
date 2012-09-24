@@ -1,6 +1,6 @@
 import pipes
-from tiget import get_version, settings, aliases
-
+from tiget import get_version, aliases
+from tiget.settings import settings
 from tiget.cmds.base import commands, Cmd, CmdError
 
 
@@ -82,12 +82,16 @@ class SetCmd(Cmd):
         for var in args:
             try:
                 var, value = var.split('=', 1)
-                settings[var] = value
             except ValueError:
                 if var.startswith('no'):
                     settings[var[2:]] = False
                 else:
                     settings[var] = True
+            else:
+                try:
+                    settings[var] = value
+                except ValueError as e:
+                    raise CmdError(e)
         if not args:
             for key in sorted(settings.keys()):
                 value = settings[key]

@@ -4,7 +4,8 @@ from subprocess import call, check_call, check_output
 
 from nose.tools import ok_, eq_, raises, assert_raises
 
-from tiget import settings, git
+from tiget import git
+from tiget.settings import settings
 from tiget.git import init_repo, get_transaction, auto_transaction
 
 
