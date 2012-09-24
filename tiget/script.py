@@ -13,11 +13,12 @@ from tiget.utils import print_error
 
 
 class Script(object):
-    def __init__(self, instream, infile):
+    def __init__(self, instream, infile, ignore_errors=False):
         if isinstance(instream, basestring):
             instream = StringIO(instream)
         self.instream = instream
         self.infile = infile
+        self.ignore_errors = ignore_errors
         self.lineno = 0
 
     def print_error(self, e):
@@ -33,14 +34,8 @@ class Script(object):
         try:
             line = shlex.split(line)
         except ValueError as e:
-            self.print_error(e)
-            return
-        try:
-            run(line)
-        except CmdError as e:
-            self.print_error(e)
-        except Exception:
-            traceback.print_exc()
+            raise CmdError(e)
+        run(line)
 
     def run(self):
         while True:
@@ -58,12 +53,22 @@ class Script(object):
                 continue
             elif line in ('quit', 'exit'):
                 break
-            self.run_line(line)
+            try:
+                self.run_line(line)
+            except CmdError as e:
+                self.print_error(e)
+                if not self.ignore_errors:
+                    return 1
+            except Exception:
+                traceback.print_exc()
+                self.print_error('internal error (see traceback)')
+                if not self.ignore_errors:
+                    return 1
 
 
 class Repl(Script):
     def __init__(self):
-        super(Repl, self).__init__(sys.stdin, '<repl>')
+        super(Repl, self).__init__(sys.stdin, '<repl>', ignore_errors=True)
 
     def complete(self, text, state):
         cmds = commands.keys() + aliases.keys()
