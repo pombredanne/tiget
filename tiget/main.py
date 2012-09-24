@@ -9,7 +9,11 @@ def main():
     settings['color'] = sys.stdout.isatty()
 
     args = sys.argv[1:]
-    if not args or args[0] == 'shell':
-        Repl().run()
+    if not args:
+        if sys.stdin.isatty():
+            script = Repl()
+        else:
+            script = Script(sys.stdin, '<stdin>')
     else:
-        Script(list2cmdline(args), '<argv>').run()
+        script = Script(list2cmdline(args), '<argv>')
+    return script.run()
