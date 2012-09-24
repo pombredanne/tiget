@@ -7,11 +7,11 @@ from tiget.utils import find_repository_path
 
 
 def main():
-    settings['color'] = sys.stdout.isatty()
+    settings.color = sys.stdout.isatty()
 
     repository_path = find_repository_path()
     if repository_path:
-        settings['repository_path'] = repository_path
+        settings.repository_path = repository_path
 
     args = sys.argv[1:]
     if not args:

@@ -1,6 +1,3 @@
-from UserDict import UserDict
-
-
 class Setting(object):
     def __init__(self, default=None, choices=None):
         self.default = default
@@ -32,27 +29,36 @@ SETTINGS = {
 }
 
 
-class Settings(UserDict):
+class Settings(object):
+    def __init__(self):
+        self.data = {}
+
     def __getattr__(self, key):
         try:
             return self[key]
         except KeyError as e:
             raise AttributeError(e)
 
+    def __setattr__(self, key, value):
+        if key == 'data':
+            super(Settings, self).__setattr__(key, value)
+        else:
+            self[key] = value
+
     def __getitem__(self, key):
         setting = SETTINGS.get(key)
-        if setting and not key in self:
+        if setting and not key in self.data:
             return setting.default
-        return UserDict.__getitem__(self, key)
+        return self.data[key]
 
     def __setitem__(self, key, value):
         setting = SETTINGS.get(key)
         if setting:
             setting.validate(value)
-        UserDict.__setitem__(self, key, value)
+        self.data[key] = value
 
     def keys(self):
-        keys = set(UserDict.keys(self))
+        keys = set(self.data.keys())
         keys.update(SETTINGS.keys())
         return list(keys)
 
