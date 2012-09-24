@@ -87,3 +87,12 @@ def print_error(line):
     if settings.color:
         line = red(line)
     print >> sys.stderr, line
+
+def find_repository_path(cwd=None):
+    if cwd is None:
+        cwd = os.getcwd()
+    head, tail = cwd, '.'
+    while tail:
+        if os.path.exists(os.path.join(head, '.git')):
+            return head
+        head, tail = os.path.split(head)

@@ -1,20 +1,17 @@
 import sys
-import os
 from subprocess import list2cmdline
 
 from tiget.script import Script, Repl
 from tiget.settings import settings
+from tiget.utils import find_repository_path
 
 
 def main():
     settings['color'] = sys.stdout.isatty()
 
-    head, tail = os.getcwd(), '.'
-    while tail:
-        if os.path.exists(os.path.join(head, '.git')):
-            settings['repository_path'] = head
-            break
-        head, tail = os.path.split(head)
+    repository_path = find_repository_path()
+    if repository_path:
+        settings['repository_path'] = repository_path
 
     args = sys.argv[1:]
     if not args:
