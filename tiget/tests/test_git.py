@@ -12,7 +12,7 @@ from tiget.git import init_repo, get_transaction, auto_transaction
 class GitTestcase(object):
     def setup(self):
         self.repo = mkdtemp()
-        git.repository_path = self.repo
+        settings['repository_path'] = self.repo
         check_call(['git', 'init', '--quiet'], cwd=self.repo)
 
     def teardown(self):

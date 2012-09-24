@@ -28,6 +28,7 @@ class StrSetting(Setting):
 SETTINGS = {
     'color': BoolSetting(default=True),
     'branchname': StrSetting(default='tiget'),
+    'repository_path': StrSetting(default='.'),
 }
 
 

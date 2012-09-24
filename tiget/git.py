@@ -1,4 +1,3 @@
-import os
 import stat
 import time
 from functools import wraps
@@ -11,7 +10,6 @@ from tiget import get_version
 from tiget.settings import settings
 
 transaction = None
-repository_path = None
 
 
 class GitError(Exception):
@@ -31,7 +29,7 @@ MemoryTree = namedtuple('MemoryTree', ['tree', 'childs', 'blobs'])
 class Transaction(object):
     def __init__(self):
         try:
-            repo = Repo(repository_path or os.getcwd())
+            repo = Repo(settings.repository_path)
         except NotGitRepository:
             raise GitError('no git repository found')
         self.repo = repo
