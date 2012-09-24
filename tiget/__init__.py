@@ -8,6 +8,3 @@ def get_version():
     elif VERSION[3] > 0:
         version += '.post' + str(VERSION[3])
     return version
-
-
-aliases = {'?': 'help', 'man': 'help', 'ls': 'list'}

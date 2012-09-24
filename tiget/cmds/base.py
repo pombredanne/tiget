@@ -4,6 +4,7 @@ from getopt import getopt, GetoptError
 
 
 commands = {}
+aliases = {}
 
 
 class CmdError(Exception): pass
@@ -15,6 +16,7 @@ class CmdBase(type):
         klass = super(CmdBase, cls).__new__(cls, cls_name, bases, attrs)
         if parents:
             commands[klass.name] = klass()
+            aliases.update({k: klass.name for k in klass.aliases})
         return klass
 
 
@@ -24,6 +26,7 @@ class Cmd(object):
     name = NotImplemented
     help_text = NotImplemented
     options = ''
+    aliases = ()
 
     def do(self, opts, args):
         raise NotImplementedError

@@ -7,9 +7,9 @@ from StringIO import StringIO
 
 from colors import green
 
-from tiget import get_version, aliases
+from tiget import get_version
 from tiget.settings import settings
-from tiget.cmds import commands, CmdError, run
+from tiget.cmds import commands, aliases, CmdError, run
 from tiget.utils import print_error
 
 

@@ -1,7 +1,7 @@
 import pipes
-from tiget import get_version, aliases
+from tiget import get_version
 from tiget.settings import settings
-from tiget.cmds.base import commands, Cmd, CmdError
+from tiget.cmds.base import commands, aliases, Cmd, CmdError
 
 
 class AliasCmd(Cmd):
@@ -48,6 +48,7 @@ class HelpCmd(Cmd):
     """
     name = 'help'
     help_text = 'show this help page'
+    aliases = ('?', 'man')
 
     @Cmd.argcount(0, 1)
     def do(self, opts, args):

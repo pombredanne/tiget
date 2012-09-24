@@ -48,6 +48,7 @@ class ListCmd(Cmd):
     """
     name = 'list'
     help_text = 'list tickets'
+    aliases = ('ls',)
 
     @Cmd.argcount(0)
     @auto_transaction()

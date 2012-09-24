@@ -1,10 +1,9 @@
 import shlex
 
-from tiget import aliases
 from tiget.cmds import builtins
 from tiget.cmds import transaction
 from tiget.cmds import ticket
-from tiget.cmds.base import commands, CmdError
+from tiget.cmds.base import commands, aliases, CmdError
 
 def run(argv):
     if argv[0] in aliases:
