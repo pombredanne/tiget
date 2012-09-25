@@ -87,13 +87,16 @@ class Model(object):
         try:
             content = serializer.loads(s)
         except ValueError as e:
-            raise self.InvalidObject(str(e))
+            raise self.InvalidObject(e)
         for name, value in content.iteritems():
             try:
                 field = self._fields[name]
             except KeyError:
                 raise self.invalid_field(name)
-            self._data[name] = field.loads(value)
+            try:
+                self._data[name] = field.loads(value)
+            except ValueError as e:
+                raise self.InvalidObject(e)
 
     @property
     def path(self):
@@ -106,7 +109,10 @@ class Model(object):
     @auto_transaction()
     def save(self):
         for name, field in self._fields.iteritems():
-            field.clean(self._data[name])
+            try:
+                field.clean(self._data[name])
+            except ValueError as e:
+                raise self.InvalidObject(e)
         transaction = get_transaction()
         serialized = self.dumps(include_hidden=True)
         transaction.set_blob(self.path, serialized.encode('utf-8'))

@@ -89,5 +89,8 @@ class ForeignKey(Field):
 
     def loads(self, s):
         if not s is None:
-            return self.field_type.get(pk=s)
+            try:
+                return self.field_type.get(pk=s)
+            except self.field_type.DoesNotExist as e:
+                raise ValueError('{} does not exist'.format(self.name))
         return None
