@@ -44,21 +44,14 @@ class HelpCmd(Cmd):
     usage: help [CMD]
 
     Print the list of commands when no argument is given.
-    Print the usage for <cmd> otherwise.
+    Print the usage for CMD otherwise.
     """
     name = 'help'
     help_text = 'show this help page'
     aliases = ('?', 'man')
 
     def do(self, opts, name=None):
-        if name is None:
-            cmds = commands.values()
-            cmds.sort(key=lambda cmd: cmd.name)
-            longest = max(len(cmd.name) for cmd in cmds)
-            for cmd in cmds:
-                cmd_name = cmd.name.ljust(longest)
-                print '{} - {}'.format(cmd_name, cmd.help_text)
-        else:
+        if name:
             try:
                 cmd = commands[name]
             except KeyError:
@@ -69,6 +62,13 @@ class HelpCmd(Cmd):
             else:
                 raise self.error(
                     'no usage information for command "{}"'.format(name))
+        else:
+            cmds = commands.values()
+            cmds.sort(key=lambda cmd: cmd.name)
+            longest = max(len(cmd.name) for cmd in cmds)
+            for cmd in cmds:
+                cmd_name = cmd.name.ljust(longest)
+                print '{} - {}'.format(cmd_name, cmd.help_text)
 
 
 class SetCmd(Cmd):
