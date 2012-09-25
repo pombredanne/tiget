@@ -17,3 +17,4 @@ class Ticket(Model):
     milestone = ForeignKey(Milestone, null=True)
     reporter = ForeignKey(User, default=get_current_user)
     owner = ForeignKey(User, null=True)
+    status = TextField(choices=(u'new', u'testing', u'done'), default=u'new')
