@@ -28,7 +28,8 @@ TerminalGeometry = namedtuple('TerminalGeometry', ('lines', 'cols'))
 
 def get_termsize(fd=1):
     try:
-        geometry = struct.unpack('hh', fcntl.ioctl(fd, termios.TIOCGWINSZ, '1234'))
+        geometry = struct.unpack(
+            'hh', fcntl.ioctl(fd, termios.TIOCGWINSZ, '1234'))
     except IOError:
         geometry = (25, 80)
     return TerminalGeometry(*geometry)
@@ -87,6 +88,7 @@ def print_error(line):
     if settings.color:
         line = red(line)
     print >> sys.stderr, line
+
 
 def find_repository_path(cwd=None):
     if cwd is None:

@@ -67,7 +67,8 @@ class HelpCmd(Cmd):
             if usage:
                 print usage
             else:
-                raise self.error('no usage information for command "{}"'.format(name))
+                raise self.error(
+                    'no usage information for command "{}"'.format(name))
 
 
 class SetCmd(Cmd):
