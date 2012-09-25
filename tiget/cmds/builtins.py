@@ -50,7 +50,6 @@ class HelpCmd(Cmd):
     help_text = 'show this help page'
     aliases = ('?', 'man')
 
-    @Cmd.argcount(0, 1)
     def do(self, opts, name=None):
         if name is None:
             cmds = commands.values()
@@ -114,6 +113,5 @@ class VersionCmd(Cmd):
     name = 'version'
     help_text = 'print version information'
 
-    @Cmd.argcount(0)
     def do(self, opts):
         print get_version()

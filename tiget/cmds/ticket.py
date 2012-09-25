@@ -11,7 +11,6 @@ class AcceptCmd(Cmd):
     name = 'accept'
     help_text = 'accept ticket'
 
-    @Cmd.argcount(1)
     @auto_transaction()
     def do(self, opts, ticket_id):
         try:
@@ -31,7 +30,6 @@ class EditCmd(Cmd):
     name = 'edit'
     help_text = 'edit ticket'
 
-    @Cmd.argcount(1)
     @auto_transaction()
     def do(self, opts, ticket_id):
         try:
@@ -51,7 +49,6 @@ class InitCmd(Cmd):
     name = 'init'
     help_text = 'initialize the repository'
 
-    @Cmd.argcount(0)
     def do(self, opts):
         try:
             init_repo()
@@ -67,7 +64,6 @@ class ListCmd(Cmd):
     help_text = 'list tickets'
     aliases = ('ls',)
 
-    @Cmd.argcount(0)
     @auto_transaction()
     def do(self, opts):
         table = Table(u'id', u'summary', u'owner')
@@ -89,7 +85,6 @@ class NewCmd(Cmd):
     name = 'new'
     help_text = 'create new ticket'
 
-    @Cmd.argcount(0)
     @auto_transaction()
     def do(self, opts):
         try:

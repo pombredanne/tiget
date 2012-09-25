@@ -36,13 +36,13 @@ class Cmd(object):
             opts, args = getopt(argv, self.options)
         except GetoptError as e:
             raise self.error(e)
-        self.do(opts, *args)
+        try:
+            self.do(opts, *args)
+        except TypeError:
+            raise self.error('wrong number of arguments')
 
     def error(self, message):
         return CmdError('{}: {}'.format(self.name, message))
-
-    def argcount_error(self):
-        return self.error('wrong number of arguments')
 
     @property
     def usage(self):
@@ -50,14 +50,3 @@ class Cmd(object):
         if usage:
             usage = textwrap.dedent(usage).strip()
         return usage
-
-    @classmethod
-    def argcount(cls, *counts):
-        def _decorator(fn):
-            @wraps(fn)
-            def _inner(self, opts, *args):
-                if not len(args) in counts:
-                    raise self.argcount_error()
-                return fn(self, opts, *args)
-            return _inner
-        return _decorator
