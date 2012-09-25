@@ -28,7 +28,7 @@ class Cmd(object):
     options = ''
     aliases = ()
 
-    def do(self, opts, args):
+    def do(self, opts, *args):
         raise NotImplementedError
 
     def run(self, *argv):
@@ -36,7 +36,7 @@ class Cmd(object):
             opts, args = getopt(argv, self.options)
         except GetoptError as e:
             raise self.error(e)
-        self.do(opts, args)
+        self.do(opts, *args)
 
     def error(self, message):
         return CmdError('{}: {}'.format(self.name, message))
@@ -55,9 +55,9 @@ class Cmd(object):
     def argcount(cls, *counts):
         def _decorator(fn):
             @wraps(fn)
-            def _inner(self, opts, args):
+            def _inner(self, opts, *args):
                 if not len(args) in counts:
                     raise self.argcount_error()
-                return fn(self, opts, args)
+                return fn(self, opts, *args)
             return _inner
         return _decorator

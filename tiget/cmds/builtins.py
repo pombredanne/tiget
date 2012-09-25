@@ -11,7 +11,7 @@ class AliasCmd(Cmd):
     name = 'alias'
     help_text = 'define or list aliases'
 
-    def do(self, opts, args):
+    def do(self, opts, *args):
         for arg in args:
             try:
                 alias, cmd = arg.split('=', 1)
@@ -31,7 +31,7 @@ class UnaliasCmd(Cmd):
     name = 'unalias'
     help_text = 'remove aliases'
 
-    def do(self, opts, args):
+    def do(self, opts, *args):
         for alias in args:
             try:
                 del aliases[alias]
@@ -51,8 +51,8 @@ class HelpCmd(Cmd):
     aliases = ('?', 'man')
 
     @Cmd.argcount(0, 1)
-    def do(self, opts, args):
-        if not args:
+    def do(self, opts, name=None):
+        if name is None:
             cmds = commands.values()
             cmds.sort(key=lambda cmd: cmd.name)
             longest = max(len(cmd.name) for cmd in cmds)
@@ -60,7 +60,6 @@ class HelpCmd(Cmd):
                 cmd_name = cmd.name.ljust(longest)
                 print '{} - {}'.format(cmd_name, cmd.help_text)
         else:
-            name = args[0]
             try:
                 cmd = commands[name]
             except KeyError:
@@ -79,7 +78,7 @@ class SetCmd(Cmd):
     name = 'set'
     help_text = 'set variable VAR to VALUE'
 
-    def do(self, opts, args):
+    def do(self, opts, *args):
         for var in args:
             try:
                 var, value = var.split('=', 1)
@@ -116,5 +115,5 @@ class VersionCmd(Cmd):
     help_text = 'print version information'
 
     @Cmd.argcount(0)
-    def do(self, opts, args):
+    def do(self, opts):
         print get_version()

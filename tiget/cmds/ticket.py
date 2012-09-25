@@ -13,9 +13,9 @@ class AcceptCmd(Cmd):
 
     @Cmd.argcount(1)
     @auto_transaction()
-    def do(self, opts, args):
+    def do(self, opts, ticket_id):
         try:
-            ticket = Ticket.get(id=args[0])
+            ticket = Ticket.get(id=ticket_id)
             ticket.owner = User.current()
         except (Ticket.DoesNotExist, User.DoesNotExist) as e:
             raise self.error(e)
@@ -33,9 +33,9 @@ class EditCmd(Cmd):
 
     @Cmd.argcount(1)
     @auto_transaction()
-    def do(self, opts, args):
+    def do(self, opts, ticket_id):
         try:
-            ticket = Ticket.get(id=args[0])
+            ticket = Ticket.get(id=ticket_id)
         except Ticket.DoesNotExist as e:
             raise self.error(e)
         ticket.open_in_editor()
@@ -52,7 +52,7 @@ class InitCmd(Cmd):
     help_text = 'initialize the repository'
 
     @Cmd.argcount(0)
-    def do(self, opts, args):
+    def do(self, opts):
         try:
             init_repo()
         except GitError as e:
@@ -69,7 +69,7 @@ class ListCmd(Cmd):
 
     @Cmd.argcount(0)
     @auto_transaction()
-    def do(self, opts, args):
+    def do(self, opts):
         table = Table(u'id', u'summary', u'owner')
         for ticket in Ticket.all():
             table.add_row(
@@ -91,7 +91,7 @@ class NewCmd(Cmd):
 
     @Cmd.argcount(0)
     @auto_transaction()
-    def do(self, opts, args):
+    def do(self, opts):
         try:
             ticket = Ticket()
             try:

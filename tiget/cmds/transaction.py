@@ -11,7 +11,7 @@ class BeginCmd(Cmd):
     help_text = 'begin transaction'
 
     @Cmd.argcount(0)
-    def do(self, opts, args):
+    def do(self, opts):
         if git.transaction:
             raise self.error('there is already a transaction running')
         git.transaction = git.Transaction()
@@ -25,12 +25,9 @@ class CommitCmd(Cmd):
     help_text = 'commit transaction'
 
     @Cmd.argcount(0, 1)
-    def do(self, opts, args):
+    def do(self, opts, message=None):
         if not git.transaction:
             raise self.error('no transaction running')
-        message = None
-        if args:
-            message = args[0]
         try:
             git.transaction.commit(message)
         except GitError as e:
@@ -46,7 +43,7 @@ class RollbackCmd(Cmd):
     help_text = 'roll back transaction'
 
     @Cmd.argcount(0)
-    def do(self, opts, args):
+    def do(self, opts):
         if not git.transaction:
             raise self.error('no transaction running')
         git.transaction.rollback()
