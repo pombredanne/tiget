@@ -9,7 +9,7 @@ class Ticket(Model):
     summary = TextField()
     description = TextField(null=True)
     milestone = ForeignKey(Milestone, null=True)
-    owner = ForeignKey(User, null=True)
+    owner = ForeignKey(User)
 
     def open_in_editor(self):
         s = open_in_editor(self.dumps())
