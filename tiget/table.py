@@ -19,7 +19,11 @@ class Table(object):
         # FIXME: check number of arguments
         self.rows.append(args)
         for i, col in enumerate(args):
-            linelen = max(len(line) for line in col.splitlines())
+            lines = col.splitlines()
+            if lines:
+                linelen = max(len(line) for line in lines)
+            else:
+                linelen = 0
             self.col_width[i] = max(linelen, self.col_width[i])
 
     def render(self):
