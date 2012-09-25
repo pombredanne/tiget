@@ -1,7 +1,7 @@
 import pipes
 from tiget import get_version
 from tiget.settings import settings
-from tiget.cmds.base import commands, aliases, Cmd, CmdError
+from tiget.cmds.base import commands, aliases, Cmd
 
 
 class AliasCmd(Cmd):
@@ -16,7 +16,7 @@ class AliasCmd(Cmd):
             try:
                 alias, cmd = arg.split('=', 1)
             except ValueError:
-                raise CmdError('= not found in {}'.format(arg))
+                raise self.error('"=" not found in "{}"'.format(arg))
             aliases[alias] = cmd
         if not args:
             for alias in sorted(aliases.keys()):
@@ -36,7 +36,7 @@ class UnaliasCmd(Cmd):
             try:
                 del aliases[alias]
             except KeyError:
-                raise CmdError('{}: alias not found'.format(alias))
+                raise self.error('no alias named "{}"'.format(alias))
 
 
 class HelpCmd(Cmd):
@@ -64,12 +64,12 @@ class HelpCmd(Cmd):
             try:
                 cmd = commands[name]
             except KeyError:
-                raise CmdError('{}: command not found'.format(name))
+                raise self.error('no command named "{}"'.format(name))
             usage = cmd.usage
             if usage:
                 print usage
             else:
-                raise CmdError('{}: no usage information found'.format(name))
+                raise self.error('no usage information for command "{}"'.format(name))
 
 
 class SetCmd(Cmd):
@@ -92,7 +92,7 @@ class SetCmd(Cmd):
                 try:
                     settings[var] = value
                 except ValueError as e:
-                    raise CmdError(e)
+                    raise self.error(e)
         if not args:
             for key in sorted(settings.keys()):
                 value = settings[key]
