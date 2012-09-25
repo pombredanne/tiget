@@ -7,12 +7,14 @@ class Field(object):
     field_type = None
     creation_counter = 0
 
-    def __init__(self, default=None, hidden=False, null=False, primary_key=False):
-        # TODO: implement unique constraints
-        self._default = default
+    def __init__(
+            self, hidden=False, null=False, primary_key=False, choices=None,
+            default=None):
         self.hidden = hidden
         self.null = null
         self.primary_key = primary_key
+        self.choices = choices
+        self._default = default
         self._name = None
         self.creation_counter = Field.creation_counter
         Field.creation_counter += 1
@@ -44,12 +46,17 @@ class Field(object):
         return default
 
     def clean(self, value):
-        if not value is None and not isinstance(value, self.field_type):
-            type_name = self.field_type.__name__
-            raise ValueError(
-                '{} must be of type {}'.format(self.name, type_name))
-        if value is None and not self.null:
-            raise ValueError('{} must not be None'.format(self.name))
+        if value is None:
+            if not self.null:
+                raise ValueError('{} must not be None'.format(self.name))
+        else:
+            if not isinstance(value, self.field_type):
+                type_name = self.field_type.__name__
+                raise ValueError(
+                    '{} must be of type {}'.format(self.name, type_name))
+            elif not self.choices is None and not value in self.choices:
+                raise ValueError(
+                    '{} must be in {}'.format(self.name, self.choices))
         return value
 
     def dumps(self, value):
