@@ -1,5 +1,5 @@
 from tiget.cmds.base import Cmd
-from tiget.git import init_repo, GitError, auto_transaction, get_transaction
+from tiget.git import init_repo, GitError, auto_transaction
 from tiget.models import Ticket, User
 from tiget.table import Table
 
