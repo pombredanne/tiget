@@ -4,6 +4,24 @@ from tiget.models import Ticket, User
 from tiget.table import Table
 
 
+class AcceptCmd(Cmd):
+    """
+    usage: accept TICKET_ID
+    """
+    name = 'accept'
+    help_text = 'accept ticket'
+
+    @Cmd.argcount(1)
+    @auto_transaction()
+    def do(self, opts, args):
+        try:
+            ticket = Ticket.get(id=args[0])
+            ticket.owner = User.current()
+        except (Ticket.DoesNotExist, User.DoesNotExist) as e:
+            raise self.error(e)
+        ticket.save()
+
+
 class EditCmd(Cmd):
     """
     usage: edit TICKET_ID
@@ -16,9 +34,8 @@ class EditCmd(Cmd):
     @Cmd.argcount(1)
     @auto_transaction()
     def do(self, opts, args):
-        ticket_id = args[0]
         try:
-            ticket = Ticket.get(id=ticket_id)
+            ticket = Ticket.get(id=args[0])
         except Ticket.DoesNotExist as e:
             raise self.error(e)
         ticket.open_in_editor()
@@ -79,9 +96,8 @@ class NewCmd(Cmd):
             ticket = Ticket()
             try:
                 ticket.owner = User.current()
-            except User.DoesNotExist:
-                email = get_transaction().get_config_variable('user', 'email')
-                raise self.error('no user found for {}'.format(email))
+            except User.DoesNotExist as e:
+                raise self.error(e)
             ticket.open_in_editor()
             ticket.save()
         except GitError as e:
