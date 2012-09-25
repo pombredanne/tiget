@@ -21,41 +21,6 @@ class AcceptCmd(Cmd):
         ticket.save()
 
 
-class EditCmd(Cmd):
-    """
-    usage: edit TICKET_ID
-
-    Edit ticket with id TICKET_ID.
-    """
-    name = 'edit'
-    help_text = 'edit ticket'
-
-    @auto_transaction()
-    def do(self, opts, ticket_id):
-        try:
-            ticket = Ticket.get(id=ticket_id)
-        except Ticket.DoesNotExist as e:
-            raise self.error(e)
-        ticket.open_in_editor()
-        ticket.save()
-
-
-class InitCmd(Cmd):
-    """
-    usage: init
-
-    Initializes the git repository for usage with tiget.
-    """
-    name = 'init'
-    help_text = 'initialize the repository'
-
-    def do(self, opts):
-        try:
-            init_repo()
-        except GitError as e:
-            raise self.error(e)
-
-
 class ListCmd(Cmd):
     """
     usage: list
@@ -74,26 +39,3 @@ class ListCmd(Cmd):
                 ticket.owner.email if ticket.owner else u''
             )
         print table.render()
-
-
-class NewCmd(Cmd):
-    """
-    usage: new
-
-    Create a new ticket.
-    """
-    name = 'new'
-    help_text = 'create new ticket'
-
-    @auto_transaction()
-    def do(self, opts):
-        try:
-            ticket = Ticket()
-            try:
-                ticket.owner = User.current()
-            except User.DoesNotExist as e:
-                raise self.error(e)
-            ticket.open_in_editor()
-            ticket.save()
-        except GitError as e:
-            raise self.error(e)

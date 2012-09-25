@@ -1,6 +1,5 @@
 from tiget.models.base import Model
 from tiget.models.fields import TextField, ForeignKey
-from tiget.utils import open_in_editor
 from tiget.models.user import User
 from tiget.models.milestone import Milestone
 
@@ -18,7 +17,3 @@ class Ticket(Model):
     milestone = ForeignKey(Milestone, null=True)
     reporter = ForeignKey(User, default=get_current_user)
     owner = ForeignKey(User, null=True)
-
-    def open_in_editor(self):
-        s = open_in_editor(self.dumps())
-        self.loads(s)
