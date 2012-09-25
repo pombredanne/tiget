@@ -72,7 +72,11 @@ class HelpCmd(Cmd):
 
 class SetCmd(Cmd):
     """
-    usage: set VAR=VALUE ...
+    usage: set [VAR=VALUE [...]]
+
+    Print the list of configuration variables when no argument is given.
+    String variables can be set with VAR=VALUE. Boolean variables can be
+    enabled with VAR and disabled with noVAR.
     """
     name = 'set'
     help_text = 'set variable VAR to VALUE'
