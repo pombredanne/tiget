@@ -126,7 +126,7 @@ class Model(object):
         try:
             blob = transaction.get_blob(instance.path).decode('utf-8')
         except GitError:
-            raise cls.DoesNotExist()
+            raise cls.DoesNotExist('{} does not exist'.format(cls.__name__))
         instance.loads(blob)
         return instance
 
@@ -166,6 +166,6 @@ class Model(object):
         if len(objs) == 1:
             return objs[0]
         elif not objs:
-            raise cls.DoesNotExist()
+            raise cls.DoesNotExist('{} does not exist'.format(cls.__name__))
         else:
             raise cls.MultipleObjectsReturned()
