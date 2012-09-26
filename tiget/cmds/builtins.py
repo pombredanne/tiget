@@ -88,14 +88,14 @@ class SetCmd(Cmd):
                 var, value = var.split('=', 1)
             except ValueError:
                 if var.startswith('no'):
-                    settings[var[2:]] = False
+                    var = var[2:]
+                    value = False
                 else:
-                    settings[var] = True
-            else:
-                try:
-                    settings[var] = value
-                except ValueError as e:
-                    raise self.error(e)
+                    value = True
+            try:
+                settings[var] = value
+            except (ValueError, KeyError) as e:
+                raise self.error(e)
         if not args:
             for key in sorted(settings.keys()):
                 value = settings[key]

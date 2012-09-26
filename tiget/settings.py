@@ -42,10 +42,10 @@ class Settings(object):
             raise AttributeError(e)
 
     def __setattr__(self, key, value):
-        if key == 'data':
-            super(Settings, self).__setattr__(key, value)
-        else:
+        if key in SETTINGS:
             self[key] = value
+        else:
+            super(Settings, self).__setattr__(key, value)
 
     def __getitem__(self, key):
         setting = SETTINGS.get(key)
@@ -55,8 +55,9 @@ class Settings(object):
 
     def __setitem__(self, key, value):
         setting = SETTINGS.get(key)
-        if setting:
-            setting.validate(value)
+        if not setting:
+            raise KeyError('invalid setting "{}"'.format(key))
+        setting.validate(value)
         self.data[key] = value
 
     def keys(self):
