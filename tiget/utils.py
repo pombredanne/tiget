@@ -87,7 +87,7 @@ def unquote_filename(name):
 
 def print_error(line):
     if settings.color:
-        line = red(line)
+        line = red(str(line))
     print >> sys.stderr, line
 
 
@@ -101,7 +101,7 @@ def find_repository_path(cwd=None):
         head, tail = os.path.split(head)
 
 
-def post_mortem
+def post_mortem():
     traceback.print_exc()
     if settings.debug:
         try:
