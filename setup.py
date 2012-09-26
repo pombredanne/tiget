@@ -30,5 +30,5 @@ setup(
     entry_points={
         'console_scripts': ['tiget = tiget.main:main'],
     },
-    requires=['dulwich', 'ansicolors'],
+    requires=['dulwich', 'ansicolors', 'ipython'],
 )

@@ -1,4 +1,7 @@
 import pipes
+
+import IPython
+
 from tiget import get_version
 from tiget.settings import settings
 from tiget.cmds.base import commands, aliases, Cmd
@@ -37,6 +40,18 @@ class UnaliasCmd(Cmd):
                 del aliases[alias]
             except KeyError:
                 raise self.error('no alias named "{}"'.format(alias))
+
+
+class IpythonCmd(Cmd):
+    """
+    usage: ipython
+    """
+    name = 'ipython'
+    help_text = 'start embedded ipython shell'
+
+    def do(self, opts):
+        import tiget
+        IPython.embed(user_module=tiget, user_ns={})
 
 
 class HelpCmd(Cmd):
