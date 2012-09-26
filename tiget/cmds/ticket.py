@@ -1,24 +1,6 @@
 from tiget.cmds.base import Cmd
-from tiget.git import GitError, auto_transaction
-from tiget.models import Ticket, User
+from tiget.git import auto_transaction
 from tiget.table import Table
-
-
-class AcceptCmd(Cmd):
-    """
-    usage: accept TICKET_ID
-    """
-    name = 'accept'
-    help_text = 'accept ticket'
-
-    @auto_transaction()
-    def do(self, opts, ticket_id):
-        try:
-            ticket = Ticket.get(id=ticket_id)
-            ticket.owner = User.current()
-        except (Ticket.DoesNotExist, User.DoesNotExist) as e:
-            raise self.error(e)
-        ticket.save()
 
 
 class ListCmd(Cmd):
@@ -31,6 +13,7 @@ class ListCmd(Cmd):
 
     @auto_transaction()
     def do(self, opts):
+        from config.models import Ticket        # FIXME
         table = Table(u'id', u'summary', u'owner')
         for ticket in Ticket.all():
             table.add_row(

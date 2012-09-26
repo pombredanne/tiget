@@ -5,6 +5,7 @@ import IPython
 from tiget import get_version
 from tiget.settings import settings
 from tiget.cmds.base import commands, aliases, Cmd
+from tiget.models.base import models
 
 
 class AliasCmd(Cmd):
@@ -50,8 +51,18 @@ class IpythonCmd(Cmd):
     help_text = 'start embedded ipython shell'
 
     def do(self, opts):
-        import tiget
-        IPython.embed(user_module=tiget, user_ns={})
+        ns = {'config': __import__('config')}
+        for model in models.itervalues():
+            ns[model.__name__] = model
+        config = IPython.frontend.terminal.ipapp.load_default_config()
+        config.InteractiveShellEmbed = config.TerminalInteractiveShell
+        config.PromptManager.in_template = 'IPython[\\#]> '
+        if not settings.color:
+            config.InteractiveShellEmbed.colors = 'NoColor'
+        config.InteractiveShellEmbed.confirm_exit = False
+        IPython.embed(
+            user_module=__import__('tiget'), user_ns=ns, config=config,
+            display_banner=False)
 
 
 class HelpCmd(Cmd):

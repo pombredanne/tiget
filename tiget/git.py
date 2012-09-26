@@ -1,5 +1,6 @@
 import stat
 import time
+import os
 from functools import wraps
 from collections import namedtuple
 
@@ -18,7 +19,7 @@ class GitError(Exception):
 
 def get_transaction(initialized=True):
     if initialized and not transaction.is_initialized:
-        raise GitError('repository is not initialized')
+        raise GitError('repository is not initialized; use tiget-setup-repository')
     elif not initialized and transaction.is_initialized:
         raise GitError('repository is initialized')
     return transaction
@@ -184,3 +185,14 @@ class auto_transaction(object):
             elif transaction.has_changes:
                 transaction.commit()
             transaction = None
+
+
+def find_repository_path(cwd=None):
+    if cwd is None:
+        cwd = os.getcwd()
+    head, tail = cwd, '.'
+    while tail:
+        if os.path.exists(os.path.join(head, '.git')):
+            return head
+        head, tail = os.path.split(head)
+    raise GitError('no git repository found')

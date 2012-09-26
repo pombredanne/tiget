@@ -1,9 +1,10 @@
 import sys
+from pkg_resources import Requirement, resource_listdir, resource_string
 
 from tiget.git import auto_transaction, get_transaction, GitError
 from tiget.settings import settings
 from tiget import get_version
-from tiget.utils import print_error
+from tiget.utils import print_error, get_python_files
 
 
 @auto_transaction()
@@ -17,7 +18,13 @@ def main():
         return 1
 
     version_string = u'{}\n'.format(get_version())
-    transaction.set_blob('/VERSION', version_string.encode('utf-8'))
+    transaction.set_blob('/config/VERSION', version_string.encode('utf-8'))
+
+    req = Requirement.parse('tiget')
+    files = get_python_files(resource_listdir(req, 'tiget/config/'))
+    for filename in files:
+        content = resource_string(req, 'tiget/config/{}'.format(filename))
+        transaction.set_blob('/config/{}'.format(filename), content)
 
     transaction.add_message(u'Initialize Repository')
     transaction.is_initialized = True

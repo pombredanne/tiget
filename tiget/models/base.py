@@ -2,7 +2,8 @@ from collections import OrderedDict
 from uuid import UUID, uuid4
 
 from tiget.git import auto_transaction, get_transaction, GitError
-from tiget.utils import serializer, quote_filename, unquote_filename
+from tiget.utils import quote_filename, unquote_filename
+from tiget.serializer import dumps, loads
 from tiget.models.fields import Field, UUIDField
 
 models = {}
@@ -85,11 +86,11 @@ class Model(object):
                 continue
             value = self._data[name]
             content[name] = field.dumps(value)
-        return serializer.dumps(content)
+        return dumps(content)
 
     def loads(self, s):
         try:
-            content = serializer.loads(s)
+            content = loads(s)
         except ValueError as e:
             raise self.InvalidObject(e)
         for name, value in content.iteritems():
