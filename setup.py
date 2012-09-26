@@ -12,12 +12,14 @@ setup(
     long_description='',
     license='ISC',
     keywords='TODO',
-    packages=['tiget', 'tiget.cmds'],
-    scripts=['scripts/tiget'],
+    packages=['tiget', 'tiget.cmds', 'tiget.models'],
     classifiers=[
         'Programming Language :: Python',
         'Development Status :: 3 - Alpha',
         'Topic :: Utilities',
         'License :: OSI Approved :: ISC License (ISCL)',
     ],
+    entry_points={
+        'console_scripts': ['tiget = tiget.main:main'],
+    },
 )
