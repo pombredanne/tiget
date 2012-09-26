@@ -1,5 +1,5 @@
 from tiget.cmds.base import Cmd
-from tiget.git import init_repo, GitError, auto_transaction
+from tiget.git import GitError, auto_transaction
 from tiget.models import get_model
 from tiget.utils import open_in_editor
 
@@ -26,22 +26,6 @@ class CreateCmd(Cmd):
             instance.loads(s)
             instance.save()
         except model.InvalidObject as e:
-            raise self.error(e)
-
-
-class InitCmd(Cmd):
-    """
-    usage: init
-
-    Initializes the git repository for usage with tiget.
-    """
-    name = 'init'
-    help_text = 'initialize the repository'
-
-    def do(self, opts):
-        try:
-            init_repo()
-        except GitError as e:
             raise self.error(e)
 
 

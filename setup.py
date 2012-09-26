@@ -28,7 +28,10 @@ setup(
         'Development Status :: 3 - Alpha',
     ],
     entry_points={
-        'console_scripts': ['tiget = tiget.main:main'],
+        'console_scripts': [
+            'tiget = tiget.main:main',
+            'tiget-setup-repository = tiget.setup_repository:main',
+        ],
     },
     requires=['dulwich', 'ansicolors', 'ipython'],
 )

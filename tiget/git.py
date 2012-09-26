@@ -184,12 +184,3 @@ class auto_transaction(object):
             elif transaction.has_changes:
                 transaction.commit()
             transaction = None
-
-
-@auto_transaction()
-def init_repo():
-    transaction = get_transaction(initialized=False)
-    version_string = u'{}\n'.format(get_version())
-    transaction.set_blob('/VERSION', version_string.encode('utf-8'))
-    transaction.add_message(u'Initialize Repository')
-    transaction.is_initialized = True
