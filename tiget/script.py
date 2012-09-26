@@ -38,6 +38,20 @@ class Script(object):
             raise CmdError(e)
         run(line)
 
+    def post_mortem(self):
+        self.print_error('internal error (see traceback)')
+        traceback.print_exc()
+        if settings.debug:
+            try:
+                pdb = __import__(settings.pdb_module)
+            except ImportError as e:
+                self.print_error(e)
+            else:
+                try:
+                    pdb.post_mortem()
+                except KeyboardInterrupt:
+                    pass
+
     def run(self):
         while True:
             self.lineno += 1
@@ -61,8 +75,7 @@ class Script(object):
                 if not self.ignore_errors:
                     return 1
             except Exception:
-                traceback.print_exc()
-                self.print_error('internal error (see traceback)')
+                self.post_mortem()
                 if not self.ignore_errors:
                     return 1
 

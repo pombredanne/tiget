@@ -23,8 +23,10 @@ class StrSetting(Setting):
 
 
 SETTINGS = {
-    'color': BoolSetting(default=True),
     'branchname': StrSetting(default='tiget'),
+    'debug': BoolSetting(default=False),
+    'color': BoolSetting(default=True),
+    'pdb_module': StrSetting(default='pdb'),
     'repository_path': StrSetting(default='.'),
 }
 
