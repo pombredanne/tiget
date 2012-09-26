@@ -2,7 +2,6 @@ import os
 import sys
 import readline
 import shlex
-import traceback
 from StringIO import StringIO
 
 from colors import green
@@ -10,7 +9,7 @@ from colors import green
 from tiget import get_version
 from tiget.settings import settings
 from tiget.cmds import commands, aliases, CmdError, run
-from tiget.utils import print_error
+from tiget.utils import print_error, post_mortem
 
 
 class Script(object):
@@ -38,20 +37,6 @@ class Script(object):
             raise CmdError(e)
         run(line)
 
-    def post_mortem(self):
-        self.print_error('internal error (see traceback)')
-        traceback.print_exc()
-        if settings.debug:
-            try:
-                pdb = __import__(settings.pdb_module)
-            except ImportError as e:
-                self.print_error(e)
-            else:
-                try:
-                    pdb.post_mortem()
-                except KeyboardInterrupt:
-                    pass
-
     def run(self):
         while True:
             self.lineno += 1
@@ -75,7 +60,8 @@ class Script(object):
                 if not self.ignore_errors:
                     return 1
             except Exception:
-                self.post_mortem()
+                self.print_error('internal error (see traceback)')
+                post_mortem()
                 if not self.ignore_errors:
                     return 1
 

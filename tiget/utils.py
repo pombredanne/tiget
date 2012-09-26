@@ -6,6 +6,7 @@ import fcntl
 import termios
 import struct
 import subprocess
+import traceback
 from collections import namedtuple
 from tempfile import NamedTemporaryFile
 
@@ -98,3 +99,17 @@ def find_repository_path(cwd=None):
         if os.path.exists(os.path.join(head, '.git')):
             return head
         head, tail = os.path.split(head)
+
+
+def post_mortem
+    traceback.print_exc()
+    if settings.debug:
+        try:
+            pdb = __import__(settings.pdb_module)
+        except ImportError as e:
+            print_error(e)
+        else:
+            try:
+                pdb.post_mortem()
+            except KeyboardInterrupt:
+                pass
