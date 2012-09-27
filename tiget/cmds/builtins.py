@@ -12,7 +12,6 @@ class AliasCmd(Cmd):
     """
     usage: alias ALIAS=CMD ...
     """
-    name = 'alias'
     help_text = 'define or list aliases'
 
     def do(self, opts, *args):
@@ -32,7 +31,6 @@ class UnaliasCmd(Cmd):
     """
     usage: unalias ALIAS ...
     """
-    name = 'unalias'
     help_text = 'remove aliases'
 
     def do(self, opts, *args):
@@ -47,7 +45,6 @@ class IpythonCmd(Cmd):
     """
     usage: ipython
     """
-    name = 'ipython'
     help_text = 'start embedded ipython shell'
 
     def do(self, opts):
@@ -72,7 +69,6 @@ class HelpCmd(Cmd):
     Print the list of commands when no argument is given.
     Print the usage for CMD otherwise.
     """
-    name = 'help'
     help_text = 'show this help page'
     aliases = ('?', 'man')
 
@@ -105,7 +101,6 @@ class SetCmd(Cmd):
     String variables can be set with VAR=VALUE. Boolean variables can be
     enabled with VAR and disabled with noVAR.
     """
-    name = 'set'
     help_text = 'set variable VAR to VALUE'
 
     def do(self, opts, *args):
@@ -141,7 +136,6 @@ class VersionCmd(Cmd):
     Print the version. Can be used for version detection in command line
     scripts.
     """
-    name = 'version'
     help_text = 'print version information'
 
     def do(self, opts):

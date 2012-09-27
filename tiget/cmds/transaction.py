@@ -7,7 +7,6 @@ class BeginCmd(Cmd):
     """
     usage: begin
     """
-    name = 'begin'
     help_text = 'begin transaction'
 
     def do(self, opts):
@@ -20,7 +19,6 @@ class CommitCmd(Cmd):
     """
     usage: commit [MESSAGE]
     """
-    name = 'commit'
     help_text = 'commit transaction'
 
     def do(self, opts, message=None):
@@ -37,7 +35,6 @@ class RollbackCmd(Cmd):
     """
     usage: rollback
     """
-    name = 'rollback'
     help_text = 'roll back transaction'
 
     def do(self, opts):

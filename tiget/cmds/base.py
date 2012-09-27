@@ -1,3 +1,4 @@
+import re
 import textwrap
 from functools import wraps
 from getopt import getopt, GetoptError
@@ -15,6 +16,8 @@ class CmdBase(type):
         parents = [b for b in bases if isinstance(b, CmdBase)]
         klass = super(CmdBase, cls).__new__(cls, cls_name, bases, attrs)
         if parents:
+            if not klass.name:
+                klass.name = re.match(r'(.*)(?:Cmd)', cls_name).group(1).lower()
             commands[klass.name] = klass()
             aliases.update({k: klass.name for k in klass.aliases})
         return klass
@@ -23,7 +26,7 @@ class CmdBase(type):
 class Cmd(object):
     __metaclass__ = CmdBase
 
-    name = NotImplemented
+    name = None
     help_text = NotImplemented
     options = ''
     aliases = ()

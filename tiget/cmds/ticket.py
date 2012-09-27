@@ -7,7 +7,6 @@ class ListCmd(Cmd):
     """
     usage: list
     """
-    name = 'list'
     help_text = 'list tickets'
     aliases = ('ls',)
 

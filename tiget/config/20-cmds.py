@@ -9,7 +9,6 @@ class AcceptCmd(Cmd):
     """
     usage: accept TICKET_ID
     """
-    name = 'accept'
     help_text = 'accept ticket'
 
     @auto_transaction()

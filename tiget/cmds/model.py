@@ -10,7 +10,6 @@ class CreateCmd(Cmd):
 
     Create a new instance of MODEL.
     """
-    name = 'create'
     help_text = 'create new model instance'
     aliases = ('new',)
 
@@ -35,7 +34,6 @@ class EditCmd(Cmd):
 
     Edit MODEL instance with primary key PK.
     """
-    name = 'edit'
     help_text = 'edit model instance'
 
     @auto_transaction()
