@@ -43,6 +43,16 @@ class UnaliasCmd(Cmd):
                 raise self.error('no alias named "{}"'.format(alias))
 
 
+class EchoCmd(Cmd):
+    """
+    usage: echo ...
+    """
+    help_text = 'print text to the screen'
+
+    def do(self, opts, *args):
+        print ' '.join(args)
+
+
 class HelpCmd(Cmd):
     """
     usage: help [CMD]
