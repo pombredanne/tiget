@@ -181,6 +181,18 @@ class Model(object):
         else:
             raise cls.MultipleObjectsReturned()
 
+    @property
+    def pk(self):
+        return getattr(self, self._primary_key)
+
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return self.pk == other.pk
+        return False
+
+    def __ne__(self, other):
+        return not self == other
+
 
 def get_model(name):
     return models[name.lower()]
