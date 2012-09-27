@@ -64,9 +64,9 @@ class EditCmd(Cmd):
 
 class ListCmd(Cmd):
     """
-    usage: list
+    usage: list [-f FIELDS] MODEL
     """
-    help_text = 'list tickets'
+    help_text = 'list records'
     options = 'f:'
 
     @auto_transaction()
