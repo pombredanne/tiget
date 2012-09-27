@@ -17,6 +17,7 @@ class Table(object):
 
     def add_row(self, *args):
         # FIXME: check number of arguments
+        args = map(lambda x: unicode(x or ''), args)
         self.rows.append(args)
         for i, col in enumerate(args):
             lines = col.splitlines()
