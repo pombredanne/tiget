@@ -9,7 +9,7 @@ from tiget.git import GitError, find_repository_path
 
 
 def load_config():
-    config_module = create_module('config')
+    create_module('config')
 
     files = [
         '/etc/tigetrc',

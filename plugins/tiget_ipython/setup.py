@@ -1,26 +1,20 @@
 #!/usr/bin/env python
-from setuptools import setup, find_packages
+from setuptools import setup
 
-version = __import__('tiget').get_version()
+version = __import__('tiget_ipython').__version__
 
 
 setup(
-    name='tiget',
+    name='tiget-ipython',
     version=version,
     author='Martin Natano',
     author_email='natano@natano.net',
-    description='ticketing system with git backend',
+    description='ipython plugin for tiget',
     url='http://github.com/natano/tiget/',
     long_description='',
     license='ISC',
-    keywords=[
-        'Interactive', 'Interpreter', 'Shell', 'Git', 'Distributed',
-        'Ticketing', 'Tracker',
-    ],
-    packages=find_packages(),
-    package_data={
-        'tiget': ['config/tigetrc', 'config/*.py'],
-    },
+    keywords=['Interactive', 'Interpreter', 'Shell'],
+    packages=['tiget_ipython'],
     classifiers=[
         'Intended Audience :: Developers',
         'License :: OSI Approved :: ISC License (ISCL)',
@@ -32,10 +26,9 @@ setup(
         'Development Status :: 3 - Alpha',
     ],
     entry_points={
-        'console_scripts': [
-            'tiget = tiget.main:main',
-            'tiget-setup-repository = tiget.setup_repository:main',
+        'tiget.plugins': [
+            'ipython = tiget_ipython:init_plugin',
         ],
     },
-    requires=['dulwich', 'ansicolors'],
+    requires=['tiget', 'ipython'],
 )

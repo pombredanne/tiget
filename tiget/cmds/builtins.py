@@ -1,13 +1,11 @@
 import pipes
 
-import IPython
-
 from tiget import get_version
 from tiget.settings import settings
 from tiget.cmds.base import commands, aliases, Cmd
-from tiget.models.base import models
 from tiget.utils import create_module, post_mortem, load_file
 from tiget.git import auto_transaction, get_transaction, GitError
+from tiget.plugins import load_plugin
 
 
 class AliasCmd(Cmd):
@@ -83,27 +81,6 @@ class HelpCmd(Cmd):
                 print '{} - {}'.format(cmd_name, cmd.help_text)
 
 
-class IpythonCmd(Cmd):
-    """
-    usage: ipython
-    """
-    help_text = 'start embedded ipython shell'
-
-    def do(self, opts):
-        ns = {'config': __import__('config')}
-        for model in models.itervalues():
-            ns[model.__name__] = model
-        config = IPython.frontend.terminal.ipapp.load_default_config()
-        config.InteractiveShellEmbed = config.TerminalInteractiveShell
-        config.PromptManager.in_template = 'IPython[\\#]> '
-        if not settings.color:
-            config.InteractiveShellEmbed.colors = 'NoColor'
-        config.InteractiveShellEmbed.confirm_exit = False
-        IPython.embed(
-            user_module=__import__('tiget'), user_ns=ns, config=config,
-            display_banner=False)
-
-
 class LoadConfigCmd(Cmd):
     """
     usage: load-config NAME FILE
@@ -126,6 +103,20 @@ class LoadConfigCmd(Cmd):
             post_mortem()
             raise self.error(e)
         setattr(config, name, m)
+
+
+class LoadPluginCmd(Cmd):
+    """
+    usage: load-plugin PLUGIN
+    """
+    name = 'load-plugin'
+    help_text = 'load plugin'
+
+    def do(self, opts, plugin_name):
+        try:
+            load_plugin(plugin_name)
+        except KeyError:
+            raise self.error('plugin "{}" not found'.format(plugin_name))
 
 
 class SetCmd(Cmd):

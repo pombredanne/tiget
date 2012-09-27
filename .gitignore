@@ -3,6 +3,6 @@ env/
 *.pyc
 build/
 dist/
-tiget.egg-info/
+*.egg-info/
 .coverage
 htmlcov/
