@@ -8,7 +8,6 @@ class ListCmd(Cmd):
     usage: list
     """
     help_text = 'list tickets'
-    aliases = ('ls',)
 
     @auto_transaction()
     def do(self, opts):

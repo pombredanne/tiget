@@ -19,7 +19,6 @@ class CmdBase(type):
             if not klass.name:
                 klass.name = re.match(r'(.*)(?:Cmd)', cls_name).group(1).lower()
             commands[klass.name] = klass()
-            aliases.update({k: klass.name for k in klass.aliases})
         return klass
 
 
@@ -29,7 +28,6 @@ class Cmd(object):
     name = None
     help_text = NotImplemented
     options = ''
-    aliases = ()
 
     def do(self, opts, *args):
         raise NotImplementedError

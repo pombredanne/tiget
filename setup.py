@@ -18,7 +18,7 @@ setup(
     ],
     packages=['tiget', 'tiget.cmds', 'tiget.models'],
     package_data={
-        'tiget': ['config/*'],
+        'tiget': ['config/tigetrc', 'config/*.py'],
     },
     classifiers=[
         'Intended Audience :: Developers',

@@ -6,6 +6,8 @@ from tiget import get_version
 from tiget.settings import settings
 from tiget.cmds.base import commands, aliases, Cmd
 from tiget.models.base import models
+from tiget.utils import create_module, post_mortem, load_file
+from tiget.git import auto_transaction, get_transaction, GitError
 
 
 class AliasCmd(Cmd):
@@ -41,6 +43,36 @@ class UnaliasCmd(Cmd):
                 raise self.error('no alias named "{}"'.format(alias))
 
 
+class HelpCmd(Cmd):
+    """
+    usage: help [CMD]
+
+    Print the list of commands when no argument is given.
+    Print the usage for CMD otherwise.
+    """
+    help_text = 'show this help page'
+
+    def do(self, opts, name=None):
+        if name:
+            try:
+                cmd = commands[name]
+            except KeyError:
+                raise self.error('no command named "{}"'.format(name))
+            usage = cmd.usage
+            if usage:
+                print usage
+            else:
+                raise self.error(
+                    'no usage information for command "{}"'.format(name))
+        else:
+            cmds = commands.values()
+            cmds.sort(key=lambda cmd: cmd.name)
+            longest = max(len(cmd.name) for cmd in cmds)
+            for cmd in cmds:
+                cmd_name = cmd.name.ljust(longest)
+                print '{} - {}'.format(cmd_name, cmd.help_text)
+
+
 class IpythonCmd(Cmd):
     """
     usage: ipython
@@ -62,35 +94,28 @@ class IpythonCmd(Cmd):
             display_banner=False)
 
 
-class HelpCmd(Cmd):
+class LoadConfigCmd(Cmd):
     """
-    usage: help [CMD]
-
-    Print the list of commands when no argument is given.
-    Print the usage for CMD otherwise.
+    usage: load-config NAME FILE
     """
-    help_text = 'show this help page'
-    aliases = ('?', 'man')
+    name = 'load-config'
+    help_text = 'load python configuration file'
 
-    def do(self, opts, name=None):
-        if name:
-            try:
-                cmd = commands[name]
-            except KeyError:
-                raise self.error('no command named "{}"'.format(name))
-            usage = cmd.usage
-            if usage:
-                print usage
-            else:
-                raise self.error(
-                    'no usage information for command "{}"'.format(name))
-        else:
-            cmds = commands.values()
-            cmds.sort(key=lambda cmd: cmd.name)
-            longest = max(len(cmd.name) for cmd in cmds)
-            for cmd in cmds:
-                cmd_name = cmd.name.ljust(longest)
-                print '{} - {}'.format(cmd_name, cmd.help_text)
+    def do(self, opts, name, filename):
+        import config
+        try:
+            content = load_file(filename) + '\n'
+        except IOError as e:
+            raise self.error(e)
+        m = create_module('.'.join([config.__name__, name]))
+        m.__file__ = filename
+        try:
+            code = compile(content, filename, 'exec')
+            exec(code, m.__dict__)
+        except Exception as e:
+            post_mortem()
+            raise self.error(e)
+        setattr(config, name, m)
 
 
 class SetCmd(Cmd):
@@ -127,6 +152,20 @@ class SetCmd(Cmd):
                 else:
                     value = pipes.quote(value)
                 print '{}: {}'.format(key, value)
+
+
+class SourceCmd(Cmd):
+    """
+    usage: source FILE
+    """
+    help_text = 'source config file'
+
+    def do(self, opts, filename):
+        from tiget.script import Script
+        try:
+            Script.from_file(filename).run()
+        except IOError as e:
+            raise self.error(e)
 
 
 class VersionCmd(Cmd):

@@ -11,7 +11,6 @@ class CreateCmd(Cmd):
     Create a new instance of MODEL.
     """
     help_text = 'create new model instance'
-    aliases = ('new',)
 
     @auto_transaction()
     def do(self, opts, model_name):

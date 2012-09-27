@@ -9,7 +9,7 @@ from colors import green
 from tiget import get_version
 from tiget.settings import settings
 from tiget.cmds import commands, aliases, CmdError, run
-from tiget.utils import print_error, post_mortem
+from tiget.utils import print_error, post_mortem, load_file
 
 
 class Script(object):
@@ -20,6 +20,15 @@ class Script(object):
         self.infile = infile
         self.ignore_errors = ignore_errors
         self.lineno = 0
+
+    @classmethod
+    def from_file(cls, f):
+        if isinstance(f, basestring):
+            name = f
+            f = load_file(f)
+        else:
+            name = f.name
+        return cls(f, name)
 
     def print_error(self, e):
         print_error('"{}", line {}: {}'.format(self.infile, self.lineno, e))

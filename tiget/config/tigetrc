@@ -1,0 +1,7 @@
+alias ?=help man=help
+alias new=create
+alias load=load-config
+alias .=source
+
+load-config models tiget:/config/models.py
+load-config cmds tiget:/config/cmds.py

@@ -4,7 +4,7 @@ from pkg_resources import Requirement, resource_listdir, resource_string
 from tiget.git import auto_transaction, get_transaction, GitError
 from tiget.settings import settings
 from tiget import get_version
-from tiget.utils import print_error, get_python_files
+from tiget.utils import print_error
 
 
 @auto_transaction()
@@ -21,7 +21,7 @@ def main():
     transaction.set_blob('/config/VERSION', version_string.encode('utf-8'))
 
     req = Requirement.parse('tiget')
-    files = get_python_files(resource_listdir(req, 'tiget/config/'))
+    files = ['tigetrc', 'models.py', 'cmds.py']
     for filename in files:
         content = resource_string(req, 'tiget/config/{}'.format(filename))
         transaction.set_blob('/config/{}'.format(filename), content)

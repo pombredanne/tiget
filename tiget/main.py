@@ -1,31 +1,27 @@
+import os
 import sys
-import re
 from subprocess import list2cmdline
 
 from tiget.script import Script, Repl
 from tiget.settings import settings
-from tiget.utils import print_error, post_mortem, create_module, get_python_files
-from tiget.git import auto_transaction, get_transaction, GitError, find_repository_path
+from tiget.utils import print_error, create_module
+from tiget.git import GitError, find_repository_path
 
 
-@auto_transaction()
 def load_config():
-    transaction = get_transaction()
-
     config_module = create_module('config')
-    files = get_python_files(transaction.list_blobs('/config'))
+
+    files = [
+        '/etc/tigetrc',
+        'tiget:/config/tigetrc',
+        os.path.expanduser('~/.tigetrc'),
+        os.path.join(settings.repository_path, '.tigetrc'),
+    ]
     for filename in files:
-        name = re.match(r'(?:\d+-)?(.*)\.py', filename).group(1)
-        filename = '/config/{}'.format(filename)
-        content = transaction.get_blob(filename) + '\n'
-        m = create_module('.'.join([config_module.__name__, name]))
         try:
-            code = compile(content, filename, 'exec')
-            exec(code, m.__dict__)
-        except Exception as e:
-            post_mortem()
-            sys.exit(1)
-        setattr(config_module, name, m)
+            Script.from_file(filename).run()
+        except IOError:
+            pass
 
 
 def main():
@@ -45,5 +41,5 @@ def main():
         if sys.stdin.isatty():
             script = Repl()
         else:
-            script = Script(sys.stdin, '<stdin>')
+            script = Script.from_file(sys.stdin)
     return script.run()

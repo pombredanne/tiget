@@ -13,10 +13,11 @@ from tempfile import NamedTemporaryFile
 from colors import red
 
 from tiget.settings import settings
+from tiget.git import auto_transaction, get_transaction, GitError
 
 __all__ = [
     'open_in_editor', 'get_termsize', 'quote_filename', 'unquote_filename',
-    'print_error', 'post_mortem', 'create_module', 'get_python_files'
+    'print_error', 'post_mortem', 'create_module', 'load_file',
 ]
 
 
@@ -85,6 +86,15 @@ def create_module(name):
     return module
 
 
-def get_python_files(files):
-    is_py = lambda f: f.endswith('.py')
-    return sorted(filter(is_py, files))
+def load_file(filename):
+    if filename.startswith('tiget:'):
+        with auto_transaction():
+            try:
+                transaction = get_transaction()
+                content = transaction.get_blob(filename[len('tiget:'):])
+            except GitError as e:
+                raise IOError('No such file: \'{}\''.format(filename))
+    else:
+        with open(filename) as f:
+            content = f.read()
+    return content
