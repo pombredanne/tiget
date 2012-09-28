@@ -1,6 +1,5 @@
 from tiget import git
 from tiget.cmds.base import Cmd
-from tiget.git import GitError
 
 
 class BeginCmd(Cmd):
@@ -26,7 +25,7 @@ class CommitCmd(Cmd):
             raise self.error('no transaction running')
         try:
             git.transaction.commit(message)
-        except GitError as e:
+        except git.GitError as e:
             raise self.error(e)
         git.transaction = None
 

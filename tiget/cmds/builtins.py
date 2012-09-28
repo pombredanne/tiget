@@ -4,7 +4,6 @@ from tiget import get_version
 from tiget.settings import settings
 from tiget.cmds.base import commands, aliases, Cmd
 from tiget.utils import create_module, post_mortem, load_file
-from tiget.git import auto_transaction, get_transaction, GitError
 from tiget.plugins import load_plugin
 
 
@@ -95,14 +94,10 @@ class LoadConfigCmd(Cmd):
         except IOError as e:
             raise self.error(e)
         m = create_module('.'.join([config.__name__, name]))
-        m.__file__ = filename
-        try:
-            code = compile(content, filename, 'exec')
-            exec(code, m.__dict__)
-        except Exception as e:
-            post_mortem()
-            raise self.error(e)
         setattr(config, name, m)
+        m.__file__ = filename
+        code = compile(content, filename, 'exec')
+        exec(code, m.__dict__)
 
 
 class LoadPluginCmd(Cmd):
