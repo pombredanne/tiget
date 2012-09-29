@@ -2,8 +2,7 @@ import pipes
 
 import tiget
 from tiget.settings import settings
-from tiget.cmds.base import commands, aliases, cmd, CmdError
-from tiget.plugins import load_plugin
+from tiget.cmds import commands, aliases, cmd, CmdError
 
 
 @cmd()
@@ -81,20 +80,6 @@ def help_cmd(opts, name=None):
         for cmd in cmds:
             cmd_name = cmd.name.ljust(longest)
             print '{} - {}'.format(cmd_name, cmd.help_text)
-
-
-@cmd()
-def load_plugin_cmd(opts, plugin_name):
-    """
-    load plugin
-
-    SYNOPSIS
-        load-plugin PLUGIN
-    """
-    try:
-        load_plugin(plugin_name)
-    except ImportError as e :
-        raise CmdError(e)
 
 
 @cmd()

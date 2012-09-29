@@ -3,4 +3,4 @@ alias new=create
 alias ls=list
 alias .=source
 
-load-plugin simple-workflow
+load simple-workflow

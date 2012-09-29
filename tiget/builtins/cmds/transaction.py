@@ -1,5 +1,5 @@
 from tiget import git
-from tiget.cmds.base import cmd, CmdError
+from tiget.cmds import cmd, CmdError
 
 
 @cmd()

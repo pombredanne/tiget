@@ -1,7 +1,7 @@
 from functools import wraps
 from collections import OrderedDict
 
-from tiget.cmds.base import cmd, CmdError
+from tiget.cmds import cmd, CmdError
 from tiget.git import auto_transaction
 from tiget.models import get_model
 from tiget.utils import open_in_editor
