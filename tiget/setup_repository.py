@@ -21,8 +21,7 @@ def main():
     transaction.set_blob('/config/VERSION', version_string.encode('utf-8'))
 
     req = Requirement.parse('tiget')
-    files = ['tigetrc', 'models.py', 'cmds.py']
-    for filename in files:
+    for filename in resource_listdir(req, 'tiget/config'):
         content = resource_string(req, 'tiget/config/{}'.format(filename))
         transaction.set_blob('/config/{}'.format(filename), content)
 

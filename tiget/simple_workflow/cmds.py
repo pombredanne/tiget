@@ -2,7 +2,7 @@ from tiget.cmds import Cmd
 from tiget.git import auto_transaction
 from tiget.models import get_model
 
-from config.models import Ticket, User
+from tiget.simple_workflow.models import Ticket, User
 
 
 class AcceptCmd(Cmd):

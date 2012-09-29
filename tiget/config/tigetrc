@@ -3,5 +3,4 @@ alias new=create
 alias ls=list
 alias .=source
 
-load-config models tiget:/config/models.py
-load-config cmds tiget:/config/cmds.py
+load-plugin simple-workflow

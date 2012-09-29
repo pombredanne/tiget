@@ -19,7 +19,7 @@ setup(
     ],
     packages=find_packages(),
     package_data={
-        'tiget': ['config/tigetrc', 'config/*.py'],
+        'tiget': ['config/tigetrc'],
     },
     classifiers=[
         'Intended Audience :: Developers',
@@ -35,6 +35,9 @@ setup(
         'console_scripts': [
             'tiget = tiget.main:main',
             'tiget-setup-repository = tiget.setup_repository:main',
+        ],
+        'tiget.plugins': [
+            'simple-workflow = tiget.simple_workflow:init_plugin',
         ],
     },
     requires=['dulwich', 'ansicolors'],
