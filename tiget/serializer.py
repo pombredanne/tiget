@@ -3,9 +3,10 @@ import textwrap
 
 __all__ = ['dumps', 'loads']
 
-ITEM_SEPARATOR = re.compile(r'\n(?!\s)')
-ITEM_MATCHER = re.compile(
-    r'(?P<key>\w+):\s?(?P<value>.*?)$(?P<value2>.+)?', re.MULTILINE | re.DOTALL)
+SPLIT_ITEMS = re.compile(r'\n(?!\s)').split
+MATCH_ITEM = re.compile(
+    r'(?P<key>\w+):\s?(?P<value>.*?)$(?P<value2>.+)?',
+    re.MULTILINE | re.DOTALL).match
 
 
 def dumps(data):
@@ -19,9 +20,9 @@ def dumps(data):
 def loads(s):
     data = {}
     lineno = 0
-    for item in ITEM_SEPARATOR.split(s):
+    for item in SPLIT_ITEMS(s):
         if not item.startswith(u'#') and item.strip():
-            m = ITEM_MATCHER.match(item)
+            m = MATCH_ITEM(item)
             if not m:
                 raise ValueError(
                     'syntax error on line {}'.format(lineno + 1))
