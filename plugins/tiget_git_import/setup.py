@@ -27,7 +27,7 @@ setup(
     ],
     entry_points={
         'tiget.plugins': [
-            'git-import = tiget_git_import:init_plugin',
+            'git-import = tiget_git_import',
         ],
     },
     requires=['tiget'],

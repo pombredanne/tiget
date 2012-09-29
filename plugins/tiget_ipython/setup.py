@@ -27,7 +27,7 @@ setup(
     ],
     entry_points={
         'tiget.plugins': [
-            'ipython = tiget_ipython:init_plugin',
+            'ipython = tiget_ipython',
         ],
     },
     requires=['tiget', 'ipython'],

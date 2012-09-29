@@ -1,24 +1,54 @@
 import pkg_resources
 
 
-def load_plugin(plugin_name):
-    if ':' in plugin_name:
+plugins = {}
+
+
+class Plugin(object):
+    def __init__(self, mod):
+        self.mod = mod
         try:
-            module_path, attrs = plugin_name.split(':', 1)
-        except ValueError:
-            raise ImportError('malformed entry point "{}"'.format(entry_point))
-        entry = __import__(module_path, fromlist=['__name__'])
-        for attr in attrs.split('.'):
-            try:
-                entry = getattr(entry, attr)
-            except AttributeError:
-                raise ImportError(
-                    '{} has no attribute "{}"'.format(entry, attr))
-        init_plugin = entry
+            init_plugin = mod.init_plugin
+        except AttributeError:
+            pass
+        else:
+            init_plugin(self)
+
+    def __del__(self):
+        try:
+            del_plugin = self.mod.del_plugin
+        except AttributeError:
+            pass
+        else:
+            del_plugin(self)
+
+    def reload(self):
+        self.__del__()
+        mod = reload(self.mod)
+        self.__init__(mod)
+
+    @property
+    def name(self):
+        return self.mod.__name__.rpartition('.')[2]
+
+    @property
+    def author(self):
+        return getattr(self.mod, '__author__', None)
+
+    @property
+    def version(self):
+        return getattr(self.mod, '__version__', None)
+
+
+def load_plugin(plugin_name):
+    if '.' in plugin_name:
+        mod = __import__(plugin_name, fromlist=['__name__'])
     else:
         for ep in pkg_resources.iter_entry_points('tiget.plugins', plugin_name):
-            init_plugin = ep.load()
+            mod = ep.load()
             break
         else:
             raise ImportError('plugin "{}" does not exist'.format(plugin_name))
-    init_plugin()
+
+    plugin = Plugin(mod)
+    plugins[plugin.name] = plugin
