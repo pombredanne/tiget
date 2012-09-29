@@ -11,43 +11,49 @@ aliases = {}
 class CmdError(Exception): pass
 
 
-class CmdBase(type):
-    def __new__(cls, cls_name, bases, attrs):
-        parents = [b for b in bases if isinstance(b, CmdBase)]
-        klass = super(CmdBase, cls).__new__(cls, cls_name, bases, attrs)
-        if parents:
-            if not klass.name:
-                klass.name = re.match(r'(.*)(?:Cmd)', cls_name).group(1).lower()
-            commands[klass.name] = klass()
-        return klass
+def get_cmd_name(name):
+    m = re.match(r'(.*?)(?:_?cmd)?$', name, re.IGNORECASE)
+    return m.group(1).replace('_', '-').lower()
+
+
+def cmd(**kwargs):
+    def _decorator(fn):
+        cmd = Cmd(fn, **kwargs)
+        commands[cmd.name] = cmd
+        return wraps(fn)(cmd)
+    return _decorator
 
 
 class Cmd(object):
-    __metaclass__ = CmdBase
+    def __init__(self, fn, name=None, options=''):
+        self.fn = fn
+        if not name:
+            name = get_cmd_name(fn.__name__)
+        self.name = name
+        self.options = options
 
-    name = None
-    help_text = NotImplemented
-    options = ''
-
-    def do(self, opts, *args):
-        raise NotImplementedError
-
-    def run(self, *argv):
+    def __call__(self, *argv):
         try:
             opts, args = getopt(argv, self.options)
         except GetoptError as e:
             raise self.error(e)
         try:
-            self.do(opts, *args)
+            self.fn(opts, *args)
         except TypeError:
-            raise self.error('wrong number of arguments')
-
-    def error(self, message):
-        return CmdError('{}: {}'.format(self.name, message))
+            raise CmdError('{}: wrong number of arguments'.format(self.name))
+        except CmdError as e:
+            raise CmdError('{}: {}'.format(self.name, e))
 
     @property
     def usage(self):
-        usage = self.__doc__
+        usage = self.fn.__doc__
         if usage:
-            usage = textwrap.dedent(usage).strip()
+            usage = self.name + ' - ' + textwrap.dedent(usage).strip()
         return usage
+
+    @property
+    def help_text(self):
+        help_text = 'undocumented'
+        if self.fn.__doc__:
+            help_text = self.fn.__doc__.strip().splitlines()[0]
+        return help_text

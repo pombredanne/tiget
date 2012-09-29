@@ -2,155 +2,165 @@ import pipes
 
 import tiget
 from tiget.settings import settings
-from tiget.cmds.base import commands, aliases, Cmd
+from tiget.cmds.base import commands, aliases, cmd, CmdError
 from tiget.plugins import load_plugin
 
 
-class AliasCmd(Cmd):
+@cmd()
+def alias_cmd(opts, *args):
     """
-    usage: alias ALIAS=CMD ...
+    define or list aliases
+
+    SYNOPSIS
+        alias ALIAS=CMD ...
     """
-    help_text = 'define or list aliases'
-
-    def do(self, opts, *args):
-        for arg in args:
-            try:
-                alias, cmd = arg.split('=', 1)
-            except ValueError:
-                raise self.error('"=" not found in "{}"'.format(arg))
-            aliases[alias] = cmd
-        if not args:
-            for alias in sorted(aliases.keys()):
-                cmd = aliases[alias]
-                print '{}: {}'.format(alias, cmd)
+    for arg in args:
+        try:
+            alias, cmd = arg.split('=', 1)
+        except ValueError:
+            raise CmdError('"=" not found in "{}"'.format(arg))
+        aliases[alias] = cmd
+    if not args:
+        for alias in sorted(aliases.keys()):
+            cmd = aliases[alias]
+            print '{}: {}'.format(alias, cmd)
 
 
-class UnaliasCmd(Cmd):
+@cmd()
+def unalias_cmd(opts, *args):
     """
-    usage: unalias ALIAS ...
+    remove aliases
+
+    SYNOPSIS
+        unalias ALIAS ...
     """
-    help_text = 'remove aliases'
-
-    def do(self, opts, *args):
-        for alias in args:
-            try:
-                del aliases[alias]
-            except KeyError:
-                raise self.error('no alias named "{}"'.format(alias))
+    for alias in args:
+        try:
+            del aliases[alias]
+        except KeyError:
+            raise CmdError('no alias named "{}"'.format(alias))
 
 
-class EchoCmd(Cmd):
+@cmd()
+def echo_cmd(opts, *args):
     """
-    usage: echo ...
+    print text to the screen
+
+    SYNOPSIS
+        echo ...
     """
-    help_text = 'print text to the screen'
-
-    def do(self, opts, *args):
-        print ' '.join(args)
+    print ' '.join(args)
 
 
-class HelpCmd(Cmd):
+@cmd()
+def help_cmd(opts, name=None):
     """
-    usage: help [CMD]
+    show this help page
 
-    Print the list of commands when no argument is given.
-    Print the usage for CMD otherwise.
+    SYNOPSIS
+        help [CMD]
+
+    DESCRIPTION
+        Print the list of commands when no argument is given.
+        Print the usage for CMD otherwise.
     """
-    help_text = 'show this help page'
-
-    def do(self, opts, name=None):
-        if name:
-            try:
-                cmd = commands[name]
-            except KeyError:
-                raise self.error('no command named "{}"'.format(name))
-            usage = cmd.usage
-            if usage:
-                print usage
-            else:
-                raise self.error(
-                    'no usage information for command "{}"'.format(name))
+    if name:
+        try:
+            cmd = commands[name]
+        except KeyError:
+            raise CmdError('no command named "{}"'.format(name))
+        usage = cmd.usage
+        if usage:
+            print usage
         else:
-            cmds = commands.values()
-            cmds.sort(key=lambda cmd: cmd.name)
-            longest = max(len(cmd.name) for cmd in cmds)
-            for cmd in cmds:
-                cmd_name = cmd.name.ljust(longest)
-                print '{} - {}'.format(cmd_name, cmd.help_text)
+            raise CmdError('no usage information for command "{}"'.format(name))
+    else:
+        cmds = commands.values()
+        cmds.sort(key=lambda cmd: cmd.name)
+        longest = max(len(cmd.name) for cmd in cmds)
+        for cmd in cmds:
+            cmd_name = cmd.name.ljust(longest)
+            print '{} - {}'.format(cmd_name, cmd.help_text)
 
 
-class LoadPluginCmd(Cmd):
+@cmd()
+def load_plugin_cmd(opts, plugin_name):
     """
-    usage: load-plugin PLUGIN
-    """
-    name = 'load-plugin'
-    help_text = 'load plugin'
+    load plugin
 
-    def do(self, opts, plugin_name):
+    SYNOPSIS
+        load-plugin PLUGIN
+    """
+    try:
+        load_plugin(plugin_name)
+    except ImportError as e :
+        raise CmdError(e)
+
+
+@cmd()
+def set_cmd(opts, *args):
+    """
+    set configuration variables
+
+    SYNOPSIS
+        set VAR=VALUE ...
+        set [no]VAR ...
+
+    DESCRIPTION
+        Print the list of configuration variables when no argument is given.
+        String variables can be set with VAR=VALUE. Boolean variables can be
+        enabled with VAR and disabled with noVAR.
+    """
+    for var in args:
         try:
-            load_plugin(plugin_name)
-        except ImportError as e :
-            raise self.error(e)
-
-
-class SetCmd(Cmd):
-    """
-    usage: set [VAR=VALUE [...]]
-
-    Print the list of configuration variables when no argument is given.
-    String variables can be set with VAR=VALUE. Boolean variables can be
-    enabled with VAR and disabled with noVAR.
-    """
-    help_text = 'set variable VAR to VALUE'
-
-    def do(self, opts, *args):
-        for var in args:
-            try:
-                var, value = var.split('=', 1)
-            except ValueError:
-                if var.startswith('no'):
-                    var = var[2:]
-                    value = False
-                else:
-                    value = True
-            try:
-                settings[var] = value
-            except (ValueError, KeyError) as e:
-                raise self.error(e)
-        if not args:
-            for key in sorted(settings.keys()):
-                value = settings[key]
-                if value is True:
-                    value = 'on'
-                elif value is False:
-                    value = 'off'
-                else:
-                    value = pipes.quote(value)
-                print '{}: {}'.format(key, value)
-
-
-class SourceCmd(Cmd):
-    """
-    usage: source FILE
-    """
-    help_text = 'source config file'
-
-    def do(self, opts, filename):
-        from tiget.script import Script
+            var, value = var.split('=', 1)
+        except ValueError:
+            if var.startswith('no'):
+                var = var[2:]
+                value = False
+            else:
+                value = True
         try:
-            Script.from_file(filename).run()
-        except IOError as e:
-            raise self.error(e)
+            settings[var] = value
+        except (ValueError, KeyError) as e:
+            raise CmdError(e)
+    if not args:
+        for key in sorted(settings.keys()):
+            value = settings[key]
+            if value is True:
+                value = 'on'
+            elif value is False:
+                value = 'off'
+            else:
+                value = pipes.quote(value)
+            print '{}: {}'.format(key, value)
 
 
-class VersionCmd(Cmd):
+@cmd()
+def source_cmd(opts, filename):
     """
-    usage: version
+    source configuration file
 
-    Print the version. Can be used for version detection in command line
-    scripts.
+    SYNOPSIS
+        source FILE
     """
-    help_text = 'print version information'
+    from tiget.script import Script
+    try:
+        Script.from_file(filename).run()
+    except IOError as e:
+        raise CmdError(e)
 
-    def do(self, opts):
-        print tiget.__version__
+
+@cmd()
+def version_cmd(opts):
+    """
+    print version information
+
+    SYNOPSIS
+        version
+
+    DESCRIPTION
+        Print the version. Can be used for version detection in command line
+        scripts.
+    """
+    print tiget.__version__

@@ -1,7 +1,7 @@
 from functools import wraps
 from collections import OrderedDict
 
-from tiget.cmds.base import Cmd
+from tiget.cmds.base import cmd, CmdError
 from tiget.git import auto_transaction
 from tiget.models import get_model
 from tiget.utils import open_in_editor
@@ -10,80 +10,83 @@ from tiget.table import Table
 
 def with_model(fn):
     @wraps(fn)
-    def _inner(self, opts, model_name, *args):
+    def _inner(opts, model_name, *args):
         try:
             model = get_model(model_name)
         except KeyError:
-            raise self.error('model "{}" does not exist'.format(model_name))
-        return fn(self, opts, model, *args)
+            raise CmdError('model "{}" does not exist'.format(model_name))
+        return fn(opts, model, *args)
     return _inner
 
 
-class CreateCmd(Cmd):
+@cmd()
+@auto_transaction()
+@with_model
+def create_cmd(opts, model):
     """
-    usage: create MODEL
+    create new model instance
 
-    Create a new instance of MODEL.
+    SYNOPSIS
+        create MODEL
+
+    DESCRIPTION
+        Create a new instance of MODEL.
     """
-    help_text = 'create new model instance'
-
-    @auto_transaction()
-    @with_model
-    def do(self, opts, model):
-        try:
-            instance = model()
-            s = open_in_editor(instance.dumps())
-            instance.loads(s)
-            instance.save()
-        except model.InvalidObject as e:
-            raise self.error(e)
+    try:
+        instance = model()
+        s = open_in_editor(instance.dumps())
+        instance.loads(s)
+        instance.save()
+    except model.InvalidObject as e:
+        raise CmdError(e)
 
 
-class EditCmd(Cmd):
+@cmd()
+@auto_transaction()
+@with_model
+def edit_cmd(opts, model, pk):
     """
-    usage: edit MODEL PK
+    edit model instance
 
-    Edit MODEL instance with primary key PK.
+    SYNOPSIS
+        edit MODEL PK
+
+    DESCRIPTION
+        Edit MODEL instance with primary key PK.
     """
-    help_text = 'edit model instance'
-
-    @auto_transaction()
-    @with_model
-    def do(self, opts, model, pk):
-        try:
-            instance = model.get(pk=pk)
-        except model.DoesNotExist as e:
-            raise self.error(e)
-        try:
-            s = open_in_editor(instance.dumps())
-            instance.loads(s)
-            instance.save()
-        except model.InvalidObject as e:
-            raise self.error(e)
+    try:
+        instance = model.get(pk=pk)
+    except model.DoesNotExist as e:
+        raise CmdError(e)
+    try:
+        s = open_in_editor(instance.dumps())
+        instance.loads(s)
+        instance.save()
+    except model.InvalidObject as e:
+        raise CmdError(e)
 
 
-class ListCmd(Cmd):
+@cmd(options='f:')
+@auto_transaction()
+@with_model
+def list_cmd(opts, model):
     """
-    usage: list [-f FIELDS] MODEL
-    """
-    help_text = 'list records'
-    options = 'f:'
+    list records
 
-    @auto_transaction()
-    @with_model
-    def do(self, opts, model):
-        fields = model._fields
-        for opt, arg in opts:
-            if opt == '-f':
-                fields = OrderedDict()
-                for fname in arg.split(','):
-                    try:
-                        fields[fname] = model._fields[fname]
-                    except KeyError as e:
-                        raise self.error(
-                            'Field "{}" does not exist'.format(fname))
-        table = Table(*fields.keys())
-        for instance in model.all():
-            values = [f.dumps(instance._data[k]) for k, f in fields.iteritems()]
-            table.add_row(*values)
-        print table.render()
+    SYNOPSIS
+        list [-f FIELDS] MODEL
+    """
+    fields = model._fields
+    for opt, arg in opts:
+        if opt == '-f':
+            fields = OrderedDict()
+            for fname in arg.split(','):
+                try:
+                    fields[fname] = model._fields[fname]
+                except KeyError as e:
+                    raise CmdError( 'Field "{}" does not exist'.format(fname))
+    table = Table(*fields.keys())
+    for instance in model.all():
+        values = [f.dumps(instance._data[k]) for k, f in fields.iteritems()]
+        table.add_row(*values)
+    print table.render()

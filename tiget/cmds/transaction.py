@@ -1,43 +1,46 @@
 from tiget import git
-from tiget.cmds.base import Cmd
+from tiget.cmds.base import cmd, CmdError
 
 
-class BeginCmd(Cmd):
+@cmd()
+def begin_cmd(opts):
     """
-    usage: begin
+    begin transaction
+
+    SYNOPSIS
+        begin
     """
-    help_text = 'begin transaction'
-
-    def do(self, opts):
-        if git.transaction:
-            raise self.error('there is already a transaction running')
-        git.transaction = git.Transaction()
+    if git.transaction:
+        raise CmdError('there is already a transaction running')
+    git.transaction = git.Transaction()
 
 
-class CommitCmd(Cmd):
+@cmd()
+def commit_cmd(opts, message=None):
     """
-    usage: commit [MESSAGE]
+    commit transaction
+
+    SYNOPSIS
+        commit [MESSAGE]
     """
-    help_text = 'commit transaction'
-
-    def do(self, opts, message=None):
-        if not git.transaction:
-            raise self.error('no transaction running')
-        try:
-            git.transaction.commit(message)
-        except git.GitError as e:
-            raise self.error(e)
-        git.transaction = None
+    if not git.transaction:
+        raise CmdError('no transaction running')
+    try:
+        git.transaction.commit(message)
+    except git.GitError as e:
+        raise CmdError(e)
+    git.transaction = None
 
 
-class RollbackCmd(Cmd):
+@cmd()
+def rollback_cmd(opts):
     """
-    usage: rollback
-    """
-    help_text = 'roll back transaction'
+    roll back transaction
 
-    def do(self, opts):
-        if not git.transaction:
-            raise self.error('no transaction running')
-        git.transaction.rollback()
-        git.transaction = None
+    SYNOPSIS
+        rollback
+    """
+    if not git.transaction:
+        raise CmdError('no transaction running')
+    git.transaction.rollback()
+    git.transaction = None

@@ -1,21 +1,22 @@
-from tiget.cmds import Cmd
+from tiget.cmds import cmd, CmdError
 from tiget.git import auto_transaction
 from tiget.models import get_model
 
 from tiget.simple_workflow.models import Ticket, User
 
 
-class AcceptCmd(Cmd):
+@cmd()
+@auto_transaction()
+def accept_cmd(opts, ticket_id):
     """
-    usage: accept TICKET_ID
-    """
-    help_text = 'accept ticket'
+    accept ticket
 
-    @auto_transaction()
-    def do(self, opts, ticket_id):
-        try:
-            ticket = Ticket.get(id=ticket_id)
-            ticket.owner = User.current()
-        except (Ticket.DoesNotExist, User.DoesNotExist) as e:
-            raise self.error(e)
-        ticket.save()
+    SYNOPSIS
+        accept TICKET_ID
+    """
+    try:
+        ticket = Ticket.get(id=ticket_id)
+        ticket.owner = User.current()
+    except (Ticket.DoesNotExist, User.DoesNotExist) as e:
+        raise CmdError(e)
+    ticket.save()
