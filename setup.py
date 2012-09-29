@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from setuptools import setup, find_packages
 
-version = __import__('tiget').get_version()
+version = __import__('tiget').__version__
 
 
 setup(

@@ -7,7 +7,6 @@ from collections import namedtuple
 from dulwich.objects import Blob, Tree, Commit
 from dulwich.repo import Repo, NotGitRepository
 
-from tiget import get_version
 from tiget.settings import settings
 
 transaction = None

@@ -6,7 +6,7 @@ from StringIO import StringIO
 
 from colors import green
 
-from tiget import get_version
+import tiget
 from tiget.settings import settings
 from tiget.cmds import commands, aliases, CmdError, run
 from tiget.utils import print_error, post_mortem, load_file
@@ -112,7 +112,7 @@ class Repl(Script):
         return line
 
     def run(self):
-        print 'tiget {}'.format(get_version())
+        print 'tiget {}'.format(tiget.__version__)
         print 'Type "help" for help'
         print ''
         readline.parse_and_bind('tab: complete')

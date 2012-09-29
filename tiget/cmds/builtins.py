@@ -1,6 +1,6 @@
 import pipes
 
-from tiget import get_version
+import tiget
 from tiget.settings import settings
 from tiget.cmds.base import commands, aliases, Cmd
 from tiget.utils import create_module, post_mortem, load_file
@@ -174,4 +174,4 @@ class VersionCmd(Cmd):
     help_text = 'print version information'
 
     def do(self, opts):
-        print get_version()
+        print tiget.__version__

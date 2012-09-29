@@ -1,9 +1,9 @@
 import sys
 from pkg_resources import Requirement, resource_listdir, resource_string
 
+import tiget
 from tiget.git import auto_transaction, get_transaction, GitError
 from tiget.settings import settings
-from tiget import get_version
 from tiget.utils import print_error
 
 
@@ -17,7 +17,7 @@ def main():
         print_error(e)
         return 1
 
-    version_string = u'{}\n'.format(get_version())
+    version_string = u'{}\n'.format(tiget.__version__)
     transaction.set_blob('/config/VERSION', version_string.encode('utf-8'))
 
     req = Requirement.parse('tiget')
