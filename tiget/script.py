@@ -40,7 +40,9 @@ class Script(object):
         return line.strip()
 
     def run_line(self, line):
-        if line.startswith('!'):
+        if not line or line.startswith('#'):
+            pass
+        elif line.startswith('!'):
             status = os.system(line[1:])
             if status:
                 raise CmdError(
@@ -60,13 +62,11 @@ class Script(object):
             self.lineno += 1
             try:
                 line = self.readline()
+                if line in ('quit', 'exit'):
+                    raise EOFError(line)
             except KeyboardInterrupt:
                 continue
             except EOFError:
-                break
-            if not line:
-                continue
-            elif line in ('quit', 'exit'):
                 break
             try:
                 self.run_line(line)
@@ -74,7 +74,7 @@ class Script(object):
                 self.print_error(e)
                 if not self.ignore_errors:
                     return 1
-            except Exception:
+            except:
                 self.print_error('internal error (see traceback)')
                 post_mortem()
                 if not self.ignore_errors:
