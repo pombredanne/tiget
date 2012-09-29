@@ -41,14 +41,11 @@ class Plugin(object):
 
 
 def load_plugin(plugin_name):
-    if '.' in plugin_name:
-        mod = __import__(plugin_name, fromlist=['__name__'])
+    for ep in pkg_resources.iter_entry_points('tiget.plugins', plugin_name):
+        mod = ep.load()
+        break
     else:
-        for ep in pkg_resources.iter_entry_points('tiget.plugins', plugin_name):
-            mod = ep.load()
-            break
-        else:
-            raise ImportError('plugin "{}" does not exist'.format(plugin_name))
+        mod = __import__(plugin_name, fromlist=['__name__'])
 
     plugin = Plugin(mod)
     plugins[plugin.name] = plugin
