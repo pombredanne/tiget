@@ -40,11 +40,20 @@ class Script(object):
         return line.strip()
 
     def run_line(self, line):
-        try:
-            line = shlex.split(line)
-        except ValueError as e:
-            raise CmdError(e)
-        run(line)
+        if line.startswith('!'):
+            status = os.system(line[1:])
+            if status:
+                raise CmdError(
+                    'shell returned with exit status {}'.format(status % 255))
+        elif line.startswith('%'):
+            code = compile(line[1:], self.infile, 'single')
+            exec(code, {})
+        else:
+            try:
+                line = shlex.split(line)
+            except ValueError as e:
+                raise CmdError(e)
+            run(line)
 
     def run(self):
         while True:
@@ -56,9 +65,6 @@ class Script(object):
             except EOFError:
                 break
             if not line:
-                continue
-            elif line.startswith('!'):
-                os.system(line[1:])
                 continue
             elif line in ('quit', 'exit'):
                 break
