@@ -6,8 +6,6 @@ from tiget.utils import quote_filename, unquote_filename
 from tiget.serializer import dumps, loads
 from tiget.models.fields import Field, UUIDField
 
-models = {}
-
 
 class DoesNotExist(Exception): pass
 class MultipleObjectsReturned(Exception): pass
@@ -50,9 +48,7 @@ class ModelBase(type):
         for exc_class in MODEL_EXCEPTIONS:
             name = exc_class.__name__
             attrs[name] = type(name, (exc_class,), {'__module__': module})
-        model = super_new(cls, cls_name, bases, attrs)
-        models[cls_name.lower()] = model
-        return model
+        return super_new(cls, cls_name, bases, attrs)
 
 
 class Model(object):
@@ -192,7 +188,3 @@ class Model(object):
 
     def __ne__(self, other):
         return not self == other
-
-
-def get_model(name):
-    return models[name.lower()]

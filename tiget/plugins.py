@@ -1,7 +1,8 @@
 import pkg_resources
 from collections import OrderedDict
-from inspect import ismodule
+from inspect import ismodule, isclass
 
+from tiget.models import Model
 from tiget.cmds import Cmd
 
 
@@ -47,7 +48,16 @@ class Plugin(object):
         return getattr(self.mod, '__version__', None)
 
     def add_models(self, models):
-        pass
+        if ismodule(models):
+            for k, v in models.__dict__.iteritems():
+                if not k.startswith('_') and isclass(v) and issubclass(v, Model):
+                    self.add_model(v)
+        else:
+            for model in models:
+                self.add_model(model)
+
+    def add_model(self, model):
+        self.models[model.__name__.lower()] = model
 
     def add_cmds(self, cmds):
         if ismodule(cmds):

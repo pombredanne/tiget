@@ -2,8 +2,8 @@ import IPython
 
 import tiget
 from tiget.cmds import cmd
-from tiget.models.base import models
 from tiget.settings import settings
+from tiget.plugins import plugins
 
 
 @cmd()
@@ -14,7 +14,10 @@ def ipython_cmd(opts):
     SYNOPSIS
         ipython
     """
-    ns = {model.__name__: model for model in models.itervalues()}
+    ns = {}
+    for plugin in plugins.itervalues():
+        models = plugin.models
+        ns.update({model.__name__: model for model in models.itervalues()})
     config = IPython.frontend.terminal.ipapp.load_default_config()
     config.InteractiveShellEmbed = config.TerminalInteractiveShell
     config.PromptManager.in_template = 'IPython[\\#]> '
