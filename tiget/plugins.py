@@ -2,6 +2,8 @@ import pkg_resources
 from collections import OrderedDict
 from inspect import ismodule
 
+from tiget.cmds import Cmd
+
 
 plugins = OrderedDict()
 
@@ -48,7 +50,6 @@ class Plugin(object):
         pass
 
     def add_cmds(self, cmds):
-        from tiget.cmds import Cmd
         if ismodule(cmds):
             for k, v in cmds.__dict__.iteritems():
                 if not k.startswith('_') and isinstance(v, Cmd):

@@ -1,10 +1,7 @@
 import re
 import textwrap
-import shlex
 from functools import wraps
 from getopt import getopt, GetoptError
-
-from tiget.plugins import plugins
 
 
 aliases = {}
@@ -54,26 +51,3 @@ class Cmd(object):
         if self.fn.__doc__:
             help_text = self.fn.__doc__.strip().splitlines()[0]
         return help_text
-
-
-def get_command(name):
-    for plugin in plugins.itervalues():
-        try:
-            cmd = plugin.cmds[name]
-            break
-        except KeyError:
-            pass
-    else:
-        raise KeyError(name)
-    return cmd
-
-
-def run(argv):
-    if argv[0] in aliases:
-        argv = shlex.split(aliases[argv[0]]) + argv[1:]
-    name = argv.pop(0)
-    try:
-        cmd = get_command(name)
-    except KeyError:
-        raise CmdError('{}: command not found'.format(name))
-    cmd(*argv)
