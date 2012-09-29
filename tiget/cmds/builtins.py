@@ -3,7 +3,6 @@ import pipes
 import tiget
 from tiget.settings import settings
 from tiget.cmds.base import commands, aliases, Cmd
-from tiget.utils import create_module, post_mortem, load_file
 from tiget.plugins import load_plugin
 
 
@@ -78,26 +77,6 @@ class HelpCmd(Cmd):
             for cmd in cmds:
                 cmd_name = cmd.name.ljust(longest)
                 print '{} - {}'.format(cmd_name, cmd.help_text)
-
-
-class LoadConfigCmd(Cmd):
-    """
-    usage: load-config NAME FILE
-    """
-    name = 'load-config'
-    help_text = 'load python configuration file'
-
-    def do(self, opts, name, filename):
-        import config
-        try:
-            content = load_file(filename) + '\n'
-        except IOError as e:
-            raise self.error(e)
-        m = create_module('.'.join([config.__name__, name]))
-        setattr(config, name, m)
-        m.__file__ = filename
-        code = compile(content, filename, 'exec')
-        exec(code, m.__dict__)
 
 
 class LoadPluginCmd(Cmd):

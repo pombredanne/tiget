@@ -4,13 +4,11 @@ from subprocess import list2cmdline
 
 from tiget.script import Script, Repl
 from tiget.settings import settings
-from tiget.utils import print_error, create_module
+from tiget.utils import print_error
 from tiget.git import GitError, find_repository_path
 
 
 def load_config():
-    create_module('config')
-
     files = [
         '/etc/tigetrc',
         'tiget:/config/tigetrc',

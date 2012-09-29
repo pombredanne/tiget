@@ -6,7 +6,6 @@ import termios
 import struct
 import subprocess
 import traceback
-import imp
 from collections import namedtuple
 from tempfile import NamedTemporaryFile
 
@@ -17,7 +16,7 @@ from tiget.git import auto_transaction, get_transaction, GitError
 
 __all__ = [
     'open_in_editor', 'get_termsize', 'quote_filename', 'unquote_filename',
-    'print_error', 'post_mortem', 'create_module', 'load_file',
+    'print_error', 'post_mortem', 'load_file',
 ]
 
 
@@ -78,12 +77,6 @@ def post_mortem():
                 pdb.post_mortem()
             except KeyboardInterrupt:
                 pass
-
-
-def create_module(name):
-    module = imp.new_module(name)
-    sys.modules[name] = module
-    return module
 
 
 def load_file(filename):
