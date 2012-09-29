@@ -1,4 +1,7 @@
-from tiget.builtins.cmds import shell
-from tiget.builtins.cmds import plugin
-from tiget.builtins.cmds import transaction
-from tiget.builtins.cmds import model
+from tiget.builtins.cmds.shell import (
+    alias_cmd, unalias_cmd, echo_cmd, help_cmd, set_cmd, source_cmd,
+    version_cmd
+)
+from tiget.builtins.cmds.plugin import load_cmd
+from tiget.builtins.cmds.transaction import begin_cmd, commit_cmd, rollback_cmd
+from tiget.builtins.cmds.model import create_cmd, edit_cmd, list_cmd

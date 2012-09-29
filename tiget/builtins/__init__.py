@@ -6,3 +6,4 @@ __version__ = tiget.__version__
 
 def init_plugin(plugin):
     from tiget.builtins import cmds
+    plugin.add_cmds(cmds)

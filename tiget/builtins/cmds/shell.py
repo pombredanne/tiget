@@ -2,7 +2,8 @@ import pipes
 
 import tiget
 from tiget.settings import settings
-from tiget.cmds import commands, aliases, cmd, CmdError
+from tiget.plugins import plugins
+from tiget.cmds import get_command, aliases, cmd, CmdError
 
 
 @cmd()
@@ -65,7 +66,7 @@ def help_cmd(opts, name=None):
     """
     if name:
         try:
-            cmd = commands[name]
+            cmd = get_command(name)
         except KeyError:
             raise CmdError('no command named "{}"'.format(name))
         usage = cmd.usage
@@ -74,12 +75,17 @@ def help_cmd(opts, name=None):
         else:
             raise CmdError('no usage information for command "{}"'.format(name))
     else:
-        cmds = commands.values()
-        cmds.sort(key=lambda cmd: cmd.name)
-        longest = max(len(cmd.name) for cmd in cmds)
-        for cmd in cmds:
-            cmd_name = cmd.name.ljust(longest)
-            print '{} - {}'.format(cmd_name, cmd.help_text)
+        for plugin in plugins.itervalues():
+            cmds = plugin.cmds.values()
+            if not cmds:
+                continue
+            print '[{}]'.format(plugin.name)
+            cmds.sort(key=lambda cmd: cmd.name)
+            longest = max(len(cmd.name) for cmd in cmds)
+            for cmd in cmds:
+                cmd_name = cmd.name.ljust(longest)
+                print '{} - {}'.format(cmd_name, cmd.help_text)
+            print ''
 
 
 @cmd()

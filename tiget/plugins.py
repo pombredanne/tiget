@@ -1,12 +1,17 @@
 import pkg_resources
+from collections import OrderedDict
+from inspect import ismodule
 
 
-plugins = {}
+plugins = OrderedDict()
 
 
 class Plugin(object):
     def __init__(self, mod):
         self.mod = mod
+        self.models = {}
+        self.cmds = {}
+        self.settings = {}
         try:
             init_plugin = mod.init_plugin
         except AttributeError:
@@ -38,6 +43,22 @@ class Plugin(object):
     @property
     def version(self):
         return getattr(self.mod, '__version__', None)
+
+    def add_models(self, models):
+        pass
+
+    def add_cmds(self, cmds):
+        from tiget.cmds import Cmd
+        if ismodule(cmds):
+            for k, v in cmds.__dict__.iteritems():
+                if not k.startswith('_') and isinstance(v, Cmd):
+                    self.add_cmd(v)
+        else:
+            for cmd in cmds:
+                self.add_cmd(cmd)
+
+    def add_cmd(self, cmd):
+        self.cmds[cmd.name] = cmd
 
 
 def load_plugin(plugin_name):

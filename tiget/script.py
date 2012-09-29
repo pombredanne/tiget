@@ -8,7 +8,8 @@ from colors import green
 
 import tiget
 from tiget.settings import settings
-from tiget.cmds import commands, aliases, CmdError, run
+from tiget.plugins import plugins
+from tiget.cmds import aliases, CmdError, run
 from tiget.utils import print_error, post_mortem, load_file
 
 
@@ -86,7 +87,10 @@ class Repl(Script):
         super(Repl, self).__init__(sys.stdin, '<repl>', ignore_errors=True)
 
     def complete(self, text, state):
-        cmds = commands.keys() + aliases.keys()
+        cmds = []
+        for plugin in plugins.itervalues():
+            cmds += plugin.cmds.keys()
+        cmds += aliases.keys()
         options = [cmd for cmd in cmds if cmd.startswith(text)]
         if state < len(options):
             return options[state] + ' '
