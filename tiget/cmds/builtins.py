@@ -89,8 +89,8 @@ class LoadPluginCmd(Cmd):
     def do(self, opts, plugin_name):
         try:
             load_plugin(plugin_name)
-        except KeyError:
-            raise self.error('plugin "{}" not found'.format(plugin_name))
+        except ImportError as e :
+            raise self.error(e)
 
 
 class SetCmd(Cmd):
