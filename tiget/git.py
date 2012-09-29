@@ -85,6 +85,15 @@ class Transaction(object):
             memory_tree = memory_tree.childs[name]
         return memory_tree
 
+    def exists(self, path):
+        path = self.split_path(path)
+        filename = path.pop()
+        memory_tree = self.get_memory_tree(path)
+        for files in (memory_tree.blobs, memory_tree.childs, memory_tree.tree):
+            if filename in files:
+                return True
+        return False
+
     def get_blob(self, key):
         path = self.split_path(key)
         filename = path.pop()
