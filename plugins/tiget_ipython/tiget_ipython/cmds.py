@@ -13,7 +13,7 @@ class IpythonCmd(Cmd):
     help_text = 'start embedded ipython shell'
 
     def do(self, opts):
-        ns = {'config': __import__('config')}
+        ns = {}
         for model in models.itervalues():
             ns[model.__name__] = model
         config = IPython.frontend.terminal.ipapp.load_default_config()
