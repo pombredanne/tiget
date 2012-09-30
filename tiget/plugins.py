@@ -30,6 +30,7 @@ class Plugin(object):
 
     def reload(self):
         self.__del__()
+        # TODO: deep reload
         mod = reload(self.mod)
         self.__init__(mod, self.name)
 
