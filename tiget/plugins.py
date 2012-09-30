@@ -2,19 +2,17 @@ import pkg_resources
 from collections import OrderedDict
 from inspect import ismodule, isclass
 
-from tiget.models import Model
-from tiget.cmds import Cmd
-
 
 plugins = OrderedDict()
 
 
 class Plugin(object):
-    def __init__(self, mod):
+    def __init__(self, mod, name):
         self.mod = mod
+        self.name = name
         self.models = {}
         self.cmds = {}
-        self.settings = {}
+        self.settings = Settings()
         try:
             init_plugin = mod.init_plugin
         except AttributeError:
@@ -36,10 +34,6 @@ class Plugin(object):
         self.__init__(mod)
 
     @property
-    def name(self):
-        return self.mod.__name__.rpartition('.')[2]
-
-    @property
     def author(self):
         return getattr(self.mod, '__author__', None)
 
@@ -48,6 +42,7 @@ class Plugin(object):
         return getattr(self.mod, '__version__', None)
 
     def add_models(self, models):
+        from tiget.models import Model
         if ismodule(models):
             for k, v in models.__dict__.iteritems():
                 if not k.startswith('_') and isclass(v) and issubclass(v, Model):
@@ -60,6 +55,7 @@ class Plugin(object):
         self.models[model.__name__.lower()] = model
 
     def add_cmds(self, cmds):
+        from tiget.cmds import Cmd
         if ismodule(cmds):
             for k, v in cmds.__dict__.iteritems():
                 if not k.startswith('_') and isinstance(v, Cmd):
@@ -71,13 +67,65 @@ class Plugin(object):
     def add_cmd(self, cmd):
         self.cmds[cmd.name] = cmd
 
+    def add_settings(self, **kwargs):
+        for name, variable in kwargs.iteritems():
+            self.add_setting(name, variable)
+
+    def add_setting(self, name, variable):
+        self.settings.variables[name] = variable
+
+
+class Settings(object):
+    def __init__(self):
+        self.variables = {}
+        self.data = {}
+
+    def __getattr__(self, key):
+        try:
+            return self[key]
+        except KeyError as e:
+            raise AttributeError(e)
+
+    def __setattr__(self, key, value):
+        if key in ('variables', 'data') or not key in self:
+            super(Settings, self).__setattr__(key, value)
+        else:
+            self[key] = value
+
+    def __getitem__(self, key):
+        try:
+            variable = self.variables[key]
+        except KeyError:
+            raise KeyError('invalid setting "{}"'.format(key))
+        if not key in self.data:
+            return variable.default
+        return self.data[key]
+
+    def __setitem__(self, key, value):
+        try:
+            variable = self.variables[key]
+        except KeyError:
+            raise KeyError('invalid setting "{}"'.format(key))
+        variable.validate(value)
+        self.data[key] = value
+
+    def __len__(self):
+        return len(self.variables)
+
+    def __contains__(self, key):
+        return key in self.variables
+
+    def keys(self):
+        return self.variables.keys()
+
 
 def load_plugin(plugin_name):
     for ep in pkg_resources.iter_entry_points('tiget.plugins', plugin_name):
         mod = ep.load()
+        name = ep.name
         break
     else:
         mod = __import__(plugin_name, fromlist=['__name__'])
+        name = mod.__name__.rpartition('.')[2]
 
-    plugin = Plugin(mod)
-    plugins[plugin.name] = plugin
+    plugins[name] = Plugin(mod, name)

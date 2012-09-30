@@ -98,7 +98,7 @@ class Repl(Script):
 
     def readline(self):
         prompt = 'tiget[{}]% '.format(self.lineno)
-        if settings.color:
+        if settings.core.color:
             prompt = green(prompt)
         readline.set_completer(self.complete)
         try:

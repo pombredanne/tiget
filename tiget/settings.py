@@ -1,3 +1,8 @@
+from tiget.plugins import plugins
+
+__all__ = ['BoolSetting', 'StrSetting', 'settings']
+
+
 class Setting(object):
     def __init__(self, default=None, choices=None):
         self.default = default
@@ -22,48 +27,18 @@ class StrSetting(Setting):
         super(StrSetting, self).validate(value)
 
 
-SETTINGS = {
-    'branchname': StrSetting(default='tiget'),
-    'debug': BoolSetting(default=False),
-    'color': BoolSetting(default=True),
-    'pdb_module': StrSetting(default='pdb'),
-    'repository_path': StrSetting(default='.'),
-}
-
-
 class Settings(object):
-    def __init__(self):
-        self.data = {}
-
     def __getattr__(self, key):
         try:
             return self[key]
         except KeyError as e:
             raise AttributeError(e)
 
-    def __setattr__(self, key, value):
-        if key in SETTINGS:
-            self[key] = value
-        else:
-            super(Settings, self).__setattr__(key, value)
-
     def __getitem__(self, key):
-        setting = SETTINGS.get(key)
-        if setting and not key in self.data:
-            return setting.default
-        return self.data[key]
-
-    def __setitem__(self, key, value):
-        setting = SETTINGS.get(key)
-        if not setting:
-            raise KeyError('invalid setting "{}"'.format(key))
-        setting.validate(value)
-        self.data[key] = value
+        return plugins[key].settings
 
     def keys(self):
-        keys = set(self.data.keys())
-        keys.update(SETTINGS.keys())
-        return list(keys)
+        return plugins.keys()
 
 
 settings = Settings()

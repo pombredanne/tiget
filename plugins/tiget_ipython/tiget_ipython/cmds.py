@@ -20,8 +20,8 @@ def ipython_cmd(opts):
         ns.update({model.__name__: model for model in models.itervalues()})
     config = IPython.frontend.terminal.ipapp.load_default_config()
     config.InteractiveShellEmbed = config.TerminalInteractiveShell
-    config.PromptManager.in_template = 'IPython[\\#]> '
-    if not settings.color:
+    config.PromptManager.in_template = settings.ipython.prompt
+    if not settings.core.color:
         config.InteractiveShellEmbed.colors = 'NoColor'
     config.InteractiveShellEmbed.confirm_exit = False
     IPython.embed(

@@ -29,11 +29,11 @@ MemoryTree = namedtuple('MemoryTree', ['tree', 'childs', 'blobs'])
 class Transaction(object):
     def __init__(self):
         try:
-            repo = Repo(settings.repository_path)
+            repo = Repo(settings.core.repository_path)
         except NotGitRepository:
             raise GitError('no git repository found')
         self.repo = repo
-        self.ref = 'refs/heads/{}'.format(settings.branchname)
+        self.ref = 'refs/heads/{}'.format(settings.core.branchname)
         try:
             previous_commit_id = repo.refs[self.ref]
         except KeyError:

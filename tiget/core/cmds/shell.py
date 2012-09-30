@@ -94,37 +94,45 @@ def set_cmd(opts, *args):
     set configuration variables
 
     SYNOPSIS
-        set VAR=VALUE ...
-        set [no]VAR ...
+        set [PLUGIN.]VAR=VALUE ...
+        set [PLUGIN.][no]VAR ...
 
     DESCRIPTION
         Print the list of configuration variables when no argument is given.
         String variables can be set with VAR=VALUE. Boolean variables can be
         enabled with VAR and disabled with noVAR.
+        Variable names may be prefixed with a module name. If no module name
+        is given "core" is assumed.
     """
     for var in args:
-        try:
-            var, value = var.split('=', 1)
-        except ValueError:
+        var, eq, value = var.partition('=')
+        plugin, _, var = var.rpartition('.')
+        if not plugin:
+            plugin = 'core'
+        if not eq:
+            value = True
             if var.startswith('no'):
                 var = var[2:]
                 value = False
-            else:
-                value = True
         try:
-            settings[var] = value
+            settings[plugin][var] = value
         except (ValueError, KeyError) as e:
             raise CmdError(e)
     if not args:
-        for key in sorted(settings.keys()):
-            value = settings[key]
-            if value is True:
-                value = 'on'
-            elif value is False:
-                value = 'off'
-            else:
-                value = pipes.quote(value)
-            print '{}: {}'.format(key, value)
+        for plugin in plugins.itervalues():
+            if not plugin.settings:
+                continue
+            print '[{}]'.format(plugin.name)
+            for key in sorted(plugin.settings.keys()):
+                value = plugin.settings[key]
+                if value is True:
+                    value = 'on'
+                elif value is False:
+                    value = 'off'
+                else:
+                    value = pipes.quote(value)
+                print '{}={}'.format(key, value)
+            print ''
 
 
 @cmd()

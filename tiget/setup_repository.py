@@ -5,11 +5,12 @@ import tiget
 from tiget.git import auto_transaction, get_transaction, GitError
 from tiget.settings import settings
 from tiget.utils import print_error
+from tiget.plugins import plugins
 
 
 @auto_transaction()
 def main():
-    settings.color = sys.stdout.isatty()
+    load_plugin('tiget.core')
 
     try:
         transaction = get_transaction(initialized=False)

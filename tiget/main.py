@@ -14,7 +14,7 @@ def load_config():
         '/etc/tigetrc',
         'tiget:/config/tigetrc',
         os.path.expanduser('~/.tigetrc'),
-        os.path.join(settings.repository_path, '.tigetrc'),
+        os.path.join(settings.core.repository_path, '.tigetrc'),
     ]
     for filename in files:
         try:
@@ -24,12 +24,10 @@ def load_config():
 
 
 def main():
-    settings.color = sys.stdout.isatty()
-
-    load_plugin('builtins')
+    load_plugin('tiget.core')
 
     try:
-        settings.repository_path = find_repository_path()
+        settings.core.repository_path = find_repository_path()
         load_config()
     except GitError as e:
         print_error(e)

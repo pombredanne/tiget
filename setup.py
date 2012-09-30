@@ -37,7 +37,6 @@ setup(
             'tiget-setup-repository = tiget.setup_repository:main',
         ],
         'tiget.plugins': [
-            'builtins = tiget.builtins',
             'simple-workflow = tiget.simple_workflow',
         ],
     },

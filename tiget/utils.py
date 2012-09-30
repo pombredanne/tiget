@@ -60,16 +60,16 @@ def unquote_filename(name):
 
 
 def print_error(line):
-    if settings.color:
+    if settings.core.color:
         line = red(str(line))
     print >> sys.stderr, line
 
 
 def post_mortem():
     traceback.print_exc()
-    if settings.debug:
+    if settings.core.debug:
         try:
-            pdb = __import__(settings.pdb_module)
+            pdb = __import__(settings.core.pdb_module)
         except ImportError as e:
             print_error(e)
         else:

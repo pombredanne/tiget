@@ -12,7 +12,7 @@ from tiget.git import init_repo, get_transaction, auto_transaction
 class GitTestcase(object):
     def setup(self):
         self.repo = mkdtemp()
-        settings.repository_path = self.repo
+        settings.core.repository_path = self.repo
         check_call(['git', 'init', '--quiet'], cwd=self.repo)
 
     def teardown(self):
@@ -21,11 +21,11 @@ class GitTestcase(object):
 
     def assert_file_exists(self, file):
         cmd = 'git ls-tree --name-only -r {} | grep -q ^{}$'.format(
-            settings.branchname, file)
+            settings.core.branchname, file)
         check_call(cmd, cwd=self.repo, shell=True)
 
     def assert_commit_count(self, count):
-        cmd = 'git log --oneline {} | wc -l'.format(settings.branchname)
+        cmd = 'git log --oneline {} | wc -l'.format(settings.core.branchname)
         eq_(check_output(cmd, cwd=self.repo, shell=True), str(count) + '\n')
 
 
