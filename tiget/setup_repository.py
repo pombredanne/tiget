@@ -5,26 +5,26 @@ import tiget
 from tiget.git import auto_transaction, get_transaction, GitError
 from tiget.settings import settings
 from tiget.utils import print_error
-from tiget.plugins import plugins
+from tiget.plugins import load_plugin
 
 
-@auto_transaction()
 def main():
     load_plugin('tiget.core')
 
-    try:
-        transaction = get_transaction(initialized=False)
-    except GitError as e:
-        print_error(e)
-        return 1
+    with auto_transaction():
+        try:
+            transaction = get_transaction(initialized=False)
+        except GitError as e:
+            print_error(e)
+            return 1
 
-    version_string = u'{}\n'.format(tiget.__version__)
-    transaction.set_blob('/config/VERSION', version_string.encode('utf-8'))
+        version_string = u'{}\n'.format(tiget.__version__)
+        transaction.set_blob('/config/VERSION', version_string.encode('utf-8'))
 
-    req = Requirement.parse('tiget')
-    for filename in resource_listdir(req, 'tiget/config'):
-        content = resource_string(req, 'tiget/config/{}'.format(filename))
-        transaction.set_blob('/config/{}'.format(filename), content)
+        req = Requirement.parse('tiget')
+        for filename in resource_listdir(req, 'tiget/config'):
+            content = resource_string(req, 'tiget/config/{}'.format(filename))
+            transaction.set_blob('/config/{}'.format(filename), content)
 
-    transaction.add_message(u'Initialize Repository')
-    transaction.is_initialized = True
+        transaction.add_message(u'Initialize Repository')
+        transaction.is_initialized = True
