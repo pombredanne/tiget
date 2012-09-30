@@ -94,6 +94,7 @@ def set_cmd(opts, *args):
     set configuration variables
 
     SYNOPSIS
+        set
         set [PLUGIN.]VAR=VALUE ...
         set [PLUGIN.][no]VAR ...
 
