@@ -2,6 +2,8 @@ import pkg_resources
 from collections import OrderedDict
 from inspect import ismodule, isclass
 
+from tiget.deep_reload import deep_reload
+
 
 plugins = OrderedDict()
 
@@ -30,8 +32,7 @@ class Plugin(object):
 
     def reload(self):
         self.__del__()
-        # TODO: deep reload
-        mod = reload(self.mod)
+        mod = deep_reload(self.mod)
         self.__init__(mod, self.name)
 
     @property
