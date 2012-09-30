@@ -6,7 +6,6 @@ from tiget.script import Script, Repl
 from tiget.settings import settings
 from tiget.utils import print_error
 from tiget.git import GitError, find_repository_path
-from tiget.plugins import load_plugin
 
 
 def load_config():

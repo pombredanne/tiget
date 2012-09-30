@@ -32,11 +32,11 @@ class GitTestcase(object):
 class TestGit(GitTestcase):
     def test_init_repo(self):
         init_repo()
-        ref = 'refs/heads/{}'.format(settings.branchname)
+        ref = 'refs/heads/{}'.format(settings.core.branchname)
         check_call(
             ['git', 'show-ref', '--verify', '--quiet', ref], cwd=self.repo)
         self.assert_commit_count(1)
-        self.assert_file_exists('VERSION')
+        self.assert_file_exists('config/VERSION')
 
     @auto_transaction()
     def test_get_transaction(self):

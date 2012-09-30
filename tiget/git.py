@@ -3,10 +3,12 @@ import time
 import os
 from functools import wraps
 from collections import namedtuple
+from pkg_resources import Requirement, resource_listdir, resource_string
 
 from dulwich.objects import Blob, Tree, Commit
 from dulwich.repo import Repo, NotGitRepository
 
+import tiget
 from tiget.settings import settings
 
 transaction = None
@@ -203,3 +205,19 @@ def find_repository_path(cwd=None):
             return head
         head, tail = os.path.split(head)
     raise GitError('no git repository found')
+
+
+@auto_transaction()
+def init_repo():
+    transaction = get_transaction(initialized=False)
+
+    version_string = u'{}\n'.format(tiget.__version__)
+    transaction.set_blob('/config/VERSION', version_string.encode('utf-8'))
+
+    req = Requirement.parse('tiget')
+    for filename in resource_listdir(req, 'tiget/config'):
+        content = resource_string(req, 'tiget/config/{}'.format(filename))
+        transaction.set_blob('/config/{}'.format(filename), content)
+
+    transaction.add_message(u'Initialize Repository')
+    transaction.is_initialized = True
