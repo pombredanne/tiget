@@ -1,4 +1,4 @@
-import pipes
+from subprocess import list2cmdline
 
 import tiget
 from tiget.settings import settings
@@ -23,7 +23,7 @@ def alias_cmd(opts, *args):
     if not args:
         for alias in sorted(aliases.keys()):
             cmd = aliases[alias]
-            print '{}: {}'.format(alias, cmd)
+            print '{}={}'.format(alias, list2cmdline([cmd]))
 
 
 @cmd()
@@ -131,7 +131,7 @@ def set_cmd(opts, *args):
                 elif value is False:
                     value = 'off'
                 else:
-                    value = pipes.quote(value)
+                    value = list2cmdline([value])
                 print '{}={}'.format(key, value)
             print ''
 
