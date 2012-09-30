@@ -24,8 +24,6 @@ def load_config():
 
 
 def main():
-    load_plugin('tiget.core')
-
     try:
         settings.core.repository_path = find_repository_path()
         load_config()

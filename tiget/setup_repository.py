@@ -9,8 +9,6 @@ from tiget.plugins import load_plugin
 
 
 def main():
-    load_plugin('tiget.core')
-
     with auto_transaction():
         try:
             transaction = get_transaction(initialized=False)
