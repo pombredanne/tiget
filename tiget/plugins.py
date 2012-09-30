@@ -31,7 +31,7 @@ class Plugin(object):
     def reload(self):
         self.__del__()
         mod = reload(self.mod)
-        self.__init__(mod)
+        self.__init__(mod, self.name)
 
     @property
     def author(self):
