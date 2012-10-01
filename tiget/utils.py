@@ -74,7 +74,7 @@ def post_mortem():
             print_error(e)
         else:
             try:
-                pdb.post_mortem()
+                pdb.post_mortem(sys.exc_info()[2])
             except KeyboardInterrupt:
                 pass
 
