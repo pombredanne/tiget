@@ -36,12 +36,14 @@ class ModelBase(type):
                 hidden=True, primary_key=True, default=lambda: uuid4())
             attrs['id'] = id_field
             fields['id'] = id_field
-            pk_fields = [id_field]
+            pk_field = id_field
+        else:
+            pk_field = pk_fields[0]
 
         for name, field in fields.iteritems():
             field.bind(name)
 
-        attrs['_primary_key'] = pk_fields[0].name
+        attrs['_primary_key'] = pk_field.name
         attrs['_fields'] = fields
         attrs['_storage_name'] = cls_name.lower() + 's'
         module = attrs['__module__']
@@ -55,21 +57,21 @@ class Model(object):
     __metaclass__ = ModelBase
 
     def __init__(self, **kwargs):
-        pk = kwargs.pop('pk', None)
-        if not pk is None:
-            kwargs[self._primary_key] = pk
-        self._data = {}
-        for name, field in self._fields.iteritems():
-            value = kwargs.pop(name, field.default)
-            if not value is None:
-                value = field.clean(value)
-            self._data[name] = value
-        for k in kwargs.iterkeys():
-            raise self.invalid_field(k)
+        self._data = {name: f.default for name, f in self._fields.iteritems()}
+        self._update(**kwargs)
+
+    def _update(self, **kwargs):
+        if 'pk' in kwargs:
+            kwargs[self._primary_key] = kwargs.pop('pk')
+        for key, value in kwargs.iteritems():
+            try:
+                field = self._fields[key]
+            except KeyError:
+                raise KeyError('invalid field "{}"'.format(key))
+            self._data[key] = field.loads(value)
 
     def __repr__(self):
-        pk = self._data[self._primary_key]
-        return '{}: {}'.format(self.__class__.__name__, pk)
+        return '<{}: {}>'.format(self.__class__.__name__, self.pk)
 
     def invalid_field(self, name):
         message = '\'{}\' is an invalid field name for {}'
@@ -87,21 +89,13 @@ class Model(object):
     def loads(self, s):
         try:
             content = loads(s)
-        except ValueError as e:
+            self._update(**content)
+        except (ValueError, KeyError) as e:
             raise self.InvalidObject(e)
-        for name, value in content.iteritems():
-            try:
-                field = self._fields[name]
-            except KeyError:
-                raise self.invalid_field(name)
-            try:
-                self._data[name] = field.loads(value)
-            except ValueError as e:
-                raise self.InvalidObject(e)
 
     @property
     def path(self):
-        pk = self._data[self._primary_key]
+        pk = self.pk
         if pk is None:
             raise ValueError('pk must not be None')
         pk = self._fields[self._primary_key].dumps(pk)
@@ -149,9 +143,8 @@ class Model(object):
 
     @classmethod
     def filter(cls, **kwargs):
-        pk = kwargs.pop('pk', None)
-        if not pk is None:
-            kwargs[cls._primary_key] = pk
+        if 'pk' in kwargs:
+            kwargs[cls._primary_key] = kwargs.pop('pk')
         pk = kwargs.pop(cls._primary_key, None)
         if not pk is None:
             try:
