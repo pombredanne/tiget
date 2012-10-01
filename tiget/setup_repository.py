@@ -1,5 +1,6 @@
 from tiget.git import find_repository_path, init_repo, GitError
 from tiget.utils import print_error
+from tiget.settings import settings
 
 
 def main():
