@@ -11,7 +11,7 @@ from dulwich.repo import Repo, NotGitRepository
 import tiget
 from tiget.settings import settings
 
-transaction = None
+_transaction = None
 
 
 class GitError(Exception):
@@ -19,11 +19,11 @@ class GitError(Exception):
 
 
 def get_transaction(initialized=True):
-    if initialized and not transaction.is_initialized:
+    if initialized and not _transaction.is_initialized:
         raise GitError('repository is not initialized; use tiget-setup-repository')
-    elif not initialized and transaction.is_initialized:
+    elif not initialized and _transaction.is_initialized:
         raise GitError('repository is initialized')
-    return transaction
+    return _transaction
 
 
 MemoryTree = namedtuple('MemoryTree', ['tree', 'childs', 'blobs'])
@@ -171,6 +171,29 @@ class Transaction(object):
         self.messages = []
 
 
+def begin():
+    global _transaction
+    if _transaction:
+        raise GitError('there is already a transaction running')
+    _transaction = Transaction()
+
+
+def commit(message=None):
+    global _transaction
+    if not _transaction:
+        raise GitError('no transaction in progress')
+    _transaction.commit(message)
+    _transaction = None
+
+
+def rollback():
+    global _transaction
+    if not _transaction:
+        raise GitError('no transaction in progress')
+    _transaction.rollback()
+    _transaction = None
+
+
 class auto_transaction(object):
     def __call__(self, fn):
         @wraps(fn)
@@ -180,20 +203,17 @@ class auto_transaction(object):
         return _inner
 
     def __enter__(self):
-        global transaction
-        self.active = not transaction
+        self.active = not _transaction
         if self.active:
-            transaction = Transaction()
-        return transaction
+            begin()
+        return _transaction
 
     def __exit__(self, type, value, traceback):
-        global transaction
         if self.active:
-            if type:
-                transaction.rollback()
-            elif transaction.has_changes:
-                transaction.commit()
-            transaction = None
+            if not type and _transaction.has_changes:
+                commit()
+            else:
+                rollback()
 
 
 def find_repository_path(cwd=None):

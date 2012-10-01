@@ -1,4 +1,4 @@
-from tiget import git
+from tiget.git import begin, commit, rollback, GitError
 from tiget.cmds import cmd, CmdError
 
 
@@ -10,9 +10,10 @@ def begin_cmd(opts):
     SYNOPSIS
         begin
     """
-    if git.transaction:
-        raise CmdError('there is already a transaction running')
-    git.transaction = git.Transaction()
+    try:
+        begin()
+    except GitError as e:
+        raise CmdError(e)
 
 
 @cmd()
@@ -23,13 +24,10 @@ def commit_cmd(opts, message=None):
     SYNOPSIS
         commit [MESSAGE]
     """
-    if not git.transaction:
-        raise CmdError('no transaction running')
     try:
-        git.transaction.commit(message)
-    except git.GitError as e:
+        commit(message)
+    except GitError as e:
         raise CmdError(e)
-    git.transaction = None
 
 
 @cmd()
@@ -40,7 +38,7 @@ def rollback_cmd(opts):
     SYNOPSIS
         rollback
     """
-    if not git.transaction:
-        raise CmdError('no transaction running')
-    git.transaction.rollback()
-    git.transaction = None
+    try:
+        rollback()
+    except GitError as e:
+        raise CmdError(e)
