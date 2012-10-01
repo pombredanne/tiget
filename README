@@ -6,11 +6,6 @@
 WIPWIPWIP
 
 
-DEPENDENCIES:
-
- * dulwich
-
-
 STYLE:
 
 Please follow PEP 8[1].

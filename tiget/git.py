@@ -5,8 +5,7 @@ from functools import wraps
 from collections import namedtuple
 from pkg_resources import Requirement, resource_listdir, resource_string
 
-from dulwich.objects import Blob, Tree, Commit
-from dulwich.repo import Repo, NotGitRepository
+import pygit2
 
 import tiget
 from tiget.settings import settings
@@ -31,44 +30,27 @@ MemoryTree = namedtuple('MemoryTree', ['tree', 'childs', 'blobs'])
 class Transaction(object):
     def __init__(self):
         try:
-            repo = Repo(settings.core.repository_path)
-        except NotGitRepository:
+            repo = pygit2.Repository(settings.core.repository_path)
+        except KeyError:
             raise GitError('no git repository found')
         self.repo = repo
         self.ref = 'refs/heads/{}'.format(settings.core.branchname)
         try:
-            previous_commit_id = repo.refs[self.ref]
+            previous_commit_id = repo.lookup_reference(self.ref).oid
         except KeyError:
-            tree = Tree()
+            tree = []
             self.parents = []
             self.is_initialized = False
         else:
-            tree = repo.tree(repo.commit(previous_commit_id).tree)
+            tree = repo[previous_commit_id].tree
             self.parents = [previous_commit_id]
             self.is_initialized = True
         self.has_changes = False
         self.memory_tree = MemoryTree(tree, {}, {})
         self.messages = []
 
-    def get_config_variable(self, section, name):
-        c = self.repo.get_config_stack()
-        try:
-            return c.get(section, name).decode('utf-8')
-        except KeyError:
-            raise GitError(
-                '{}.{} not found in git config'.format(section, name))
-
-    @property
-    def author(self):
-        name = self.get_config_variable('user', 'name')
-        email = self.get_config_variable('user', 'email')
-        return u'{} <{}>'.format(name, email)
-
-    @property
-    def timezone(self):
-        if time.daylight and time.localtime().tm_isdst:
-            return time.altzone
-        return time.timezone
+    def config(self, name):
+        return self.repo.config[name]
 
     def split_path(self, path):
         return path.lstrip('/').split('/')
@@ -77,11 +59,11 @@ class Transaction(object):
         memory_tree = self.memory_tree
         for name in path:
             if not name in memory_tree.childs:
-                tree = Tree()
+                tree = []
                 if name in memory_tree.tree:
-                    p, tid = memory_tree.tree[name]
-                    if p & stat.S_IFDIR:
-                        tree = self.repo.tree(tid)
+                    entry = memory_tree.tree[name]
+                    if entry.attributes & stat.S_IFDIR:
+                        tree = entry.to_object()
                 memory_tree.childs[name] = MemoryTree(tree, {}, {})
             memory_tree = memory_tree.childs[name]
         return memory_tree
@@ -103,44 +85,54 @@ class Transaction(object):
         if filename in memory_tree.blobs:
             blob = memory_tree.blobs[filename]
         elif filename in memory_tree.tree:
-            perm, blob_id = memory_tree.tree[filename]
-            if perm & stat.S_IFREG:
-                blob = self.repo.get_blob(blob_id)
+            entry = memory_tree.tree[filename]
+            if entry.attributes & stat.S_IFREG:
+                blob = entry.to_object().data
         if not blob:
             raise GitError('blob not found')
-        return blob.data
+        return blob
 
     def set_blob(self, key, value):
         path = self.split_path(key)
         filename = path.pop()
         memory_tree = self.get_memory_tree(path)
-        memory_tree.blobs[filename] = Blob.from_string(value)
+        memory_tree.blobs[filename] = value
         self.has_changes = True
 
     def list_blobs(self, path):
         path = self.split_path(path)
         memory_tree = self.get_memory_tree(path)
-        names = set()
-        for entry in memory_tree.tree.items():
-            if entry.mode & stat.S_IFREG:
-                names.add(entry.path)
-        names.update(memory_tree.blobs.keys())
+        names = set(memory_tree.blobs.iterkeys())
+        for entry in memory_tree.tree:
+            if entry.attributes & stat.S_IFREG:
+                names.add(entry.name)
         return names
-
-    def _store_objects(self, memory_tree):
-        perm = stat.S_IFREG | 0644
-        for name, blob in memory_tree.blobs.iteritems():
-            self.repo.object_store.add_object(blob)
-            memory_tree.tree.add(name, perm, blob.id)
-        for name, child in memory_tree.childs.iteritems():
-            if not child.childs and not child.blobs:
-                continue
-            self._store_objects(child)
-            memory_tree.tree.add(name, stat.S_IFDIR, child.tree.id)
-        self.repo.object_store.add_object(memory_tree.tree)
 
     def add_message(self, message):
         self.messages += [message]
+
+    def _store_objects(self, memory_tree):
+        treebuilder = self.repo.TreeBuilder()
+        for entry in memory_tree.tree:
+            treebuilder.insert(entry.name, entry.oid, entry.attributes)
+        for name, content in memory_tree.blobs.iteritems():
+            blob_id = self.repo.create_blob(content)
+            treebuilder.insert(name, blob_id, stat.S_IFREG | 0644)
+        for name, child in memory_tree.childs.iteritems():
+            if not child.childs and not child.blobs:
+                continue
+            tree_id = self._store_objects(child)
+            treebuilder.insert(name, tree_id, stat.S_IFDIR)
+        return treebuilder.write()
+
+    @property
+    def author(self):
+        try:
+            name = self.config('user.name')
+            email = self.config('user.email')
+        except KeyError as e:
+            raise GitError('{} not found in git config'.format(e))
+        return pygit2.Signature(name, email)
 
     def commit(self, message=None):
         if not self.has_changes:
@@ -153,18 +145,11 @@ class Transaction(object):
         elif self.messages:
             message += u'\n\n' + u'\n'.join(self.messages)
 
-        self._store_objects(self.memory_tree)
+        tree_id = self._store_objects(self.memory_tree)
 
-        commit = Commit()
-        commit.tree = self.memory_tree.tree.id
-        commit.parents = self.parents
-        commit.author = commit.committer = self.author.encode('utf-8')
-        commit.author_time = commit.commit_time = int(time.time())
-        commit.author_timezone = commit.commit_timezone = -self.timezone
-        commit.encoding = 'UTF-8'
-        commit.message = message.encode('utf-8')
-        self.repo.object_store.add_object(commit)
-        self.repo.refs[self.ref] = commit.id
+        author = committer = self.author
+        self.repo.create_commit(
+            self.ref, author, committer, message, tree_id, self.parents, 'utf-8')
 
     def rollback(self):
         self.memory_tree = {}
@@ -216,15 +201,11 @@ class auto_transaction(object):
                 rollback()
 
 
-def find_repository_path(cwd=None):
-    if cwd is None:
-        cwd = os.getcwd()
-    head, tail = cwd, '.'
-    while tail:
-        if os.path.exists(os.path.join(head, '.git')):
-            return head
-        head, tail = os.path.split(head)
-    raise GitError('no git repository found')
+def find_repository_path(cwd='.'):
+    try:
+        return pygit2.discover_repository(cwd)
+    except KeyError:
+        raise GitError('no git repository found')
 
 
 @auto_transaction()

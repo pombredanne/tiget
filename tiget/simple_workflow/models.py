@@ -10,7 +10,7 @@ class User(Model):
     @auto_transaction()
     def current(cls, **kwargs):
         transaction = get_transaction()
-        return cls.get(email=transaction.get_config_variable('user', 'email'))
+        return cls.get(email=transaction.config('user.email'))
 
 
 class Milestone(Model):

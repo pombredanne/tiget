@@ -40,5 +40,5 @@ setup(
             'simple-workflow = tiget.simple_workflow',
         ],
     },
-    requires=['dulwich', 'ansicolors'],
+    requires=['pygit2', 'ansicolors'],
 )
