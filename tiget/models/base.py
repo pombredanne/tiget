@@ -58,24 +58,24 @@ class Model(object):
 
     def __init__(self, **kwargs):
         self._data = {name: f.default for name, f in self._fields.iteritems()}
-        self._update(**kwargs)
+        for key, value in self.normalize_kwargs(**kwargs).iteritems():
+            self._data[key] = self._fields[key].clean(value)
 
-    def _update(self, **kwargs):
+    @classmethod
+    def normalize_kwargs(cls, **kwargs):
         if 'pk' in kwargs:
-            kwargs[self._primary_key] = kwargs.pop('pk')
-        for key, value in kwargs.iteritems():
-            try:
-                field = self._fields[key]
-            except KeyError:
-                raise KeyError('invalid field "{}"'.format(key))
-            self._data[key] = field.loads(value)
+            kwargs[cls._primary_key] = kwargs.pop('pk')
+        for key in kwargs.iterkeys():
+            if not key in cls._fields:
+                raise KeyError(
+                    '{} has no field "{}"'.format(self.__class__.__name__, key))
+        return kwargs
 
     def __repr__(self):
         return '<{}: {}>'.format(self.__class__.__name__, self.pk)
 
-    def invalid_field(self, name):
-        message = '\'{}\' is an invalid field name for {}'
-        return TypeError(message.format(name, self.__class__.__name__))
+    def __unicode__(self):
+        return '{} {}'.format(self.__class__.__name__, self.pk)
 
     def dumps(self, include_hidden=False):
         content = OrderedDict()
@@ -89,7 +89,8 @@ class Model(object):
     def loads(self, s):
         try:
             content = loads(s)
-            self._update(**content)
+            for key, value in self.normalize_kwargs(**content).iteritems():
+                self._data[key] = self._fields[key].loads(value)
         except (ValueError, KeyError) as e:
             raise self.InvalidObject(e)
 
@@ -125,10 +126,10 @@ class Model(object):
         transaction = get_transaction()
         instance = cls(pk=pk)
         try:
-            blob = transaction.get_blob(instance.path).decode('utf-8')
+            content = transaction.get_blob(instance.path).decode('utf-8')
         except GitError:
             raise cls.DoesNotExist('{} does not exist'.format(cls.__name__))
-        instance.loads(blob)
+        instance.loads(content)
         return instance
 
     @classmethod
