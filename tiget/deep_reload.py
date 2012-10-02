@@ -1,4 +1,5 @@
 import sys
+from imp import reload
 from inspect import ismodule
 
 
@@ -19,7 +20,7 @@ def deep_reload(module):
     def _reload(mod):
         reloaded.add(mod)
         if mod.__name__.startswith(module.__name__):
-            for m in filter(ismodule, mod.__dict__.itervalues()):
+            for m in filter(ismodule, mod.__dict__.values()):
                 if _is_builtin(m) or m in reloaded:
                     continue
                 elif m.__name__.startswith(module.__name__ + '.'):

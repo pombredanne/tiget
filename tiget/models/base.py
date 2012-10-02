@@ -28,7 +28,7 @@ class ModelBase(type):
         fields.sort(key=lambda x: x[1].creation_counter)
         fields = OrderedDict(fields)
 
-        pk_fields = [f for f in fields.itervalues() if f.primary_key]
+        pk_fields = [f for f in fields.values() if f.primary_key]
         if len(pk_fields) > 1:
             raise RuntimeError('more than one primary key specified')
         elif not pk_fields:
@@ -40,7 +40,7 @@ class ModelBase(type):
         else:
             pk_field = pk_fields[0]
 
-        for name, field in fields.iteritems():
+        for name, field in fields.items():
             field.bind(name)
 
         attrs['_primary_key'] = pk_field.name
@@ -53,19 +53,17 @@ class ModelBase(type):
         return super_new(cls, cls_name, bases, attrs)
 
 
-class Model(object):
-    __metaclass__ = ModelBase
-
+class Model(object, metaclass=ModelBase):
     def __init__(self, **kwargs):
-        self._data = {name: f.default for name, f in self._fields.iteritems()}
-        for key, value in self.normalize_kwargs(**kwargs).iteritems():
+        self._data = {name: f.default for name, f in self._fields.items()}
+        for key, value in self.normalize_kwargs(**kwargs).items():
             self._data[key] = self._fields[key].clean(value)
 
     @classmethod
     def normalize_kwargs(cls, **kwargs):
         if 'pk' in kwargs:
             kwargs[cls._primary_key] = kwargs.pop('pk')
-        for key in kwargs.iterkeys():
+        for key in kwargs.keys():
             if not key in cls._fields:
                 raise KeyError(
                     '{} has no field "{}"'.format(self.__class__.__name__, key))
@@ -74,12 +72,12 @@ class Model(object):
     def __repr__(self):
         return '<{}: {}>'.format(self.__class__.__name__, self.pk)
 
-    def __unicode__(self):
+    def __str__(self):
         return '{} {}'.format(self.__class__.__name__, self.pk)
 
     def dumps(self, include_hidden=False):
         content = OrderedDict()
-        for name, field in self._fields.iteritems():
+        for name, field in self._fields.items():
             if field.hidden and not include_hidden:
                 continue
             value = self._data[name]
@@ -89,7 +87,7 @@ class Model(object):
     def loads(self, s):
         try:
             content = loads(s)
-            for key, value in self.normalize_kwargs(**content).iteritems():
+            for key, value in self.normalize_kwargs(**content).items():
                 self._data[key] = self._fields[key].loads(value)
         except (ValueError, KeyError) as e:
             raise self.InvalidObject(e)
@@ -104,7 +102,7 @@ class Model(object):
 
     @auto_transaction()
     def save(self):
-        for name, field in self._fields.iteritems():
+        for name, field in self._fields.items():
             try:
                 field.clean(self._data[name])
             except ValueError as e:
@@ -113,7 +111,7 @@ class Model(object):
         serialized = self.dumps(include_hidden=True)
         transaction.set_blob(self.path, serialized.encode('utf-8'))
         # TODO: create informative commit message
-        transaction.add_message(u'Edit {}'.format(self))
+        transaction.add_message('Edit {}'.format(self))
 
     @auto_transaction()
     def delete(self):
@@ -157,7 +155,7 @@ class Model(object):
         filtered = []
         # TODO: use incidces for filtering
         for obj in objs:
-            if all(obj._data[k] == v for k, v in kwargs.iteritems()):
+            if all(obj._data[k] == v for k, v in kwargs.items()):
                 filtered += [obj]
         return filtered
 

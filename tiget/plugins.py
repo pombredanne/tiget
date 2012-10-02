@@ -46,7 +46,7 @@ class Plugin(object):
     def add_models(self, models):
         from tiget.models import Model
         if ismodule(models):
-            for k, v in models.__dict__.iteritems():
+            for k, v in models.__dict__.items():
                 if not k.startswith('_') and isclass(v) and issubclass(v, Model):
                     self.add_model(v)
         else:
@@ -59,7 +59,7 @@ class Plugin(object):
     def add_cmds(self, cmds):
         from tiget.cmds import Cmd
         if ismodule(cmds):
-            for k, v in cmds.__dict__.iteritems():
+            for k, v in cmds.__dict__.items():
                 if not k.startswith('_') and isinstance(v, Cmd):
                     self.add_cmd(v)
         else:
@@ -70,7 +70,7 @@ class Plugin(object):
         self.cmds[cmd.name] = cmd
 
     def add_settings(self, **kwargs):
-        for name, variable in kwargs.iteritems():
+        for name, variable in kwargs.items():
             self.add_setting(name, variable)
 
     def add_setting(self, name, variable):

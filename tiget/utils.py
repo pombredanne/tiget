@@ -41,28 +41,27 @@ def get_termsize(fd=1):
     return TerminalGeometry(*geometry)
 
 
-RESERVED_CHARS = u'/\\|?*<>:+[]"\u0000%'
+RESERVED_CHARS = '/\\|?*<>:+[]"\u0000%'
 
 def quote_filename(name):
     quoted = ''
     for c in name:
         if c in RESERVED_CHARS:
-            for byte in c.encode('utf-8'):
+            for byte in c:
                 quoted += '%' + byte.encode('hex')
         else:
-            quoted += c.encode('utf-8')
+            quoted += c
     return quoted
 
 
 def unquote_filename(name):
-    raw = re.sub(r'%([\da-f]{2})', lambda m: m.group(1).decode('hex'), name)
-    return raw.decode('utf-8')
+    return re.sub(r'%([\da-f]{2})', lambda m: m.group(1).decode('hex'), name)
 
 
 def print_error(line):
     if settings.core.color:
         line = red(str(line))
-    print >> sys.stderr, line
+    print(line, file=sys.stderr)
 
 
 def post_mortem():
@@ -84,7 +83,7 @@ def load_file(filename):
         with auto_transaction():
             try:
                 transaction = get_transaction()
-                content = transaction.get_blob(filename[len('tiget:'):])
+                content = transaction.get_blob(filename[len('tiget:'):]).decode('utf-8')
             except GitError as e:
                 raise IOError('No such file: \'{}\''.format(filename))
     else:

@@ -2,7 +2,7 @@ import os
 import sys
 import readline
 import shlex
-from StringIO import StringIO
+from io import StringIO
 
 from colors import green
 
@@ -15,7 +15,7 @@ from tiget.utils import print_error, post_mortem, load_file
 
 class Script(object):
     def __init__(self, instream, infile, ignore_errors=False):
-        if isinstance(instream, basestring):
+        if isinstance(instream, str):
             instream = StringIO(instream)
         self.instream = instream
         self.infile = infile
@@ -24,7 +24,7 @@ class Script(object):
 
     @classmethod
     def from_file(cls, f):
-        if isinstance(f, basestring):
+        if isinstance(f, str):
             name = f
             f = load_file(f)
         else:
@@ -87,11 +87,10 @@ class Repl(Script):
         super(Repl, self).__init__(sys.stdin, '<repl>', ignore_errors=True)
 
     def complete(self, text, state):
-        cmds = []
-        for plugin in plugins.itervalues():
-            cmds += plugin.cmds.keys()
-        cmds += aliases.keys()
-        options = [cmd for cmd in cmds if cmd.startswith(text)]
+        cmds = set(aliases.keys())
+        for plugin in plugins.values():
+            cmds.update(plugin.cmds.keys())
+        options = list(sorted(cmd for cmd in cmds if cmd.startswith(text)))
         if state < len(options):
             return options[state] + ' '
         return None
@@ -102,12 +101,12 @@ class Repl(Script):
             prompt = green(prompt)
         readline.set_completer(self.complete)
         try:
-            line = raw_input(prompt).strip()
+            line = input(prompt).strip()
         except KeyboardInterrupt:
-            print '^C'
+            print('^C')
             raise
         except EOFError:
-            print 'quit'
+            print('quit')
             raise
         finally:
             readline.set_completer()
@@ -116,8 +115,8 @@ class Repl(Script):
         return line
 
     def run(self):
-        print 'tiget {}'.format(tiget.__version__)
-        print 'Type "help" for help'
-        print ''
+        print('tiget {}'.format(tiget.__version__))
+        print('Type "help" for help')
+        print('')
         readline.parse_and_bind('tab: complete')
         super(Repl, self).run()

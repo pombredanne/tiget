@@ -15,9 +15,9 @@ def ipython_cmd(opts):
         ipython
     """
     ns = {}
-    for plugin in plugins.itervalues():
+    for plugin in plugins.values():
         models = plugin.models
-        ns.update({model.__name__: model for model in models.itervalues()})
+        ns.update({model.__name__: model for model in models.values()})
     config = IPython.frontend.terminal.ipapp.load_default_config()
     config.InteractiveShellEmbed = config.TerminalInteractiveShell
     config.PromptManager.in_template = settings.ipython.prompt

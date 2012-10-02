@@ -5,39 +5,39 @@ from tiget.serializer import dumps, loads
 
 class TestSerializer(object):
     def test_loads_none(self):
-        data = loads(u'none: ')
+        data = loads('none: ')
         eq_(len(data), 1)
         eq_(data['none'], None)
 
     def test_loads_oneline(self):
-        data = loads(u'oneline: foo')
+        data = loads('oneline: foo')
         eq_(len(data), 1)
-        eq_(data['oneline'], u'foo')
+        eq_(data['oneline'], 'foo')
 
     def test_loads_multiline(self):
-        data = loads(u'multiline: foo\n    bar\n    baz')
+        data = loads('multiline: foo\n    bar\n    baz')
         eq_(len(data), 1)
-        eq_(data['multiline'], u'foo\nbar\nbaz')
+        eq_(data['multiline'], 'foo\nbar\nbaz')
 
     def test_loads_comment(self):
-        data = loads(u'# foo')
+        data = loads('# foo')
         eq_(len(data), 0)
 
     def test_loads_multiline_comment(self):
-        data = loads(u'# foo\n    bar\n    baz')
+        data = loads('# foo\n    bar\n    baz')
         eq_(len(data), 0)
 
     def test_loads_blankline(self):
-        data = loads(u'')
+        data = loads('')
         eq_(len(data), 0)
 
     def test_loads_blankline_with_space(self):
-        data = loads(u' ')
+        data = loads(' ')
         eq_(len(data), 0)
 
     @raises(ValueError)
     def test_loads_broken(self):
-        data = loads(u'I am broken')
+        data = loads('I am broken')
 
     def test_dumps_none(self):
         s = dumps({'none': None})

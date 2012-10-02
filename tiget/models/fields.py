@@ -61,7 +61,7 @@ class Field(object):
 
     def dumps(self, value):
         if not value is None:
-            value = unicode(value)
+            value = str(value)
         return value
 
     def loads(self, s):
@@ -80,7 +80,7 @@ class UUIDField(Field):
 
 
 class TextField(Field):
-    field_type = unicode
+    field_type = str
 
 
 class ForeignKey(Field):

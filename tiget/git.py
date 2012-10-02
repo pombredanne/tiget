@@ -102,7 +102,7 @@ class Transaction(object):
     def list_blobs(self, path):
         path = self.split_path(path)
         memory_tree = self.get_memory_tree(path)
-        names = set(memory_tree.blobs.iterkeys())
+        names = set(memory_tree.blobs.keys())
         for entry in memory_tree.tree:
             if entry.attributes & stat.S_IFREG:
                 names.add(entry.name)
@@ -115,10 +115,10 @@ class Transaction(object):
         treebuilder = self.repo.TreeBuilder()
         for entry in memory_tree.tree:
             treebuilder.insert(entry.name, entry.oid, entry.attributes)
-        for name, content in memory_tree.blobs.iteritems():
+        for name, content in memory_tree.blobs.items():
             blob_id = self.repo.create_blob(content)
-            treebuilder.insert(name, blob_id, stat.S_IFREG | 0644)
-        for name, child in memory_tree.childs.iteritems():
+            treebuilder.insert(name, blob_id, stat.S_IFREG | 0o644)
+        for name, child in memory_tree.childs.items():
             if not child.childs and not child.blobs:
                 continue
             tree_id = self._store_objects(child)
@@ -143,7 +143,7 @@ class Transaction(object):
                 raise GitError('no message for commit')
             message = '\n'.join(self.messages)
         elif self.messages:
-            message += u'\n\n' + u'\n'.join(self.messages)
+            message += '\n\n' + '\n'.join(self.messages)
 
         tree_id = self._store_objects(self.memory_tree)
 
@@ -212,7 +212,7 @@ def find_repository_path(cwd='.'):
 def init_repo():
     transaction = get_transaction(initialized=False)
 
-    version_string = u'{}\n'.format(tiget.__version__)
+    version_string = '{}\n'.format(tiget.__version__)
     transaction.set_blob('/config/VERSION', version_string.encode('utf-8'))
 
     req = Requirement.parse('tiget')
@@ -220,5 +220,5 @@ def init_repo():
         content = resource_string(req, 'tiget/config/{}'.format(filename))
         transaction.set_blob('/config/{}'.format(filename), content)
 
-    transaction.add_message(u'Initialize Repository')
+    transaction.add_message('Initialize Repository')
     transaction.is_initialized = True

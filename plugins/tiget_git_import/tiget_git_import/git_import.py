@@ -32,7 +32,7 @@ class GitImporter(object):
     def get_source(self, fullname):
         transaction = get_transaction()
         filename = self.get_filename(fullname, prefix=None)
-        return transaction.get_blob(filename) + '\n'
+        return transaction.get_blob(filename).decode('utf-8') + '\n'
 
     def get_code(self, fullname):
         source = self.get_source(fullname)

@@ -23,7 +23,7 @@ def alias_cmd(opts, *args):
     if not args:
         for alias in sorted(aliases.keys()):
             cmd = aliases[alias]
-            print '{}={}'.format(alias, list2cmdline([cmd]))
+            print('{}={}'.format(alias, list2cmdline([cmd])))
 
 
 @cmd()
@@ -49,7 +49,7 @@ def echo_cmd(opts, *args):
     SYNOPSIS
         echo ...
     """
-    print ' '.join(args)
+    print(' '.join(args))
 
 
 @cmd()
@@ -71,21 +71,21 @@ def help_cmd(opts, name=None):
             raise CmdError('no command named "{}"'.format(name))
         usage = cmd.usage
         if usage:
-            print usage
+            print(usage)
         else:
             raise CmdError('no usage information for command "{}"'.format(name))
     else:
-        for plugin in plugins.itervalues():
-            cmds = plugin.cmds.values()
+        for plugin in plugins.values():
+            cmds = list(plugin.cmds.values())
             if not cmds:
                 continue
-            print '[{}]'.format(plugin.name)
+            print('[{}]'.format(plugin.name))
             cmds.sort(key=lambda cmd: cmd.name)
             longest = max(len(cmd.name) for cmd in cmds)
             for cmd in cmds:
                 cmd_name = cmd.name.ljust(longest)
-                print '{} - {}'.format(cmd_name, cmd.help_text)
-            print ''
+                print('{} - {}'.format(cmd_name, cmd.help_text))
+            print('')
 
 
 @cmd()
@@ -120,10 +120,10 @@ def set_cmd(opts, *args):
         except (ValueError, KeyError) as e:
             raise CmdError(e)
     if not args:
-        for plugin in plugins.itervalues():
+        for plugin in plugins.values():
             if not plugin.settings:
                 continue
-            print '[{}]'.format(plugin.name)
+            print('[{}]'.format(plugin.name))
             for key in sorted(plugin.settings.keys()):
                 value = plugin.settings[key]
                 if value is True:
@@ -132,8 +132,8 @@ def set_cmd(opts, *args):
                     value = 'off'
                 else:
                     value = list2cmdline([value])
-                print '{}={}'.format(key, value)
-            print ''
+                print('{}={}'.format(key, value))
+            print('')
 
 
 @cmd()
@@ -163,4 +163,4 @@ def version_cmd(opts):
         Print the version. Can be used for version detection in command line
         scripts.
     """
-    print tiget.__version__
+    print(tiget.__version__)

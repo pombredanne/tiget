@@ -87,6 +87,6 @@ def list_cmd(opts, model):
                     raise CmdError( 'Field "{}" does not exist'.format(fname))
     table = Table(*fields.keys())
     for instance in model.all():
-        values = [f.dumps(instance._data[k]) for k, f in fields.iteritems()]
+        values = [f.dumps(instance._data[k]) for k, f in fields.items()]
         table.add_row(*values)
-    print table.render()
+    print(table.render())

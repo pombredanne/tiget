@@ -5,7 +5,7 @@ from subprocess import list2cmdline
 from tiget.script import Script, Repl
 from tiget.settings import settings
 from tiget.utils import print_error
-from tiget.git import GitError, find_repository_path
+from tiget.git import GitError, find_repository_path, auto_transaction, get_transaction
 
 
 def load_config():
@@ -13,8 +13,15 @@ def load_config():
         '/etc/tigetrc',
         'tiget:/config/tigetrc',
         os.path.expanduser('~/.tigetrc'),
-        os.path.join(settings.core.repository_path, '.tigetrc'),
     ]
+    try:
+        with auto_transaction():
+            transaction = get_transaction()
+            workdir = transaction.repo.workdir
+    except GitError:
+        pass
+    if workdir:
+        files.append(os.path.join(workdir, '.tigetrc'))
     for filename in files:
         try:
             Script.from_file(filename).run()

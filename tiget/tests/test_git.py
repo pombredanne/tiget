@@ -26,7 +26,8 @@ class GitTestcase(object):
 
     def assert_commit_count(self, count):
         cmd = 'git log --oneline {} | wc -l'.format(settings.core.branchname)
-        eq_(check_output(cmd, cwd=self.repo, shell=True), str(count) + '\n')
+        eq_(check_output(
+            cmd, cwd=self.repo, shell=True).decode('utf-8'), str(count) + '\n')
 
 
 class TestGit(GitTestcase):
@@ -52,8 +53,8 @@ class TestGit(GitTestcase):
         init_repo()
         with auto_transaction():
             transaction = get_transaction()
-            transaction.set_blob('/foo', u'bar'.encode('utf-8'))
-            transaction.add_message(u'foobar')
+            transaction.set_blob('/foo', 'bar'.encode('utf-8'))
+            transaction.add_message('foobar')
         self.assert_commit_count(2)
         self.assert_file_exists('foo')
 
@@ -64,6 +65,6 @@ class TestGit(GitTestcase):
         with assert_raises(TestException):
             with auto_transaction():
                 transaction = get_transaction()
-                transaction.set_blob('/foo', u'bar'.encode('utf-8'))
+                transaction.set_blob('/foo', 'bar'.encode('utf-8'))
                 raise TestException()
         self.assert_commit_count(1)

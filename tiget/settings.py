@@ -22,7 +22,7 @@ class BoolSetting(Setting):
 
 class StrSetting(Setting):
     def validate(self, value):
-        if not isinstance(value, basestring):
+        if not isinstance(value, str):
             raise ValueError('value must be a string')
         super(StrSetting, self).validate(value)
 

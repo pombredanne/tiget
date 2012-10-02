@@ -17,7 +17,7 @@ class Table(object):
 
     def add_row(self, *args):
         # FIXME: check number of arguments
-        args = map(lambda x: unicode(x or ''), args)
+        args = [str(x or '') for x in args]
         self.rows.append(args)
         for i, col in enumerate(args):
             lines = col.splitlines()
@@ -32,8 +32,8 @@ class Table(object):
         available_width = (
             get_termsize().cols -
             (len(self.col_width) - 1) * 3 - 4)
-        ratio = min(1, float(available_width) / unscaled)
-        widths = [max(1, int(math.floor(w * ratio))) for w in self.col_width]
+        ratio = min(1, available_width / unscaled)
+        widths = [max(1, math.floor(w * ratio)) for w in self.col_width]
 
         def _render_row(row, header=False):
             cells = []
@@ -45,12 +45,12 @@ class Table(object):
                 for cell, width, style in zip(cells, widths, self.styles):
                     if header:
                         style = CENTER
-                    value = style(cell.pop(0) if cell else u'', width)
+                    value = style(cell.pop(0) if cell else '', width)
                     values += [value]
-                lines += [u'| ' + u' | '.join(values) + u' |']
-            return u'\n'.join(lines) + u'\n'
+                lines += ['| ' + ' | '.join(values) + ' |']
+            return '\n'.join(lines) + '\n'
 
-        separator = u'+-' + u'-+-'.join(u'-' * w for w in widths) + u'-+\n'
+        separator = '+-' + '-+-'.join('-' * w for w in widths) + '-+\n'
 
         s = separator
         s += _render_row(self.columns, header=True)

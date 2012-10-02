@@ -5,7 +5,7 @@ from tiget.cmds.base import aliases, CmdError, cmd, Cmd
 
 def get_command(name):
     from tiget.plugins import plugins
-    for plugin in plugins.itervalues():
+    for plugin in plugins.values():
         try:
             cmd = plugin.cmds[name]
             break
