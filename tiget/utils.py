@@ -8,6 +8,7 @@ import subprocess
 import traceback
 from collections import namedtuple
 from tempfile import NamedTemporaryFile
+from binascii import hexlify, unhexlify
 
 from colors import red
 
@@ -47,15 +48,17 @@ def quote_filename(name):
     quoted = ''
     for c in name:
         if c in RESERVED_CHARS:
-            for byte in c:
-                quoted += '%' + byte.encode('hex')
+            for byte in c.encode('utf-8'):
+                quoted += '%{:02x}'.format(byte)
         else:
             quoted += c
     return quoted
 
 
 def unquote_filename(name):
-    return re.sub(r'%([\da-f]{2})', lambda m: m.group(1).decode('hex'), name)
+    def _replace(m):
+        return unhexlify(m.group(1).encode('ascii')).decode('utf-8')
+    return re.sub(r'%([\da-f]{2})', _replace, name)
 
 
 def print_error(line):

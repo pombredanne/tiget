@@ -34,6 +34,7 @@ class Cmd(object):
         try:
             self.fn(opts, *args)
         except TypeError:
+            # FIXME: may obscure other errors
             raise CmdError('{}: wrong number of arguments'.format(self.name))
         except CmdError as e:
             raise CmdError('{}: {}'.format(self.name, e))

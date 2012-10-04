@@ -72,7 +72,7 @@ class UUIDField(Field):
 
     def dumps(self, value):
         if not value is None:
-            return value.hex.decode('ascii')
+            return value.hex
         return None
 
 
