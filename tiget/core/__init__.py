@@ -7,7 +7,7 @@ __author__ = tiget.__author__
 __version__ = tiget.__version__
 
 
-def init_plugin(plugin):
+def load(plugin):
     from tiget.core import cmds
     plugin.add_cmds(cmds)
     plugin.add_settings(

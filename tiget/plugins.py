@@ -19,19 +19,19 @@ class Plugin(object):
         self.cmds = {}
         self.settings = Settings()
         try:
-            init_plugin = self.mod.init_plugin
+            load = self.mod.load
         except AttributeError:
             pass
         else:
-            init_plugin(self)
+            load(self)
 
     def unload(self):
         try:
-            del_plugin = self.mod.del_plugin
+            unload = self.mod.unload
         except AttributeError:
             pass
         else:
-            del_plugin(self)
+            unload(self)
 
     def reload(self):
         self.unload()

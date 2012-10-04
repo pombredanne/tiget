@@ -12,13 +12,13 @@ PATH_PREFIX = 'tiget-git-import:'
 DEFAULT_PATH = '{}/config'.format(PATH_PREFIX)
 
 
-def init_plugin(plugin):
+def load(plugin):
     sys.path_hooks.append(GitImporter)
     if not DEFAULT_PATH in sys.path:
         sys.path.append(DEFAULT_PATH)
 
 
-def del_plugin(plugin):
+def unload(plugin):
     if DEFAULT_PATH in sys.path:
         sys.path.remove(DEFAULT_PATH)
     sys.path_hooks.remove(GitImporter)
