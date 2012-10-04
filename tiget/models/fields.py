@@ -5,7 +5,6 @@ __all__ = ['UUIDField', 'TextField', 'ForeignKey']
 
 class Field(object):
     field_type = None
-    creation_counter = 0
 
     def __init__(
             self, hidden=False, null=False, primary_key=False, choices=None,
@@ -16,8 +15,6 @@ class Field(object):
         self.choices = choices
         self._default = default
         self._name = None
-        self.creation_counter = Field.creation_counter
-        Field.creation_counter += 1
 
     def __get__(self, instance, owner):
         if instance is None:

@@ -15,30 +15,37 @@ MODEL_EXCEPTIONS = (DoesNotExist, MultipleObjectsReturned, InvalidObject)
 
 
 class ModelBase(type):
+    @classmethod
+    def __prepare__(cls, name, bases):
+        parents = [b for b in bases if isinstance(b, ModelBase)]
+        if parents:
+            return OrderedDict()
+        return super(ModelBase, cls).__prepare__(name, bases)
+
     def __new__(cls, cls_name, bases, attrs):
         super_new = super(ModelBase, cls).__new__
         parents = [b for b in bases if isinstance(b, ModelBase)]
         if not parents:
             return super_new(cls, cls_name, bases, attrs)
 
-        fields = []
-        for k, v in attrs.items():
-            if isinstance(v, Field):
-                fields += [(k, v)]
-        fields.sort(key=lambda x: x[1].creation_counter)
-        fields = OrderedDict(fields)
+        pk_field = None
+        fields = OrderedDict()
+        for key, value in attrs.items():
+            if not isinstance(value, Field):
+                continue
+            fields[key] = value
+            if value.primary_key and pk_field is None:
+                pk_field = value
+            elif value.primary_key:
+                raise RuntimeError('more than one primary key specified')
 
-        pk_fields = [f for f in fields.values() if f.primary_key]
-        if len(pk_fields) > 1:
-            raise RuntimeError('more than one primary key specified')
-        elif not pk_fields:
+        if pk_field is None:
             id_field = UUIDField(
                 hidden=True, primary_key=True, default=lambda: uuid4())
             attrs['id'] = id_field
             fields['id'] = id_field
+            fields.move_to_end('id', last=False)
             pk_field = id_field
-        else:
-            pk_field = pk_fields[0]
 
         for name, field in fields.items():
             field.bind(name)
