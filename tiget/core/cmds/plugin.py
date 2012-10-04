@@ -1,5 +1,5 @@
 from tiget.cmds import cmd, CmdError
-from tiget.plugins import load_plugin, plugins
+from tiget.plugins import load_plugin, unload_plugin, reload_plugin
 
 
 @cmd()
@@ -25,10 +25,9 @@ def reload_cmd(opts, plugin_name):
         reload PLUGIN
     """
     try:
-        plugin = plugins[plugin_name]
+        reload_plugin(plugin_name)
     except KeyError:
         raise CmdError('no plugin "{}" loaded'.format(plugin_name))
-    plugin.reload()
 
 
 @cmd()
@@ -40,6 +39,6 @@ def unload_cmd(opts, plugin_name):
         unload PLUGIN
     """
     try:
-        del plugins[plugin_name]
+        unload_plugin(plugin_name)
     except KeyError:
         raise CmdError('no plugin "{}" loaded'.format(plugin_name))

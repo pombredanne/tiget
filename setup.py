@@ -36,6 +36,8 @@ setup(
             'tiget-setup-repository = tiget.setup_repository:main',
         ],
         'tiget.plugins': [
+            'core = tiget.core',
+            'importer = tiget.importer',
             'simple-workflow = tiget.simple_workflow',
         ],
     },

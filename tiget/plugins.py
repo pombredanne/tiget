@@ -12,17 +12,20 @@ class Plugin(object):
     def __init__(self, mod, name):
         self.mod = mod
         self.name = name
+        self.load()
+
+    def load(self):
         self.models = {}
         self.cmds = {}
         self.settings = Settings()
         try:
-            init_plugin = mod.init_plugin
+            init_plugin = self.mod.init_plugin
         except AttributeError:
             pass
         else:
             init_plugin(self)
 
-    def __del__(self):
+    def unload(self):
         try:
             del_plugin = self.mod.del_plugin
         except AttributeError:
@@ -31,9 +34,9 @@ class Plugin(object):
             del_plugin(self)
 
     def reload(self):
-        self.__del__()
-        mod = deep_reload(self.mod)
-        self.__init__(mod, self.name)
+        self.unload()
+        self.mod = deep_reload(self.mod)
+        self.load()
 
     @property
     def author(self):
@@ -121,13 +124,23 @@ class Settings(object):
         return self.variables.keys()
 
 
-def load_plugin(plugin_name):
-    for ep in pkg_resources.iter_entry_points('tiget.plugins', plugin_name):
+def load_plugin(name):
+    for ep in pkg_resources.iter_entry_points('tiget.plugins', name):
         mod = ep.load()
         name = ep.name
         break
     else:
-        mod = __import__(plugin_name, fromlist=['__name__'])
+        mod = __import__(name, fromlist=['__name__'])
         name = mod.__name__.rpartition('.')[2]
-
     plugins[name] = Plugin(mod, name)
+
+
+def unload_plugin(name):
+    plugin = plugins.pop(name)
+    plugin.unload()
+
+
+def reload_plugin(name):
+    plugin = plugins[name]
+    plugin.unload()
+    plugin.load()

@@ -1,9 +1,27 @@
 import imp
 import sys
 
+import tiget
 from tiget.git import auto_transaction, get_transaction, GitError
 
+__author__ = tiget.__author__
+__version__ = tiget.__version__
+
+
 PATH_PREFIX = 'tiget-git-import:'
+DEFAULT_PATH = '{}/config'.format(PATH_PREFIX)
+
+
+def init_plugin(plugin):
+    sys.path_hooks.append(GitImporter)
+    if not DEFAULT_PATH in sys.path:
+        sys.path.append(DEFAULT_PATH)
+
+
+def del_plugin(plugin):
+    if DEFAULT_PATH in sys.path:
+        sys.path.remove(DEFAULT_PATH)
+    sys.path_hooks.remove(GitImporter)
 
 
 class GitImporter(object):
