@@ -132,6 +132,8 @@ def load_plugin(name):
     else:
         mod = __import__(name, fromlist=['__name__'])
         name = mod.__name__.rpartition('.')[2]
+    if name in plugins:
+        raise ImportError('plugin "{}" is already loaded'.format(name))
     plugins[name] = Plugin(mod, name)
 
 
