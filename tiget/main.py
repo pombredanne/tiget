@@ -19,7 +19,7 @@ def load_config():
             transaction = get_transaction()
             workdir = transaction.repo.workdir
     except GitError:
-        pass
+        workdir = None
     if workdir:
         files.append(os.path.join(workdir, '.tigetrc'))
     for filename in files:
