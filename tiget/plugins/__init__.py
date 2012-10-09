@@ -3,6 +3,7 @@ from collections import OrderedDict
 from inspect import ismodule, isclass
 
 from tiget.deep_reload import deep_reload
+from tiget.plugins.settings import Settings
 
 
 plugins = OrderedDict()
@@ -78,50 +79,6 @@ class Plugin(object):
 
     def add_setting(self, name, variable):
         self.settings.variables[name] = variable
-
-
-class Settings(object):
-    def __init__(self):
-        self.variables = {}
-        self.data = {}
-
-    def __getattr__(self, key):
-        try:
-            return self[key]
-        except KeyError as e:
-            raise AttributeError(e)
-
-    def __setattr__(self, key, value):
-        if key in ('variables', 'data') or not key in self:
-            super(Settings, self).__setattr__(key, value)
-        else:
-            self[key] = value
-
-    def __getitem__(self, key):
-        try:
-            variable = self.variables[key]
-        except KeyError:
-            raise KeyError('invalid setting "{}"'.format(key))
-        if not key in self.data:
-            return variable.default
-        return self.data[key]
-
-    def __setitem__(self, key, value):
-        try:
-            variable = self.variables[key]
-        except KeyError:
-            raise KeyError('invalid setting "{}"'.format(key))
-        variable.validate(value)
-        self.data[key] = value
-
-    def __len__(self):
-        return len(self.variables)
-
-    def __contains__(self, key):
-        return key in self.variables
-
-    def keys(self):
-        return self.variables.keys()
 
 
 def load_plugin(name):

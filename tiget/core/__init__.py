@@ -1,7 +1,7 @@
 import sys
 
 import tiget
-from tiget.settings import StrSetting, BoolSetting
+from tiget.plugins.api import *
 
 __author__ = tiget.__author__
 __version__ = tiget.__version__

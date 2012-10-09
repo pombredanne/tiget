@@ -1,4 +1,4 @@
-from tiget.settings import StrSetting
+from tiget.plugins.api import *
 
 __author__ = 'Martin Natano <natano@natano.net>'
 __version__ = '0.1a0'
