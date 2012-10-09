@@ -2,7 +2,7 @@ import IPython
 
 import tiget
 from tiget.cmds import cmd
-from tiget.settings import settings
+from tiget.conf import settings
 from tiget.plugins import plugins
 
 

@@ -7,7 +7,7 @@ from io import StringIO
 from colors import green
 
 import tiget
-from tiget.settings import settings
+from tiget.conf import settings
 from tiget.plugins import plugins
 from tiget.cmds import aliases, CmdError, run
 from tiget.utils import print_error, post_mortem, load_file

@@ -12,7 +12,7 @@ from binascii import hexlify, unhexlify
 
 from colors import red
 
-from tiget.settings import settings
+from tiget.conf import settings
 from tiget.git import auto_transaction, get_transaction, GitError
 
 __all__ = [

@@ -1,7 +1,7 @@
 from subprocess import list2cmdline
 
 import tiget
-from tiget.settings import settings
+from tiget.conf import settings
 from tiget.plugins import plugins
 from tiget.cmds import get_command, aliases, cmd, CmdError
 

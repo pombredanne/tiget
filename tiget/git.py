@@ -8,7 +8,7 @@ from pkg_resources import Requirement, resource_listdir, resource_string
 import pygit2
 
 import tiget
-from tiget.settings import settings
+from tiget.conf import settings
 
 _transaction = None
 
