@@ -4,9 +4,12 @@ import textwrap
 __all__ = ['dumps', 'loads']
 
 SPLIT_ITEMS = re.compile(r'\n(?!\s)').split
-MATCH_ITEM = re.compile(
-    r'(?P<key>\w+):\s?(?P<value>.*?)$(?P<value2>.+)?',
-    re.MULTILINE | re.DOTALL).match
+MATCH_ITEM = re.compile(r'''
+    (?P<key>\w+):       # key
+    \s?
+    (?P<value>.*?)$     # first line
+    (?P<value2>.+)?     # optional continuation line(s)
+    ''', re.MULTILINE | re.DOTALL | re.VERBOSE).match
 
 
 def dumps(data):
