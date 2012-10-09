@@ -27,8 +27,7 @@ def loads(s):
         if not item.startswith('#') and item.strip():
             m = MATCH_ITEM(item)
             if not m:
-                raise ValueError(
-                    'syntax error on line {}'.format(lineno + 1))
+                raise ValueError('syntax error on line {}'.format(lineno + 1))
             value = m.group('value')
             value += textwrap.dedent(m.group('value2') or '')
             data[m.group('key')] = value or None
