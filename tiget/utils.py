@@ -57,8 +57,9 @@ def quote_filename(name):
 
 def unquote_filename(name):
     def _replace(m):
-        return unhexlify(m.group(1).encode('ascii')).decode('utf-8')
-    return re.sub(r'%([\da-f]{2})', _replace, name)
+        return unhexlify(
+            m.group(0).replace('%', '').encode('ascii')).decode('utf-8')
+    return re.sub(r'(%[\da-f]{2})+', _replace, name)
 
 
 def print_error(line):
