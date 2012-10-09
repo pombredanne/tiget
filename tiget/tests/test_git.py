@@ -26,8 +26,8 @@ class GitTestcase(object):
 
     def assert_commit_count(self, count):
         cmd = 'git log --oneline {} | wc -l'.format(settings.core.branchname)
-        eq_(check_output(
-            cmd, cwd=self.repo, shell=True).decode('utf-8'), str(count) + '\n')
+        output = check_output(cmd, cwd=self.repo, shell=True).decode('utf-8')
+        eq_(output.strip(), str(count))
 
 
 class TestGit(GitTestcase):
