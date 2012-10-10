@@ -18,10 +18,13 @@ def load_cmd(opts, plugin_name=None):
         except ImportError as e :
             raise CmdError(e)
     else:
-        print('Available plugins (plugins marked with * are loaded):')
-        for ep in pkg_resources.iter_entry_points('tiget.plugins'):
-            loaded = ep.name in plugins
-            print('[{}] {}'.format('*' if loaded else ' ', ep.name))
+        print('Available plugins:')
+        names = set(
+            ep.name for ep in pkg_resources.iter_entry_points('tiget.plugins'))
+        names.update(plugins.keys())
+        for name in sorted(names):
+            loaded = name in plugins
+            print('[{}] {}'.format('*' if loaded else ' ', name))
 
 
 @cmd()
