@@ -10,6 +10,7 @@ import pygit2
 import tiget
 from tiget.conf import settings
 
+
 _transaction = None
 
 
@@ -29,10 +30,9 @@ MemoryTree = namedtuple('MemoryTree', ['tree', 'childs', 'blobs'])
 
 class Transaction(object):
     def __init__(self):
-        try:
-            repo = pygit2.Repository(settings.core.repository_path)
-        except KeyError:
-            raise GitError('no git repository found')
+        repo = settings.core.repository
+        if repo is None:
+            raise GitError('core.repository is not set')
         self.repo = repo
         self.ref = 'refs/heads/{}'.format(settings.core.branchname)
         try:
@@ -201,11 +201,12 @@ class auto_transaction(object):
                 rollback()
 
 
-def find_repository_path(cwd='.'):
+def find_repository(cwd='.'):
     try:
-        return pygit2.discover_repository(cwd)
+        path = pygit2.discover_repository(cwd)
+        return pygit2.Repository(path)
     except KeyError:
-        raise GitError('no git repository found')
+        raise GitError('no repository found in "{}"'.format(cwd))
 
 
 @auto_transaction()

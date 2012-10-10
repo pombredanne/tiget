@@ -125,13 +125,7 @@ def set_cmd(opts, *args):
                 continue
             print('[{}]'.format(plugin.name))
             for key in sorted(plugin.settings.keys()):
-                value = plugin.settings[key]
-                if value is True:
-                    value = 'on'
-                elif value is False:
-                    value = 'off'
-                else:
-                    value = list2cmdline([value])
+                value = list2cmdline([plugin.settings.get_display(key)])
                 print('{}={}'.format(key, value))
             print('')
 

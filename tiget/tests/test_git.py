@@ -12,11 +12,10 @@ from tiget.git import init_repo, get_transaction, auto_transaction
 class GitTestcase(object):
     def setup(self):
         self.repo = mkdtemp()
-        settings.core.repository_path = self.repo
         check_call(['git', 'init', '--quiet'], cwd=self.repo)
+        settings.core.repository = self.repo
 
     def teardown(self):
-        git.repository_path = None
         shutil.rmtree(self.repo)
 
     def assert_file_exists(self, file):

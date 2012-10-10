@@ -5,7 +5,7 @@ from subprocess import list2cmdline
 from tiget.script import Script, Repl
 from tiget.conf import settings
 from tiget.utils import print_error
-from tiget.git import GitError, find_repository_path, auto_transaction, get_transaction
+from tiget.git import GitError, auto_transaction, get_transaction
 
 
 def load_config():
@@ -14,12 +14,7 @@ def load_config():
         'tiget:/config/tigetrc',
         os.path.expanduser('~/.tigetrc'),
     ]
-    try:
-        with auto_transaction():
-            transaction = get_transaction()
-            workdir = transaction.repo.workdir
-    except GitError:
-        workdir = None
+    workdir = settings.core.workdir
     if workdir:
         files.append(os.path.join(workdir, '.tigetrc'))
     for filename in files:
@@ -30,12 +25,7 @@ def load_config():
 
 
 def main():
-    try:
-        settings.core.repository_path = find_repository_path()
-        load_config()
-    except GitError as e:
-        print_error(e)
-        return 1
+    load_config()
 
     args = sys.argv[1:]
     if args:

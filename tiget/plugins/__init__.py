@@ -13,7 +13,6 @@ class Plugin(object):
     def __init__(self, mod, name):
         self.mod = mod
         self.name = name
-        self.load()
 
     def load(self):
         self.models = {}
@@ -91,7 +90,9 @@ def load_plugin(name):
         name = mod.__name__.rpartition('.')[2]
     if name in plugins:
         raise ImportError('plugin "{}" is already loaded'.format(name))
-    plugins[name] = Plugin(mod, name)
+    plugin = Plugin(mod, name)
+    plugins[name] = plugin
+    plugin.load()
 
 
 def unload_plugin(name):

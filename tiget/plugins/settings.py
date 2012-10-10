@@ -3,23 +3,37 @@ class Setting(object):
         self.default = default
         self.choices = choices
 
-    def validate(self, value):
+    def clean(self, value):
         if not self.choices is None and not value in self.choices:
             raise ValueError('value must be in {}'.format(self.choices))
+        return value
+
+    def format(self, value):
+        if value is None:
+            return '<null>'
+        return str(value)
 
 
 class BoolSetting(Setting):
-    def validate(self, value):
+    def clean(self, value):
         if not isinstance(value, bool):
             raise ValueError('value must be a boolean')
-        super().validate(value)
+        return super().clean(value)
+
+    def format(self, value):
+        if value is True:
+            return 'on'
+        elif value is False:
+            return 'off'
+        else:
+            return super().format(value)
 
 
 class StrSetting(Setting):
-    def validate(self, value):
+    def clean(self, value):
         if not isinstance(value, str):
             raise ValueError('value must be a string')
-        super().validate(value)
+        return super().clean(value)
 
 
 class Settings(object):
@@ -44,17 +58,14 @@ class Settings(object):
             variable = self.variables[key]
         except KeyError:
             raise KeyError('invalid setting "{}"'.format(key))
-        if not key in self.data:
-            return variable.default
-        return self.data[key]
+        return self.data.get(key, variable.default)
 
     def __setitem__(self, key, value):
         try:
             variable = self.variables[key]
         except KeyError:
             raise KeyError('invalid setting "{}"'.format(key))
-        variable.validate(value)
-        self.data[key] = value
+        self.data[key] = variable.clean(value)
 
     def __len__(self):
         return len(self.variables)
@@ -64,3 +75,11 @@ class Settings(object):
 
     def keys(self):
         return self.variables.keys()
+
+    def get_display(self, key):
+        try:
+            variable = self.variables[key]
+        except KeyError:
+            raise KeyError('invalid setting "{}"'.format(key))
+        value = self.data.get(key, variable.default)
+        return variable.format(value)

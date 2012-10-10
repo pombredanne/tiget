@@ -84,12 +84,13 @@ def post_mortem():
 
 def load_file(filename):
     if filename.startswith('tiget:'):
-        with auto_transaction():
-            try:
+        try:
+            with auto_transaction():
                 transaction = get_transaction()
-                content = transaction.get_blob(filename[len('tiget:'):]).decode('utf-8')
-            except GitError as e:
-                raise IOError('No such file: \'{}\''.format(filename))
+                name = filename[len('tiget:'):]
+                content = transaction.get_blob(name).decode('utf-8')
+        except GitError as e:
+            raise IOError('No such file: \'{}\''.format(filename))
     else:
         with open(filename) as f:
             content = f.read()
