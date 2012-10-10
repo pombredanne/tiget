@@ -14,9 +14,9 @@ def load_config():
         'tiget:/config/tigetrc',
         os.path.expanduser('~/.tigetrc'),
     ]
-    workdir = settings.core.workdir
-    if workdir:
-        files.append(os.path.join(workdir, '.tigetrc'))
+    repo = settings.core.repository
+    if repo and repo.workdir:
+        files.append(os.path.join(repo.workdir, '.tigetrc'))
     for filename in files:
         try:
             Script.from_file(filename).run()

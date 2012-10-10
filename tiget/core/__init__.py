@@ -22,17 +22,6 @@ class RepositorySetting(Setting):
         return super().format(None)
 
 
-class WorkdirSetting(Setting):
-    def clean(self, value):
-        raise ValueError('core.workdir is readonly')
-
-    def format(self, value):
-        repo = settings.core.repository
-        if repo:
-            return repo.workdir
-        return super().format(None)
-
-
 def load(plugin):
     from tiget.core import cmds
     plugin.add_cmds(cmds)
@@ -42,7 +31,6 @@ def load(plugin):
         color=BoolSetting(default=sys.stdout.isatty()),
         pdb_module=StrSetting(default='pdb'),
         repository=RepositorySetting(),
-        workdir=WorkdirSetting(),
     )
     try:
         settings.core.repository = '.'
