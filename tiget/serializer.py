@@ -20,10 +20,10 @@ def dumps(data):
     return s
 
 
-def loads(s):
+def loads(serialized):
     data = {}
     lineno = 0
-    for item in SPLIT_ITEMS(s):
+    for item in SPLIT_ITEMS(serialized):
         if not item.startswith('#') and item.strip():
             m = MATCH_ITEM(item)
             if not m:

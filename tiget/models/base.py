@@ -96,9 +96,9 @@ class Model(object, metaclass=ModelBase):
             data[field.name] = field.dumps(value)
         return serializer.dumps(data)
 
-    def loads(self, s):
+    def loads(self, serialized):
         try:
-            data = serializer.loads(s)
+            data = serializer.loads(serialized)
             for field_name, value in data.items():
                 field = self._meta.get_field(field_name)
                 setattr(self, field.attname, field.loads(value))
