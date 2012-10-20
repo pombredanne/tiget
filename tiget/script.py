@@ -84,7 +84,7 @@ class Script(object):
 
 class Repl(Script):
     def __init__(self):
-        super(Repl, self).__init__(sys.stdin, '<repl>', ignore_errors=True)
+        super().__init__(sys.stdin, '<repl>', ignore_errors=True)
 
     def complete(self, text, state):
         cmds = set(aliases.keys())
@@ -119,4 +119,4 @@ class Repl(Script):
         print('Type "help" for help')
         print('')
         readline.parse_and_bind('tab: complete')
-        super(Repl, self).run()
+        super().run()
