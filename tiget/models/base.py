@@ -85,9 +85,11 @@ class Model(object, metaclass=ModelBase):
 
     pk = property(_get_pk_val, _set_pk_val)
 
-    def dumps(self, include_hidden=False):
+    def dumps(self, include_hidden=False, include_pk=True):
         data = OrderedDict()
         for field in self._meta.fields:
+            if field.name == self._meta.pk.name and not include_pk:
+                continue
             if field.hidden and not include_hidden:
                 continue
             value = getattr(self, field.attname)
@@ -119,7 +121,7 @@ class Model(object, metaclass=ModelBase):
             except ValueError as e:
                 raise self.InvalidObject(e)
         transaction = get_transaction()
-        serialized = self.dumps(include_hidden=True)
+        serialized = self.dumps(include_hidden=True, include_pk=False)
         transaction.set_blob(self.path, serialized.encode('utf-8'))
         # TODO: create informative commit message
         transaction.add_message('Edit {}'.format(self))
