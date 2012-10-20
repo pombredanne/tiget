@@ -34,6 +34,6 @@ class Options(object):
     def _prepare(self):
         if not self.pk:
             id_field = UUIDField(
-                hidden=True, primary_key=True, default=lambda: uuid4())
+                primary_key=True, hidden=True, default=lambda: uuid4())
             self.model.add_to_class('id', id_field)
             self.fields.insert(0, self.fields.pop())

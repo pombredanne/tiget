@@ -91,27 +91,17 @@ class Model(object, metaclass=ModelBase):
             if field.hidden and not include_hidden:
                 continue
             value = getattr(self, field.attname)
-            data[field.attname] = field.dumps(value)
+            data[field.name] = field.dumps(value)
         return serializer.dumps(data)
 
     def loads(self, s):
         try:
             data = serializer.loads(s)
-            for field in self._meta.fields:
-                if field.attname in data:
-                    value = field.loads(data.pop(field.attname))
-                    setattr(self, field.attname, value)
-        except ValueError as e:
+            for field_name, value in data.items():
+                field = self._meta.get_field(field_name)
+                setattr(self, field.attname, field.loads(value))
+        except (ValueError, KeyError) as e:
             raise self.InvalidObject(e)
-        if data:
-            for prop in list(data.keys()):
-                try:
-                    if isinstance(getattr(self.__class__, prop), property):
-                        setattr(self, prop, data.pop(prop))
-                except AttributeError:
-                    pass
-            if data:
-                raise self.InvalidObject('invalid field \'{}\''.format(data[0]))
 
     @property
     def path(self):
