@@ -76,17 +76,15 @@ def list_cmd(opts, model):
     SYNOPSIS
         list [-f FIELDS] MODEL
     """
-    fields = model._fields
+    fields = model._meta.fields
     for opt, arg in opts:
         if opt == '-f':
-            fields = OrderedDict()
-            for fname in arg.split(','):
-                try:
-                    fields[fname] = model._fields[fname]
-                except KeyError as e:
-                    raise CmdError( 'Field "{}" does not exist'.format(fname))
-    table = Table(*fields.keys())
+            try:
+                fields = [model._meta.get_field(f) for f in arg.split(',')]
+            except KeyError as e:
+                raise CmdError(e)
+    table = Table(*(f.name for f in fields))
     for instance in model.all():
-        values = [f.dumps(instance._data[k]) for k, f in fields.items()]
+        values = [f.dumps(getattr(instance, f.attname)) for f in fields]
         table.add_row(*values)
     print(table.render())

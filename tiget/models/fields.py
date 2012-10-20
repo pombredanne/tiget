@@ -8,39 +8,28 @@ class Field(object):
 
     def __init__(
             self, hidden=False, null=False, primary_key=False, choices=None,
-            default=None):
+            default=None, name=None):
         self.hidden = hidden
         self.null = null
         self.primary_key = primary_key
         self.choices = choices
-        self._default = default
-        self._name = None
+        self.default = default
+        self.name = name
 
-    def __get__(self, instance, owner):
-        if instance is None:
-            return self
-        return instance._data[self.name]
+    def contribute_to_class(self, cls, name):
+        if not self.name:
+            self.name = name
+        self.attname = self.get_attname()
+        self.model = cls
+        cls._meta.add_field(self)
 
-    def __set__(self, instance, value):
-        instance._data[self.name] = self.clean(value)
+    def get_attname(self):
+        return self.name
 
-    @property
-    def name(self):
-        if not self._name:
-            raise RuntimeError('{} is not bound'.format(self.name))
-        return self._name
-
-    def bind(self, name):
-        if self._name:
-            raise RuntimeError('{} is already bound'.format(self.name))
-        self._name = name
-
-    @property
-    def default(self):
-        default = self._default
-        if hasattr(default, '__call__'):
-            default = default()
-        return default
+    def get_default(self):
+        if callable(self.default):
+            return self.default()
+        return self.default
 
     def clean(self, value):
         if value is None:
@@ -87,8 +76,8 @@ class ForeignKey(Field):
 
     def dumps(self, value):
         if not value is None:
-            pk_field = value._fields[value._primary_key]
-            return pk_field.dumps(value._data[value._primary_key])
+            pk_field = value._meta.pk
+            return pk_field.dumps(value.pk)
         return None
 
     def loads(self, s):
