@@ -4,6 +4,7 @@ from tiget import serializer
 from tiget.git import auto_transaction, get_transaction, GitError
 from tiget.utils import quote_filename, unquote_filename
 from tiget.models.options import Options
+from tiget.models.fields import ForeignKey
 
 
 class DoesNotExist(Exception): pass
@@ -55,11 +56,14 @@ class Model(object, metaclass=ModelBase):
     def __init__(self, **kwargs):
         self._data = {}
         for field in self._meta.fields:
+            attname = field.attname
+            if isinstance(field, ForeignKey):
+                attname = field.name
             try:
-                val = kwargs.pop(field.attname)
+                val = kwargs.pop(attname)
             except KeyError:
                 val = field.get_default()
-            setattr(self, field.attname, val)
+            setattr(self, attname, val)
         if kwargs:
             for prop in list(kwargs.keys()):
                 try:
@@ -117,7 +121,7 @@ class Model(object, metaclass=ModelBase):
     def save(self):
         for field in self._meta.fields:
             try:
-                field.clean(getattr(self, field.attname))
+                field.validate(getattr(self, field.attname))
             except ValueError as e:
                 raise self.InvalidObject(e)
         transaction = get_transaction()
@@ -181,6 +185,14 @@ class Model(object, metaclass=ModelBase):
             raise cls.DoesNotExist('{} does not exist'.format(cls.__name__))
         else:
             raise cls.MultipleObjectsReturned()
+
+    @classmethod
+    def exists(cls, **kwargs):
+        try:
+            cls.get(**kwargs)
+            return True
+        except cls.DoesNotExist:
+            return False
 
     def __eq__(self, other):
         return isinstance(other, self.__class__) and self.pk == other.pk
