@@ -2,7 +2,6 @@ from collections import OrderedDict
 
 from tiget import serializer
 from tiget.git import auto_transaction, get_transaction
-from tiget.utils import quote_filename
 from tiget.models.options import Options
 from tiget.models.manager import Manager
 from tiget.models.fields import ForeignKey
@@ -120,7 +119,7 @@ class Model(object, metaclass=ModelBase):
         if pk is None:
             raise ValueError('pk must not be None')
         pk = self._meta.pk.dumps(self.pk)
-        return '/{}/{}'.format(self._meta.storage_name, quote_filename(pk))
+        return [self._meta.storage_name, pk]
 
     @auto_transaction()
     def save(self):

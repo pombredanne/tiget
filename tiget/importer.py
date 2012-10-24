@@ -37,7 +37,7 @@ class GitImporter(object):
         base = '/'.join([self.path, shortname])
         for ext in ('/__init__.py', '.py'):
             filename = base + ext
-            if transaction.exists(filename):
+            if transaction.exists(filename.strip('/').split('/')):
                 if prefix:
                     filename = prefix + filename
                 return filename
@@ -48,27 +48,26 @@ class GitImporter(object):
 
     @auto_transaction()
     def get_source(self, fullname):
-        transaction = get_transaction()
-        filename = self.get_filename(fullname, prefix=None)
-        return transaction.get_blob(filename).decode('utf-8') + '\n'
+        path = self.get_filename(fullname, prefix=None).strip('/').split('/')
+        return get_transaction().get_blob(path).decode('utf-8') + '\n'
 
+    @auto_transaction()
     def get_code(self, fullname):
         source = self.get_source(fullname)
         filename = self.get_filename(fullname)
         return compile(source, filename, 'exec')
 
-    @auto_transaction()
     def find_module(self, fullname, path=True):
         try:
             self.get_filename(fullname)
         except ImportError:
             return None
-        else:
-            return self
+        return self
 
     def load_module(self, fullname):
-        code = self.get_code(fullname)
-        is_pkg = self.is_package(fullname)
+        with auto_transaction():
+            code = self.get_code(fullname)
+            is_pkg = self.is_package(fullname)
         is_reload = fullname in sys.modules
         mod = sys.modules.setdefault(fullname, imp.new_module(fullname))
         mod.__file__ = code.co_filename

@@ -1,5 +1,4 @@
 from tiget.git import auto_transaction, get_transaction, GitError
-from tiget.utils import unquote_filename
 
 
 class Manager(object):
@@ -19,10 +18,9 @@ class Manager(object):
 
     @auto_transaction()
     def all(self):
-        path = '/{}'.format(self.model._meta.storage_name)
         instances = []
-        for pk in get_transaction().list_blobs(path):
-            pk = self.model._meta.pk.loads(unquote_filename(pk))
+        for pk in get_transaction().list_blobs([self.model._meta.storage_name]):
+            pk = self.model._meta.pk.loads(pk)
             instances += [self._fetch(pk)]
         return instances
 

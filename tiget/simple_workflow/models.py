@@ -1,5 +1,5 @@
 from tiget.models import Model, TextField, ForeignKey
-from tiget.git import auto_transaction, get_transaction
+from tiget.git import get_config
 
 
 class User(Model):
@@ -7,9 +7,8 @@ class User(Model):
     name = TextField(null=True)
 
     @classmethod
-    @auto_transaction()
     def current(cls, **kwargs):
-        return cls.objects.get(email=get_transaction().config('user.email'))
+        return cls.objects.get(email=get_config('user.email'))
 
 
 class Milestone(Model):

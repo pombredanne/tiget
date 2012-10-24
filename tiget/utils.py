@@ -1,14 +1,11 @@
 import os
 import sys
-import re
 import fcntl
 import termios
 import struct
-import subprocess
 import traceback
 from collections import namedtuple
 from tempfile import NamedTemporaryFile
-from binascii import hexlify, unhexlify
 
 from colors import red
 
@@ -16,8 +13,7 @@ from tiget.conf import settings
 from tiget.git import auto_transaction, get_transaction, GitError
 
 __all__ = [
-    'open_in_editor', 'get_termsize', 'quote_filename', 'unquote_filename',
-    'print_error', 'post_mortem', 'load_file',
+    'open_in_editor', 'get_termsize', 'print_error', 'post_mortem', 'load_file',
 ]
 
 
@@ -40,26 +36,6 @@ def get_termsize(fd=1):
     except IOError:
         geometry = (25, 80)
     return TerminalGeometry(*geometry)
-
-
-RESERVED_CHARS = '/\\|?*<>:+[]"\u0000%'
-
-def quote_filename(name):
-    quoted = ''
-    for c in name:
-        if c in RESERVED_CHARS:
-            for byte in c.encode('utf-8'):
-                quoted += '%{:02x}'.format(byte)
-        else:
-            quoted += c
-    return quoted
-
-
-def unquote_filename(name):
-    def _replace(m):
-        return unhexlify(
-            m.group(0).replace('%', '').encode('ascii')).decode('utf-8')
-    return re.sub(r'(%[\da-f]{2})+', _replace, name)
 
 
 def print_error(line):
@@ -86,8 +62,8 @@ def load_file(filename):
     if filename.startswith('tiget:'):
         try:
             with auto_transaction():
-                name = filename[len('tiget:'):]
-                content = get_transaction().get_blob(name).decode('utf-8')
+                path = filename[len('tiget:'):].strip('/').split('/')
+                content = get_transaction().get_blob(path).decode('utf-8')
         except GitError as e:
             raise IOError('No such file: \'{}\''.format(filename))
     else:
