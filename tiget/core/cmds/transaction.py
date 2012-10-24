@@ -1,4 +1,4 @@
-from tiget.git import begin, commit, rollback, GitError
+from tiget.git import transaction, GitError
 from tiget.cmds import cmd, CmdError
 
 
@@ -11,7 +11,7 @@ def begin_cmd(opts):
         begin
     """
     try:
-        begin()
+        transaction.begin()
     except GitError as e:
         raise CmdError(e)
 
@@ -25,7 +25,7 @@ def commit_cmd(opts, message=None):
         commit [MESSAGE]
     """
     try:
-        commit(message)
+        transaction.commit(message)
     except GitError as e:
         raise CmdError(e)
 
@@ -39,6 +39,6 @@ def rollback_cmd(opts):
         rollback
     """
     try:
-        rollback()
+        transaction.rollback()
     except GitError as e:
         raise CmdError(e)
