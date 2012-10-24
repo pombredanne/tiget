@@ -52,7 +52,7 @@ class TestGit(GitTestcase):
         init_repo()
         with auto_transaction():
             transaction = get_transaction()
-            transaction.set_blob('/foo', 'bar'.encode('utf-8'))
+            transaction.set_blob(['foo'], 'bar'.encode('utf-8'))
             transaction.add_message('foobar')
         self.assert_commit_count(2)
         self.assert_file_exists('foo')
@@ -64,6 +64,6 @@ class TestGit(GitTestcase):
         with assert_raises(TestException):
             with auto_transaction():
                 transaction = get_transaction()
-                transaction.set_blob('/foo', 'bar'.encode('utf-8'))
+                transaction.set_blob(['foo'], 'bar'.encode('utf-8'))
                 raise TestException()
         self.assert_commit_count(1)
