@@ -32,7 +32,7 @@ def init_repo():
 
     req = Requirement.parse('tiget')
     tigetrc = resource_string(req, 'tiget/config/tigetrc')
-    transaction.set_blob(['config', filename], content)
+    transaction.set_blob(['config', 'tigetrc'], tigetrc)
 
     transaction.add_message('Initialize Repository')
     transaction.is_initialized = True
