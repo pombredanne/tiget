@@ -79,7 +79,7 @@ class ForeignKeyDescriptor(object):
             if pk is None:
                 obj = None
             else:
-                obj = self.field.target.get(pk=pk)
+                obj = self.field.target.objects.get(pk=pk)
             self._cache = obj
         return self._cache
 
@@ -109,7 +109,7 @@ class ForeignKey(Field):
         return '_'.join([self.name, self.target._meta.pk.attname])
 
     def validate(self, value):
-        if not value is None and not self.target.exists(pk=value):
+        if not value is None and not self.target.objects.exists(pk=value):
             target_name = self.target.__name__
             raise ValueError(
                 '{} with pk={} does not exist'.format(target_name, repr(value)))

@@ -86,9 +86,8 @@ def load_file(filename):
     if filename.startswith('tiget:'):
         try:
             with auto_transaction():
-                transaction = get_transaction()
                 name = filename[len('tiget:'):]
-                content = transaction.get_blob(name).decode('utf-8')
+                content = get_transaction().get_blob(name).decode('utf-8')
         except GitError as e:
             raise IOError('No such file: \'{}\''.format(filename))
     else:

@@ -9,8 +9,7 @@ class User(Model):
     @classmethod
     @auto_transaction()
     def current(cls, **kwargs):
-        transaction = get_transaction()
-        return cls.get(email=transaction.config('user.email'))
+        return cls.objects.get(email=get_transaction().config('user.email'))
 
 
 class Milestone(Model):

@@ -55,7 +55,7 @@ def edit_cmd(opts, model, pk):
         Edit MODEL instance with primary key PK.
     """
     try:
-        instance = model.get(pk=pk)
+        instance = model.objects.get(pk=pk)
     except model.DoesNotExist as e:
         raise CmdError(e)
     try:
@@ -84,7 +84,7 @@ def list_cmd(opts, model):
             except KeyError as e:
                 raise CmdError(e)
     table = Table(*(f.name for f in fields))
-    for instance in model.all():
+    for instance in model.objects.all():
         values = [f.dumps(getattr(instance, f.attname)) for f in fields]
         table.add_row(*values)
     print(table.render())

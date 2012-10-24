@@ -1,9 +1,10 @@
 from collections import OrderedDict
 
 from tiget import serializer
-from tiget.git import auto_transaction, get_transaction, GitError
-from tiget.utils import quote_filename, unquote_filename
+from tiget.git import auto_transaction, get_transaction
+from tiget.utils import quote_filename
 from tiget.models.options import Options
+from tiget.models.manager import Manager
 from tiget.models.fields import ForeignKey
 
 
@@ -34,6 +35,11 @@ class ModelBase(type):
         opts = Options(attrs.pop('Meta', None))
         new_class.add_to_class('_meta', opts)
 
+        manager = attrs.pop('objects', None)
+        if manager is None:
+            manager = Manager()
+        new_class.add_to_class('objects', manager)
+
         for exc_class in MODEL_EXCEPTIONS:
             name = exc_class.__name__
             exc_class = type(name, (exc_class,), {'__module__': module})
@@ -54,7 +60,6 @@ class ModelBase(type):
 
 class Model(object, metaclass=ModelBase):
     def __init__(self, **kwargs):
-        self._data = {}
         for field in self._meta.fields:
             attname = field.attname
             if isinstance(field, ForeignKey):
@@ -132,67 +137,7 @@ class Model(object, metaclass=ModelBase):
 
     @auto_transaction()
     def delete(self):
-        raise NotImplementedError
-
-    @classmethod
-    @auto_transaction()
-    def get_obj(cls, pk):
-        pk = cls._meta.pk.loads(pk)
-        transaction = get_transaction()
-        instance = cls(pk=pk)
-        try:
-            content = transaction.get_blob(instance.path).decode('utf-8')
-        except GitError:
-            raise cls.DoesNotExist('{} does not exist'.format(cls.__name__))
-        instance.loads(content)
-        return instance
-
-    @classmethod
-    @auto_transaction()
-    def all(cls):
-        transaction = get_transaction()
-        path = '/{}'.format(cls._meta.storage_name)
-        instances = []
-        for pk in transaction.list_blobs(path):
-            instances += [cls.get_obj(unquote_filename(pk))]
-        return instances
-
-    @classmethod
-    def filter(cls, **kwargs):
-        if 'pk' in kwargs:
-            kwargs[cls._meta.pk.attname] = kwargs.pop('pk')
-        pk = kwargs.pop(cls._meta.pk.attname, None)
-        if not pk is None:
-            try:
-                objs = [cls.get_obj(pk)]
-            except cls.DoesNotExist:
-                objs = []
-        else:
-            objs = cls.all()
-        filtered = []
-        # TODO: use incidces for filtering
-        for obj in objs:
-            if all(obj._data[k] == v for k, v in kwargs.items()):
-                filtered += [obj]
-        return filtered
-
-    @classmethod
-    def get(cls, **kwargs):
-        objs = cls.filter(**kwargs)
-        if len(objs) == 1:
-            return objs[0]
-        elif not objs:
-            raise cls.DoesNotExist('{} does not exist'.format(cls.__name__))
-        else:
-            raise cls.MultipleObjectsReturned()
-
-    @classmethod
-    def exists(cls, **kwargs):
-        try:
-            cls.get(**kwargs)
-            return True
-        except cls.DoesNotExist:
-            return False
+        raise NotImplementedError()
 
     def __eq__(self, other):
         return isinstance(other, self.__class__) and self.pk == other.pk
