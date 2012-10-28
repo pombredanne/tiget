@@ -30,7 +30,7 @@ class Cmd(object):
         try:
             opts, args = getopt(argv, self.options)
         except GetoptError as e:
-            raise self.error(e)
+            raise CmdError(e)
         try:
             self.fn(opts, *args)
         except TypeError:
