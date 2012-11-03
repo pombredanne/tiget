@@ -18,7 +18,7 @@ class Query(object):
             return other
         return AndQuery(self, other)
 
-    def __not__(self):
+    def __invert__(self):
         return NotQuery(self)
 
     def __repr__(self):
