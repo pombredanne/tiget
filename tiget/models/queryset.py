@@ -1,63 +1,60 @@
-from tiget.git import auto_transaction, get_transaction, GitError
+from tiget.git import auto_transaction
+from tiget.models.query import Query
 
 
 class QuerySet(object):
-    def __init__(self, model):
+    def __init__(self, model, query=None):
         self.model = model
-        self._match = lambda pk: True
-        self._obj_cache = {}
+        if query is None:
+            query = Query(model)
+        self.query = query
 
-    @auto_transaction()
-    def _fetch(self, pk):
-        if pk in self._obj_cache:
-            return self._obj_cache[pk]
-        instance = self.model(pk=pk)
-        try:
-            content = get_transaction().get_blob(instance.path).decode('utf-8')
-        except GitError:
+    def __iter__(self):
+        obj_cache = {}
+        with auto_transaction():
+            for pk in self.query.execute(obj_cache):
+                yield self.query._fetch(pk, obj_cache)
+
+    def __or__(self, other):
+        return QuerySet(self.model, self.query | other.query)
+
+    def __and__(self, other):
+        return QuerySet(self.model, self.query & other.query)
+
+    def __not__(self):
+        return QuerySet(self.model, ~self.query)
+
+    def filter(self, **conditions):
+        query = self.query & Query(self.model, **conditions)
+        return QuerySet(self.model, query)
+
+    def exclude(self, **conditions):
+        query = self.query & ~Query(self.model, **conditions)
+        return QuerySet(self.model, query)
+
+    def get(self):
+        found = False
+        for obj in self:
+            if not found:
+                found = True
+            else:
+                raise self.model.MultipleObjectsReturned()
+        if not found:
             raise self.model.DoesNotExist()
-        instance.loads(content)
-        self._obj_cache[pk] = instance
-        return instance
+        return obj
 
-    @auto_transaction()
-    def all(self):
-        instances = []
-        for pk in get_transaction().list_blobs([self.model._meta.storage_name]):
-            pk = self.model._meta.pk.loads(pk)
-            instances += [self._fetch(pk)]
-        return instances
+    def exists(self):
+        with auto_transaction():
+            for pk in self.query.execute():
+                return True
+        return False
 
-    def filter(self, **kwargs):
-        if 'pk' in kwargs:
-            kwargs[self.model._meta.pk.attname] = kwargs.pop('pk')
-        pk = kwargs.pop(self.model._meta.pk.attname, None)
-        if not pk is None:
-            pk = self.model._meta.pk.loads(pk)
-            try:
-                objs = [self._fetch(pk)]
-            except self.model.DoesNotExist:
-                objs = []
-        else:
-            objs = self.all()
-        filtered = []
-        # TODO: use indices for filtering
-        for obj in objs:
-            if all(getattr(obj, k) == v for k, v in kwargs.items()):
-                filtered += [obj]
-        return filtered
+    def count(self):
+        count = 0
+        for pk in self.query.execute():
+            count += 1
+        return count
 
-    def get(self, **kwargs):
-        objs = self.filter(**kwargs)
-        if len(objs) == 1:
-            return objs[0]
-        elif not objs:
-            raise self.model.DoesNotExist()
-        else:
-            raise self.model.MultipleObjectsReturned()
-
-    def exists(self, **kwargs):
-        return bool(self.filter(**kwargs))
-
-    def count(self, **kwargs):
-        return len(self.filter(**kwargs))
+    def order_by(self, *order_by):
+        # TODO: implement
+        return self
