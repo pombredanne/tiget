@@ -22,10 +22,9 @@ class Query(object):
         return NotQuery(self)
 
     def __repr__(self):
-        if not self.conditions:
-            return '()'
-        return ' AND '.join(
+        conditions = ' AND '.join(
             '{}={!r}'.format(k, v) for k, v in self.conditions.items())
+        return '({})'.format(conditions)
 
     @auto_transaction()
     def _fetch(self, pk, obj_cache):
@@ -60,6 +59,9 @@ class NotQuery(Query):
     def __init__(self, subquery):
         self.subquery = subquery
 
+    def __repr__(self):
+        return '(NOT {!r})'.format(self.subquery)
+
     def match(self, *arg, **kwargs):
         return not self.subquery.match(*args, **kwargs)
 
@@ -72,7 +74,8 @@ class AndQuery(Query):
         return AndQuery(other, *self.subqueries)
 
     def __repr__(self):
-        return ' AND '.join('({!r})'.format(query) for query in self.subqueries)
+        r = ' AND '.join('{!r}'.format(query) for query in self.subqueries)
+        return '({})'.format(r)
 
     def match(self, *args, **kwargs):
         return all(query.match(*args, **kwargs) for query in self.subqueries)
@@ -86,7 +89,8 @@ class OrQuery(Query):
         return OrQuery(other, *self.subqueries)
 
     def __repr__(self):
-        return ' OR '.join('({!r})'.format(query) for query in self.subqueries)
+        r =' OR '.join('{!r}'.format(query) for query in self.subqueries)
+        return '({})'.format(r)
 
     def match(self, *args, **kwargs):
         return any(query.match(*args, **kwargs) for query in self.subqueries)
