@@ -157,7 +157,9 @@ def rollback():
 
 
 def get_transaction(initialized=True):
-    if initialized and not _transaction.is_initialized:
+    if _transaction is None:
+        raise GitError('no transaction running')
+    elif initialized and not _transaction.is_initialized:
         raise GitError('repository is not initialized; use tiget-setup-repository')
     elif not initialized and _transaction.is_initialized:
         raise GitError('repository is initialized')
