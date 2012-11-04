@@ -1,4 +1,3 @@
-from tiget.git import auto_transaction, get_transaction, GitError
 from tiget.models.queryset import QuerySet
 
 

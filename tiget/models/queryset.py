@@ -1,5 +1,5 @@
 from tiget.git import auto_transaction
-from tiget.models.query import Query
+from tiget.models.query import Query, ObjCache
 
 
 class QuerySet(object):
@@ -9,12 +9,6 @@ class QuerySet(object):
             query = Query(model)
         self.query = query
 
-    def __iter__(self):
-        obj_cache = {}
-        with auto_transaction():
-            for pk in self.query.execute(obj_cache):
-                yield self.query._fetch(pk, obj_cache)
-
     def __or__(self, other):
         return QuerySet(self.model, self.query | other.query)
 
@@ -23,6 +17,12 @@ class QuerySet(object):
 
     def __not__(self):
         return QuerySet(self.model, ~self.query)
+
+    def __iter__(self):
+        obj_cache = ObjCache(self.model)
+        with auto_transaction():
+            for pk in self.query.execute(self.model, obj_cache):
+                yield obj_cache[pk]
 
     def filter(self, **conditions):
         query = self.query & Query(self.model, **conditions)
@@ -43,17 +43,13 @@ class QuerySet(object):
             raise self.model.DoesNotExist()
         return obj
 
+    @auto_transaction()
     def exists(self):
-        with auto_transaction():
-            for pk in self.query.execute():
-                return True
-        return False
+        return any(True for _ in self.query.execute(self.model))
 
+    @auto_transaction()
     def count(self):
-        count = 0
-        for pk in self.query.execute():
-            count += 1
-        return count
+        return sum(1 for _ in self.query.execute(self.model))
 
     def order_by(self, *order_by):
         # TODO: implement
