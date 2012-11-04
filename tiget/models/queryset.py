@@ -20,9 +20,8 @@ class QuerySet(object):
 
     def __iter__(self):
         obj_cache = ObjCache(self.model)
-        with auto_transaction():
-            for pk in self.query.execute(self.model, obj_cache):
-                yield obj_cache[pk]
+        for pk in self.query.execute(self.model, obj_cache):
+            yield obj_cache[pk]
 
     def filter(self, **conditions):
         query = self.query & Query(self.model, **conditions)
