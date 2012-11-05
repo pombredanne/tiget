@@ -15,9 +15,10 @@ def load_config():
     ]
     for filename in files:
         try:
-            Script.from_file(filename).run()
+            script = Script.from_file(filename)
         except IOError:
             pass
+        script.run()
 
 
 def main():

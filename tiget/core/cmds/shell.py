@@ -140,9 +140,10 @@ def source_cmd(opts, filename):
     """
     from tiget.script import Script
     try:
-        Script.from_file(filename).run()
+        script = Script.from_file(filename)
     except IOError as e:
         raise CmdError(e)
+    script.run()
 
 
 @cmd()
