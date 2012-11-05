@@ -5,7 +5,6 @@ from subprocess import list2cmdline
 from tiget.script import Script, Repl
 from tiget.conf import settings
 from tiget.utils import print_error
-from tiget.git import GitError, auto_transaction, get_transaction
 
 
 def load_config():

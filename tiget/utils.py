@@ -10,7 +10,7 @@ from tempfile import NamedTemporaryFile
 from colors import red
 
 from tiget.conf import settings
-from tiget.git import auto_transaction, get_transaction, GitError
+from tiget.git import transaction, GitError
 
 __all__ = [
     'open_in_editor', 'get_termsize', 'print_error', 'post_mortem', 'load_file',
@@ -61,9 +61,9 @@ def post_mortem():
 def load_file(filename):
     if filename.startswith('tiget:'):
         try:
-            with auto_transaction():
+            with transaction.wrap():
                 path = filename[len('tiget:'):].strip('/').split('/')
-                content = get_transaction().get_blob(path).decode('utf-8')
+                content = transaction.current().get_blob(path).decode('utf-8')
         except GitError as e:
             raise IOError('No such file: \'{}\''.format(filename))
     else:

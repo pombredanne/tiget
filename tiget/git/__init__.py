@@ -3,8 +3,10 @@ from pkg_resources import Requirement, resource_string
 import pygit2
 
 from tiget.conf import settings
-from tiget.git.transaction import (
-    GitError, begin, commit, rollback, get_transaction, auto_transaction)
+
+
+class GitError(Exception):
+    pass
 
 
 def find_repository(cwd='.'):
@@ -22,17 +24,19 @@ def get_config(name):
     return repo.config[name]
 
 
-@auto_transaction()
 def init_repo():
     from tiget import __version__
-    transaction = get_transaction(initialized=False)
+    from tiget.git import transaction
 
-    version_string = '{}\n'.format(__version__)
-    transaction.set_blob(['config', 'VERSION'], version_string.encode('utf-8'))
+    with transaction.wrap():
+        trans = transaction.current(initialized=False)
 
-    req = Requirement.parse('tiget')
-    tigetrc = resource_string(req, 'tiget/config/tigetrc')
-    transaction.set_blob(['config', 'tigetrc'], tigetrc)
+        version = '{}\n'.format(__version__)
+        trans.set_blob(['config', 'VERSION'], version.encode('utf-8'))
 
-    transaction.add_message('Initialize Repository')
-    transaction.is_initialized = True
+        req = Requirement.parse('tiget')
+        tigetrc = resource_string(req, 'tiget/config/tigetrc')
+        trans.set_blob(['config', 'tigetrc'], tigetrc)
+
+        trans.add_message('Initialize Repository')
+        trans.is_initialized = True

@@ -1,4 +1,4 @@
-from tiget.git import get_transaction, GitError
+from tiget.git import transaction, GitError
 
 
 class ObjCache(object):
@@ -10,7 +10,7 @@ class ObjCache(object):
         if not pk in self.cache:
             obj = self.model(pk=pk)
             try:
-                content = get_transaction().get_blob(obj.path).decode('utf-8')
+                content = transaction.current().get_blob(obj.path).decode('utf-8')
             except GitError:
                 raise self.model.DoesNotExist()
             obj.loads(content)
@@ -47,8 +47,8 @@ class Query(object):
         # TODO: query optimization
         if obj_cache is None:
             obj_cache = ObjCache(model)
-        transaction = get_transaction()
-        for pk in transaction.list_blobs([model._meta.storage_name]):
+        trans = transaction.current()
+        for pk in trans.list_blobs([model._meta.storage_name]):
             pk = model._meta.pk.loads(pk)
             if self.match(model, pk, obj_cache):
                 yield pk

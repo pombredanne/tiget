@@ -4,9 +4,8 @@ from subprocess import call, check_call, check_output
 
 from nose.tools import ok_, eq_, raises, assert_raises
 
-from tiget import git
 from tiget.conf import settings
-from tiget.git import init_repo, get_transaction, auto_transaction
+from tiget.git import transaction, init_repo, GitError
 
 
 class GitTestcase(object):
@@ -38,22 +37,22 @@ class TestGit(GitTestcase):
         self.assert_commit_count(1)
         self.assert_file_exists('config/VERSION')
 
-    @auto_transaction()
-    def test_get_transaction(self):
-        with assert_raises(git.GitError):
-            get_transaction(initialized=True)
-        get_transaction(initialized=False)
+    @transaction.wrap()
+    def test_transaction_current(self):
+        with assert_raises(GitError):
+            transaction.current(initialized=True)
+        transaction.current(initialized=False)
         init_repo()
-        get_transaction(initialized=True)
-        with assert_raises(git.GitError):
-            get_transaction(initialized=False)
+        transaction.current(initialized=True)
+        with assert_raises(GitError):
+            transaction.current(initialized=False)
 
     def test_transaction_commit(self):
         init_repo()
-        with auto_transaction():
-            transaction = get_transaction()
-            transaction.set_blob(['foo'], 'bar'.encode('utf-8'))
-            transaction.add_message('foobar')
+        with transaction.wrap():
+            trans = transaction.current()
+            trans.set_blob(['foo'], 'bar'.encode('utf-8'))
+            trans.add_message('foobar')
         self.assert_commit_count(2)
         self.assert_file_exists('foo')
 
@@ -62,8 +61,8 @@ class TestGit(GitTestcase):
 
         init_repo()
         with assert_raises(TestException):
-            with auto_transaction():
-                transaction = get_transaction()
-                transaction.set_blob(['foo'], 'bar'.encode('utf-8'))
+            with transaction.wrap():
+                trans = transaction.current()
+                trans.set_blob(['foo'], 'bar'.encode('utf-8'))
                 raise TestException()
         self.assert_commit_count(1)

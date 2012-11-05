@@ -5,14 +5,11 @@ from collections import namedtuple
 import pygit2
 
 from tiget.conf import settings
+from tiget.git import GitError
 from tiget.git.utils import quote_filename, unquote_filename
 
 
 MemoryTree = namedtuple('MemoryTree', ['tree', 'childs', 'blobs'])
-
-
-class GitError(Exception):
-    pass
 
 
 class Transaction(object):
@@ -156,7 +153,7 @@ def rollback():
     _transaction = None
 
 
-def get_transaction(initialized=True):
+def current(initialized=True):
     if _transaction is None:
         raise GitError('no transaction running')
     elif initialized and not _transaction.is_initialized:
@@ -166,7 +163,7 @@ def get_transaction(initialized=True):
     return _transaction
 
 
-class auto_transaction(object):
+class wrap(object):
     def __call__(self, fn):
         @wraps(fn)
         def _inner(*args, **kwargs):

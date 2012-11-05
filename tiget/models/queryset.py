@@ -1,4 +1,4 @@
-from tiget.git import auto_transaction
+from tiget.git import transaction
 from tiget.models.query import Query, ObjCache
 
 
@@ -42,11 +42,11 @@ class QuerySet(object):
             raise self.model.DoesNotExist()
         return obj
 
-    @auto_transaction()
+    @transaction.wrap()
     def exists(self):
         return any(True for _ in self.query.execute(self.model))
 
-    @auto_transaction()
+    @transaction.wrap()
     def count(self):
         return sum(1 for _ in self.query.execute(self.model))
 

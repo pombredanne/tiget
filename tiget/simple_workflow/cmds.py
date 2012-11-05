@@ -1,12 +1,12 @@
 from tiget.cmds import cmd, CmdError
-from tiget.git import auto_transaction
+from tiget.git import transaction
 from tiget.models import get_model
 
 from tiget.simple_workflow.models import Ticket, User
 
 
 @cmd()
-@auto_transaction()
+@transaction.wrap()
 def accept_cmd(opts, ticket_id):
     """
     accept ticket

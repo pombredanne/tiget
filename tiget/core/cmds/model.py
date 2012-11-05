@@ -2,7 +2,7 @@ from functools import wraps
 from collections import OrderedDict
 
 from tiget.cmds import cmd, CmdError
-from tiget.git import auto_transaction
+from tiget.git import transaction
 from tiget.models import get_model
 from tiget.utils import open_in_editor
 from tiget.table import Table
@@ -20,7 +20,7 @@ def with_model(fn):
 
 
 @cmd()
-@auto_transaction()
+@transaction.wrap()
 @with_model
 def create_cmd(opts, model):
     """
@@ -42,7 +42,7 @@ def create_cmd(opts, model):
 
 
 @cmd()
-@auto_transaction()
+@transaction.wrap()
 @with_model
 def edit_cmd(opts, model, pk):
     """
@@ -67,7 +67,7 @@ def edit_cmd(opts, model, pk):
 
 
 @cmd(options='f:s:')
-@auto_transaction()
+@transaction.wrap()
 @with_model
 def list_cmd(opts, model):
     """
