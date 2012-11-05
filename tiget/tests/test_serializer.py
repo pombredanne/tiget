@@ -3,7 +3,21 @@ from nose.tools import ok_, eq_, raises
 from tiget.serializer import dumps, loads
 
 
-class TestSerializer(object):
+class TestSerializerDump(object):
+    def test_dumps_none(self):
+        s = dumps({'none': None})
+        eq_(s, 'none: \n')
+
+    def test_dumps_oneline(self):
+        s = dumps({'oneline': 'foo'})
+        eq_(s, 'oneline: foo\n')
+
+    def test_dumps_multiline(self):
+        s = dumps({'multiline': 'foo\nbar\nbaz'})
+        eq_(s, 'multiline: foo\n    bar\n    baz\n')
+
+
+class TestSerializerLoad(object):
     def test_loads_none(self):
         data = loads('none: ')
         eq_(len(data), 1)
@@ -37,16 +51,26 @@ class TestSerializer(object):
 
     @raises(ValueError)
     def test_loads_broken(self):
-        data = loads('I am broken')
+        data = loads('b0rked')
 
-    def test_dumps_none(self):
-        s = dumps({'none': None})
-        eq_(s, 'none: \n')
 
-    def test_dumps_oneline(self):
-        s = dumps({'oneline': 'foo'})
-        eq_(s, 'oneline: foo\n')
+class TestSerializerDumpLoad(object):
+    def dump_load(self, **data):
+        s = dumps(data)
+        restored = loads(s)
+        eq_(len(data), len(restored))
+        eq_(data.keys(), restored.keys())
+        for key in data.keys():
+            eq_(data[key], restored[key])
 
-    def test_dumps_multiline(self):
-        s = dumps({'multiline': 'foo\nbar\nbaz'})
-        eq_(s, 'multiline: foo\n    bar\n    baz\n')
+    def test_none(self):
+        self.dump_load(nada=None)
+
+    def test_oneline(self):
+        self.dump_load(oneline='foo')
+
+    def test_multiline(self):
+        self.dump_load(multiline='foo\nbar\nbaz')
+
+    def test_multivalue(self):
+        self.dump_load(ans='1', zwo='2')
