@@ -11,12 +11,8 @@ from tiget.git import GitError, auto_transaction, get_transaction
 def load_config():
     files = [
         '/etc/tigetrc',
-        'tiget:/config/tigetrc',
         os.path.expanduser('~/.tigetrc'),
     ]
-    repo = settings.core.repository
-    if repo and repo.workdir:
-        files.append(os.path.join(repo.workdir, '.tigetrc'))
     for filename in files:
         try:
             Script.from_file(filename).run()
