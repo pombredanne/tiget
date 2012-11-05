@@ -18,7 +18,8 @@ def load_config():
             script = Script.from_file(filename)
         except IOError:
             pass
-        script.run()
+        else:
+            script.run()
 
 
 def main():

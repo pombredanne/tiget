@@ -23,7 +23,8 @@ class RepositorySetting(Setting):
             script = Script.from_file(filename)
         except IOError:
             pass
-        script.run()
+        else:
+            script.run()
 
     def changed(self, repo):
         if repo:
