@@ -1,5 +1,5 @@
 #!/bin/sh
-git diff --exit-code >/dev/null
+git diff --quiet
 has_changes=$?
 if [ $has_changes = 1 ]; then
     git stash save -q --keep-index
