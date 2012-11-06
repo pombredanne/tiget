@@ -88,7 +88,7 @@ class OrQuery(Query):
         return OrQuery(other, *self.subqueries)
 
     def __repr__(self):
-        r =' OR '.join('{!r}'.format(query) for query in self.subqueries)
+        r = ' OR '.join('{!r}'.format(query) for query in self.subqueries)
         return '({})'.format(r)
 
     def match(self, *args, **kwargs):

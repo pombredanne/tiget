@@ -4,6 +4,7 @@ from binascii import unhexlify
 
 RESERVED_CHARS = '/\\|?*<>:+[]"\u0000%'
 
+
 def quote_filename(name):
     quoted = ''
     for c in name:

@@ -17,6 +17,7 @@ def _is_builtin(mod):
 
 def deep_reload(module):
     reloaded = set()
+
     def _reload(mod):
         reloaded.add(mod)
         if mod.__name__.startswith(module.__name__):
