@@ -2,7 +2,7 @@ import pkg_resources
 from collections import OrderedDict
 from inspect import ismodule, isclass
 
-from tiget.deep_reload import deep_reload
+from tiget.plugins.deep_reload import deep_reload
 from tiget.plugins.settings import Settings
 
 
