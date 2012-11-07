@@ -50,7 +50,7 @@ def init_repo_cmd(opts):
     initialize repository
 
     SYNOPSIS
-        init-repO
+        init-repo
     """
     try:
         init_repo()
