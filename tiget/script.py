@@ -4,7 +4,7 @@ import readline
 import shlex
 from io import StringIO
 
-from colors import green
+from colors import blue
 
 import tiget
 from tiget.conf import settings
@@ -98,7 +98,7 @@ class Repl(Script):
     def readline(self):
         prompt = 'tiget[{}]% '.format(self.lineno)
         if settings.core.color:
-            prompt = green(prompt)
+            prompt = blue(prompt)
         readline.set_completer(self.complete)
         try:
             line = input(prompt).strip()
