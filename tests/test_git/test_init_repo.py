@@ -11,3 +11,7 @@ class TestInitRepo(GitTestCase):
             cwd=self.repo)
         self.assert_commit_count(1)
         self.assert_file_exists('config/VERSION')
+
+    def test_already_initialized(self):
+        init_repo()
+        self.assertRaises(GitError, init_repo)
