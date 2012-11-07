@@ -1,4 +1,4 @@
-from tiget.models.queryset import QuerySet
+from tiget.git.models.queryset import QuerySet
 
 
 class Manager(object):

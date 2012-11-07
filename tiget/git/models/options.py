@@ -1,6 +1,6 @@
 from uuid import uuid4
 
-from tiget.models.fields import UUIDField
+from tiget.git.models.fields import UUIDField
 
 
 class Options(object):

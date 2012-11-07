@@ -1,19 +1,18 @@
-from tiget.models import Model, TextField, ForeignKey
-from tiget.git import get_config
+from tiget.git import models, get_config
 
 
-class User(Model):
-    email = TextField(primary_key=True)
-    name = TextField(null=True)
+class User(models.Model):
+    email = models.TextField(primary_key=True)
+    name = models.TextField(null=True)
 
     @classmethod
     def current(cls, **kwargs):
         return cls.objects.get(email=get_config('user.email'))
 
 
-class Milestone(Model):
-    name = TextField(primary_key=True)
-    description = TextField(null=True)
+class Milestone(models.Model):
+    name = models.TextField(primary_key=True)
+    description = models.TextField(null=True)
 
 
 def get_current_user():
@@ -23,10 +22,10 @@ def get_current_user():
         return None
 
 
-class Ticket(Model):
-    summary = TextField()
-    description = TextField(null=True)
-    milestone = ForeignKey(Milestone, null=True)
-    reporter = ForeignKey(User, default=get_current_user)
-    owner = ForeignKey(User, null=True)
-    status = TextField(choices=('new', 'testing', 'done'), default='new')
+class Ticket(models.Model):
+    summary = models.TextField()
+    description = models.TextField(null=True)
+    milestone = models.ForeignKey(Milestone, null=True)
+    reporter = models.ForeignKey(User, default=get_current_user)
+    owner = models.ForeignKey(User, null=True)
+    status = models.TextField(choices=('new', 'testing', 'done'), default='new')

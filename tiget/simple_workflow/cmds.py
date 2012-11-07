@@ -1,6 +1,6 @@
 from tiget.cmds import cmd, CmdError
 from tiget.git import transaction
-from tiget.models import get_model
+from tiget.git.models import get_model
 
 from tiget.simple_workflow.models import Ticket, User
 

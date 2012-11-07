@@ -47,7 +47,7 @@ class Plugin(object):
         return getattr(self.mod, '__version__', None)
 
     def add_models(self, models):
-        from tiget.models import Model
+        from tiget.git.models import Model
         if ismodule(models):
             for k, v in models.__dict__.items():
                 if not k.startswith('_') and isclass(v) and issubclass(v, Model):

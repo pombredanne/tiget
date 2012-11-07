@@ -1,5 +1,5 @@
-from tiget.models.base import Model
-from tiget.models.fields import *
+from tiget.git.models.base import Model
+from tiget.git.models.fields import *
 
 
 def get_model(name):

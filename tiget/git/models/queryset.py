@@ -1,5 +1,5 @@
 from tiget.git import transaction
-from tiget.models.query import Query, ObjCache
+from tiget.git.models.query import Query, ObjCache
 
 
 class QuerySet(object):

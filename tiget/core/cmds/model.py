@@ -3,7 +3,7 @@ from collections import OrderedDict
 
 from tiget.cmds import cmd, CmdError
 from tiget.git import transaction
-from tiget.models import get_model
+from tiget.git.models import get_model
 from tiget.utils import open_in_editor
 from tiget.table import Table
 

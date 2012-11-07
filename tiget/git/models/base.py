@@ -2,9 +2,9 @@ from collections import OrderedDict
 
 from tiget import serializer
 from tiget.git import transaction
-from tiget.models.options import Options
-from tiget.models.manager import Manager
-from tiget.models.fields import ForeignKey
+from tiget.git.models.options import Options
+from tiget.git.models.manager import Manager
+from tiget.git.models.fields import ForeignKey
 
 
 class DoesNotExist(Exception): pass
