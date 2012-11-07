@@ -1,4 +1,4 @@
-from tiget.git import transaction, GitError
+from tiget.git import transaction, init_repo, GitError
 from tiget.cmds import cmd, CmdError
 
 
@@ -40,5 +40,16 @@ def rollback_cmd(opts):
     """
     try:
         transaction.rollback()
+    except GitError as e:
+        raise CmdError(e)
+
+
+@cmd()
+def init_repo_cmd(opts):
+    """
+
+    """
+    try:
+        init_repo()
     except GitError as e:
         raise CmdError(e)

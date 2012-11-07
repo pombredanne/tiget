@@ -3,5 +3,6 @@ from tiget.core.cmds.shell import (
     version_cmd
 )
 from tiget.core.cmds.plugin import load_cmd, reload_cmd, unload_cmd
-from tiget.core.cmds.transaction import begin_cmd, commit_cmd, rollback_cmd
+from tiget.core.cmds.transaction import (
+    begin_cmd, commit_cmd, rollback_cmd, init_repo_cmd)
 from tiget.core.cmds.model import create_cmd, edit_cmd, list_cmd

@@ -33,7 +33,6 @@ setup(
     entry_points={
         'console_scripts': [
             'tiget = tiget.main:main',
-            'tiget-setup-repository = tiget.setup_repository:main',
         ],
         'tiget.plugins': [
             'core = tiget.core',
