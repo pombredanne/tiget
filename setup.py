@@ -17,7 +17,7 @@ setup(
         'Interactive', 'Interpreter', 'Shell', 'Git', 'Distributed',
         'Ticketing', 'Tracker',
     ],
-    packages=find_packages(),
+    packages=find_packages(exclude=['tests']),
     package_data={
         'tiget': ['config/tigetrc'],
     },
@@ -42,4 +42,5 @@ setup(
         ],
     },
     requires=['pygit2', 'ansicolors'],
+    test_suite='tests',
 )
