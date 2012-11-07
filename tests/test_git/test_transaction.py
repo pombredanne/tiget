@@ -1,45 +1,9 @@
-import unittest
-import shutil
-from tempfile import mkdtemp
-from subprocess import call, check_call, check_output
 
-from tiget.conf import settings
+from tiget.testcases import GitTestCase
 from tiget.git import transaction, init_repo, GitError
 
 
-class GitTestcase(unittest.TestCase):
-    def setUp(self):
-        self.repo = mkdtemp()
-        check_call(['git', 'init', '--quiet'], cwd=self.repo)
-        settings.core.repository = self.repo
-        self.branchref = 'refs/heads/{}'.format(settings.core.branchname)
-        self.assert_commit_count(0)
-
-    def tearDown(self):
-        shutil.rmtree(self.repo)
-
-    def assert_file_exists(self, filename):
-        cmd = 'git ls-tree --name-only -r {} | grep -q ^{}$'.format(
-            self.branchref, filename)
-        check_call(cmd, cwd=self.repo, shell=True)
-
-    def assert_commit_count(self, count):
-        cmd = 'git log --oneline {} 2>/dev/null| wc -l'.format(self.branchref)
-        output = check_output(cmd, cwd=self.repo, shell=True).decode('utf-8')
-        self.assertEqual(output.strip(), str(count))
-
-
-class TestInitRepo(GitTestcase):
-    def test_init_repo(self):
-        init_repo()
-        check_call(
-            ['git', 'show-ref', '--verify', '--quiet', self.branchref],
-            cwd=self.repo)
-        self.assert_commit_count(1)
-        self.assert_file_exists('config/VERSION')
-
-
-class TestTransaction(GitTestcase):
+class TestTransaction(GitTestCase):
     def test_commit(self):
         transaction.begin()
         trans = transaction.current(initialized=False)
@@ -88,7 +52,7 @@ class TestTransaction(GitTestcase):
             self.assertRaises(GitError, transaction.current, initialized=False)
 
 
-class TestTransactionWrap(GitTestcase):
+class TestTransactionWrap(GitTestCase):
     def test_wrap(self):
         with transaction.wrap():
             trans = transaction.current(initialized=False)
@@ -116,7 +80,7 @@ class TestTransactionWrap(GitTestcase):
         self.assert_commit_count(0)
 
 
-class TestTransactionBlob(GitTestcase):
+class TestTransactionBlob(GitTestCase):
     def test_set_get(self):
         with transaction.wrap():
             trans = transaction.current(initialized=False)
