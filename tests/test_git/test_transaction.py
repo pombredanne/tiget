@@ -1,4 +1,3 @@
-
 from tiget.testcases import GitTestCase
 from tiget.git import transaction, init_repo, GitError
 
