@@ -35,7 +35,7 @@ def init_repo():
         trans.set_blob(['config', 'VERSION'], version.encode('utf-8'))
 
         req = Requirement.parse('tiget')
-        tigetrc = resource_string(req, 'tiget/config/tigetrc')
+        tigetrc = resource_string(req, 'tiget/data/tigetrc')
         trans.set_blob(['config', 'tigetrc'], tigetrc)
 
         trans.add_message('Initialize Repository')

@@ -19,7 +19,7 @@ setup(
     ],
     packages=find_packages(exclude=['tests']),
     package_data={
-        'tiget': ['config/tigetrc'],
+        'tiget': ['data/tigetrc'],
     },
     classifiers=[
         'Intended Audience :: Developers',
