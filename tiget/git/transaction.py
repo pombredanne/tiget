@@ -6,7 +6,7 @@ import pygit2
 
 from tiget.conf import settings
 from tiget.git import GitError
-from tiget.git.utils import quote_filename, unquote_filename
+from tiget.git.quote import quote_filename, unquote_filename
 
 
 MemoryTree = namedtuple('MemoryTree', ['tree', 'childs', 'blobs'])
