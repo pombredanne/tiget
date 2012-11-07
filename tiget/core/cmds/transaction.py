@@ -47,7 +47,10 @@ def rollback_cmd(opts):
 @cmd()
 def init_repo_cmd(opts):
     """
+    initialize repository
 
+    SYNOPSIS
+        init-repO
     """
     try:
         init_repo()
