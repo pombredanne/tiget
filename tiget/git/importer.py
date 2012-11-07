@@ -73,7 +73,8 @@ class GitImporter(object):
         mod.__file__ = code.co_filename
         mod.__loader__ = self
         if is_pkg:
-            path = '/'.join([PATH_PREFIX, fullname.rpartition('.')[2]])
+            path = '/'.join(
+                [PATH_PREFIX, self.path, fullname.rpartition('.')[2]])
             mod.__path__ = [path]
             mod.__package__ = fullname
         else:
