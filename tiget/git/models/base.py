@@ -77,7 +77,7 @@ class Model(object, metaclass=ModelBase):
                     pass
             if kwargs:
                 raise TypeError(
-                    'invalid keyword argument \'{}\''.format(kwargs[0]))
+                    'invalid keyword argument \'{}\''.format(kwargs.keys()[0]))
 
     def __repr__(self):
         return '<{}: {}>'.format(self.__class__.__name__, self.pk)
