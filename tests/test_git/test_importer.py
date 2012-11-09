@@ -84,3 +84,14 @@ class TestImporter(GitTestCase):
         self.assertEqual(foo.foo(), 'foo')
         from foo import bar
         self.assertEqual(bar.bar(), 'bar')
+
+    def test_import_module_other_path(self):
+        with transaction.wrap():
+            self.assertRaises(ImportError, __import__, 'foo')
+            trans = transaction.current()
+            trans.set_blob(['foo', 'foo.py'], TEST_MODULE.encode('utf-8'))
+            trans.add_message('foo')
+            sys.path.append('tiget-git-import:/foo')
+            import foo
+            self.assertEqual(foo.foo(), 'foo')
+            sys.path.remove('tiget-git-import:/foo')
