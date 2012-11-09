@@ -18,10 +18,19 @@ class QuerySet(object):
     def __not__(self):
         return QuerySet(self.model, ~self.query)
 
-    def __iter__(self):
+    @transaction.wrap()
+    def __bool__(self):
+        return any(True for _ in self.query.execute(self.model))
+
+    @transaction.wrap()
+    def __len__(self):
+        return sum(1 for _ in self.query.execute(self.model))
+
+    @transaction.wrap()
+    def __list__(self):
         obj_cache = ObjCache(self.model)
-        for pk in self.query.execute(self.model, obj_cache):
-            yield obj_cache[pk]
+        pks = self.query.execute(self.model, obj_cache)
+        return list(obj_cache[pk] for pk in pks)
 
     def filter(self, **conditions):
         query = self.query & Query(self.model, **conditions)
@@ -41,14 +50,6 @@ class QuerySet(object):
         if not found:
             raise self.model.DoesNotExist()
         return obj
-
-    @transaction.wrap()
-    def exists(self):
-        return any(True for _ in self.query.execute(self.model))
-
-    @transaction.wrap()
-    def count(self):
-        return sum(1 for _ in self.query.execute(self.model))
 
     def order_by(self, *order_by):
         # TODO: implement
