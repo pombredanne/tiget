@@ -15,11 +15,11 @@ class Manager(object):
     def get(self, **kwargs):
         return self.filter(**kwargs).get()
 
-    def __bool__(self, **kwargs):
-        return bool(self.filter(**kwargs))
+    def exists(self, **kwargs):
+        return self.filter(**kwargs).exists()
 
-    def __len__(self, **kwargs):
-        return len(self.filter(**kwargs))
+    def count(self, **kwargs):
+        return self.filter(**kwargs).count()
 
     def order_by(self, *order_by):
         return self.all().order_by(*order_by)

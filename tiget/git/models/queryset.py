@@ -19,14 +19,6 @@ class QuerySet(object):
         return QuerySet(self.model, ~self.query)
 
     @transaction.wrap()
-    def __bool__(self):
-        return any(True for _ in self.query.execute(self.model))
-
-    @transaction.wrap()
-    def __len__(self):
-        return sum(1 for _ in self.query.execute(self.model))
-
-    @transaction.wrap()
     def __iter__(self):
         obj_cache = ObjCache(self.model)
         pks = self.query.execute(self.model, obj_cache)
@@ -50,6 +42,14 @@ class QuerySet(object):
         if not found:
             raise self.model.DoesNotExist()
         return obj
+
+    @transaction.wrap()
+    def exists(self):
+        return any(True for _ in self.query.execute(self.model))
+
+    @transaction.wrap()
+    def count(self):
+        return sum(1 for _ in self.query.execute(self.model))
 
     def order_by(self, *order_by):
         # TODO: implement
