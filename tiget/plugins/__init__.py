@@ -102,5 +102,4 @@ def unload_plugin(name):
 
 def reload_plugin(name):
     plugin = plugins[name]
-    plugin.unload()
-    plugin.load()
+    plugin.reload()
