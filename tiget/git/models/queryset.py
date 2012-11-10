@@ -6,7 +6,7 @@ class QuerySet(object):
     def __init__(self, model, query=None):
         self.model = model
         if query is None:
-            query = Query(model)
+            query = Query()
         self.query = query
 
     def __or__(self, other):
@@ -33,11 +33,11 @@ class QuerySet(object):
         return iter([obj_cache[pk] for pk in pks])
 
     def filter(self, **conditions):
-        query = self.query & Query(self.model, **conditions)
+        query = self.query & Query(**conditions)
         return QuerySet(self.model, query)
 
     def exclude(self, **conditions):
-        query = self.query & ~Query(self.model, **conditions)
+        query = self.query & ~Query(**conditions)
         return QuerySet(self.model, query)
 
     def get(self):

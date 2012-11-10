@@ -19,7 +19,7 @@ class ObjCache(object):
 
 
 class Query(object):
-    def __init__(self, model, **conditions):
+    def __init__(self, **conditions):
         self.conditions = conditions
 
     def __or__(self, other):
