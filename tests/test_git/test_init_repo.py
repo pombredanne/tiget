@@ -1,5 +1,3 @@
-from subprocess import check_call
-
 from tiget.testcases import GitTestCase
 from tiget.git import init_repo, GitError
 
@@ -7,8 +5,10 @@ from tiget.git import init_repo, GitError
 class TestInitRepo(GitTestCase):
     def test_init_repo(self):
         init_repo()
-        check_call(['git', 'show-ref', '--verify', '--quiet', self.branchref],
-            cwd=self.repo)
+        try:
+            self.repo.lookup_reference(self.branchref)
+        except KeyError:
+            self.fail('{} does not exist'.format(self.branchref))
         self.assert_commit_count(1)
         self.assert_file_exists('config/VERSION')
 
