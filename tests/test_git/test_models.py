@@ -1,10 +1,12 @@
-import unittest
-
 from tiget.testcases import GitTestCase
 from tiget.git import models, init_repo
 
 
 class Foo(models.Model):
+    text = models.TextField()
+
+
+class Bar(models.Model):
     text = models.TextField()
 
 
@@ -48,12 +50,16 @@ class TestModelBase(GitTestCase):
         self.assert_commit_count(2)
         self.assert_file_exists('/'.join(foo.path))
 
-    @unittest.skip('not implemented yet')
     def test_delete(self):
-        pass
+        self.skipTest('not implemented yet')
 
     def test_equality(self):
-        foo = Foo(text='')
-        foo.save()
-        foo2 = Foo.objects.get(id=foo.id)
+        foo = Foo()
+        foo2 = Foo(id=foo.id)
         self.assertEqual(foo, foo2)
+
+    def test_equality_unequal(self):
+        self.assertNotEqual(Foo(), Foo())
+
+    def test_equality_other_model(self):
+        self.assertNotEqual(Foo(), Bar())
