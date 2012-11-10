@@ -27,10 +27,10 @@ class QuerySet(object):
         return sum(1 for _ in self.query.execute(self.model))
 
     @transaction.wrap()
-    def __list__(self):
+    def __iter__(self):
         obj_cache = ObjCache(self.model)
         pks = self.query.execute(self.model, obj_cache)
-        return list(obj_cache[pk] for pk in pks)
+        return iter([obj_cache[pk] for pk in pks])
 
     def filter(self, **conditions):
         query = self.query & Query(self.model, **conditions)
