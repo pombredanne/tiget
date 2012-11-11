@@ -2,12 +2,12 @@ from tiget.testcases import GitTestCase
 from tiget.git import models, init_repo
 
 
-class Foo(models.Model):
-    text = models.TextField()
+class User(models.Model):
+    name = models.TextField()
 
 
-class Bar(models.Model):
-    text = models.TextField()
+class Ticket(models.Model):
+    title = models.TextField()
 
 
 class TestModelBase(GitTestCase):
@@ -17,49 +17,94 @@ class TestModelBase(GitTestCase):
 
     def test_exceptions(self):
         for exc_class in models.base.MODEL_EXCEPTIONS:
-            model_exc_class = getattr(Foo, exc_class.__name__)
+            model_exc_class = getattr(Ticket, exc_class.__name__)
             self.assertTrue(issubclass(model_exc_class, exc_class))
 
     def test_storage_name(self):
-        self.assertEqual(Foo._meta.storage_name, 'foos')
+        self.assertEqual(Ticket._meta.storage_name, 'tickets')
 
     def test_new(self):
-        foo = Foo()
-        self.assertEqual(foo.text, None)
+        ticket = Ticket()
+        self.assertEqual(ticket.title, None)
 
     def test_new_with_argument(self):
-        foo = Foo(text='foo')
-        self.assertEqual(foo.text, 'foo')
+        ticket = Ticket(title='test ticket')
+        self.assertEqual(ticket.title, 'test ticket')
 
     def test_new_with_invalid_argument(self):
-        self.assertRaises(TypeError, Foo, bar='baz')
+        self.assertRaises(TypeError, Ticket, bar='baz')
 
     def test_path_with_pk_none(self):
-        foo = Foo(pk=None)
-        self.assertRaises(ValueError, lambda: foo.path)
+        ticket = Ticket(pk=None)
+        self.assertRaises(ValueError, lambda: ticket.path)
 
     def test_path(self):
-        foo = Foo(text='')
-        self.assertEqual(foo.path, ['foos', foo.id.hex])
+        ticket = Ticket(title='')
+        self.assertEqual(ticket.path, ['tickets', ticket.id.hex])
 
     def test_save(self):
         self.assert_commit_count(1)
-        foo = Foo(text='')
-        foo.save()
+        ticket = Ticket(title='')
+        ticket.save()
         # TODO: test validations
         self.assert_commit_count(2)
-        self.assert_file_exists('/'.join(foo.path))
+        self.assert_file_exists('/'.join(ticket.path))
 
     def test_delete(self):
         self.skipTest('not implemented yet')
 
     def test_equality(self):
-        foo = Foo()
-        foo2 = Foo(id=foo.id)
-        self.assertEqual(foo, foo2)
+        ticket = Ticket()
+        ticket2 = Ticket(id=ticket.id)
+        self.assertEqual(ticket, ticket2)
 
     def test_equality_unequal(self):
-        self.assertNotEqual(Foo(), Foo())
+        self.assertNotEqual(Ticket(), Ticket())
 
     def test_equality_other_model(self):
-        self.assertNotEqual(Foo(), Bar())
+        self.assertNotEqual(Ticket(), User())
+
+
+class TestManager(GitTestCase):
+    def setUp(self):
+        super().setUp()
+        init_repo()
+
+    def test_filter(self):
+        ticket = Ticket.objects.create(title='test ticket')
+        self.assertEqual(len(list(Ticket.objects.filter())), 1)
+        self.assertEqual(len(list(Ticket.objects.filter(title='foo'))), 0)
+        self.assertEqual(
+            len(list(Ticket.objects.filter(title='test ticket'))), 1)
+
+    def test_all(self):
+        ticket = Ticket.objects.create(title='test ticket')
+        self.assertEqual(len(list(Ticket.objects.all())), 1)
+
+    def test_get(self):
+        ticket = Ticket.objects.create(title='test ticket')
+        ticket = Ticket.objects.get(id=ticket.id)
+        self.assertEqual(ticket.title, 'test ticket')
+        self.assertRaises(Ticket.DoesNotExist, Ticket.objects.get, title='foo')
+        Ticket.objects.create(title='test ticket')
+        self.assertRaises(Ticket.MultipleObjectsReturned, Ticket.objects.get,
+            title='test ticket')
+
+    def test_exists(self):
+        self.assertFalse(Ticket.objects.exists(title='test ticket'))
+        Ticket.objects.create(title='test ticket')
+        self.assertTrue(Ticket.objects.exists(title='test ticket'))
+
+    def test_count(self):
+        self.assertEqual(Ticket.objects.count(), 0)
+        for i in range(1, 11):
+            Ticket.objects.create(title='test ticket')
+            self.assertEqual(Ticket.objects.count(), i)
+
+    def test_order_by(self):
+        self.skipTest('not implemented yet')
+
+    def test_create(self):
+        ticket = Ticket.objects.create(title='test ticket')
+        self.assert_commit_count(2)
+        self.assert_file_exists('/'.join(ticket.path))
