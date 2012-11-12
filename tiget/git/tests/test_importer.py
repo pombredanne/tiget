@@ -1,5 +1,7 @@
 import sys
 
+from nose.tools import *
+
 from tiget.testcases import GitTestCase
 from tiget.git import transaction, init_repo
 from tiget.plugins import load_plugin, unload_plugin
@@ -37,25 +39,25 @@ class TestImporter(GitTestCase):
 
     def test_import_module(self):
         with transaction.wrap():
-            self.assertRaises(ImportError, __import__, 'foo')
+            assert_raises(ImportError, __import__, 'foo')
             trans = transaction.current()
             trans.set_blob(['config', 'foo.py'], TEST_MODULE.encode('utf-8'))
             trans.add_message('foo')
             import foo
-            self.assertEqual(foo.foo(), 'foo')
+            eq_(foo.foo(), 'foo')
 
     def test_import_module_separate_transaction(self):
         with transaction.wrap():
-            self.assertRaises(ImportError, __import__, 'foo')
+            assert_raises(ImportError, __import__, 'foo')
             trans = transaction.current()
             trans.set_blob(['config', 'foo.py'], TEST_MODULE.encode('utf-8'))
             trans.add_message('foo')
         import foo
-        self.assertEqual(foo.foo(), 'foo')
+        eq_(foo.foo(), 'foo')
 
     def test_import_package(self):
         with transaction.wrap():
-            self.assertRaises(ImportError, __import__, 'foo')
+            assert_raises(ImportError, __import__, 'foo')
             trans = transaction.current()
             trans.set_blob(
                 ['config', 'foo', '__init__.py'],
@@ -65,13 +67,13 @@ class TestImporter(GitTestCase):
                 TEST_PACKAGE_BAR_PY.encode('utf-8'))
             trans.add_message('foo')
             import foo
-            self.assertEqual(foo.foo(), 'foo')
+            eq_(foo.foo(), 'foo')
             from foo import bar
-            self.assertEqual(bar.bar(), 'bar')
+            eq_(bar.bar(), 'bar')
 
     def test_import_package_separate_transaction(self):
         with transaction.wrap():
-            self.assertRaises(ImportError, __import__, 'foo')
+            assert_raises(ImportError, __import__, 'foo')
             trans = transaction.current()
             trans.set_blob(
                 ['config', 'foo', '__init__.py'],
@@ -81,17 +83,17 @@ class TestImporter(GitTestCase):
                 TEST_PACKAGE_BAR_PY.encode('utf-8'))
             trans.add_message('foo')
         import foo
-        self.assertEqual(foo.foo(), 'foo')
+        eq_(foo.foo(), 'foo')
         from foo import bar
-        self.assertEqual(bar.bar(), 'bar')
+        eq_(bar.bar(), 'bar')
 
     def test_import_module_other_path(self):
         with transaction.wrap():
-            self.assertRaises(ImportError, __import__, 'foo')
+            assert_raises(ImportError, __import__, 'foo')
             trans = transaction.current()
             trans.set_blob(['foo', 'foo.py'], TEST_MODULE.encode('utf-8'))
             trans.add_message('foo')
             sys.path.append('tiget-git-import:/foo')
             import foo
-            self.assertEqual(foo.foo(), 'foo')
+            eq_(foo.foo(), 'foo')
             sys.path.remove('tiget-git-import:/foo')

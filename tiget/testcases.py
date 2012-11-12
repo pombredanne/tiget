@@ -1,14 +1,14 @@
-import unittest
 import shutil
-from tempfile import mkdtemp
 import stat
+from tempfile import mkdtemp
 
+from nose.tools import *
 import pygit2
 
 from tiget.conf import settings
 
 
-class GitTestCase(unittest.TestCase):
+class GitTestCase(object):
     def setUp(self):
         self.repo = pygit2.init_repository(mkdtemp(), False)
         settings.core.repository = self.repo.path
@@ -19,22 +19,18 @@ class GitTestCase(unittest.TestCase):
         shutil.rmtree(self.repo.workdir)
 
     def assert_file_exists(self, filename):
-        try:
-            oid = self.repo.lookup_reference(self.branchref).oid
-        except KeyError:
-            self.fail('{} does not exist'.format(self.branchref))
+        oid = self.repo.lookup_reference(self.branchref).oid
         tree = self.repo[oid].tree
         *path, filename = filename.split('/')
         while path:
             name = path.pop()
-            self.assertIn(name, tree)
+            assert_in(name, tree)
             entry = tree[name]
-            if not entry.attributes & stat.S_IFDIR:
-                self.fail('{} is not a directory'.format(name))
+            ok_(entry.attributes & stat.S_IFDIR)
             tree = entry.to_object()
-        self.assertIn(filename, tree)
+        assert_in(filename, tree)
         entry = tree[filename]
-        self.assertTrue(entry.attributes & stat.S_IFREG)
+        ok_(entry.attributes & stat.S_IFREG)
 
     def assert_commit_count(self, expected_count):
         try:
@@ -43,4 +39,4 @@ class GitTestCase(unittest.TestCase):
             count = 0
         else:
             count = sum(1 for _ in self.repo.walk(oid, pygit2.GIT_SORT_NONE))
-        self.assertEqual(count, expected_count)
+        eq_(count, expected_count)

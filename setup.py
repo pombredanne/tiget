@@ -17,7 +17,7 @@ setup(
         'Interactive', 'Interpreter', 'Shell', 'Git', 'Distributed',
         'Ticketing', 'Tracker',
     ],
-    packages=find_packages(exclude=['tests']),
+    packages=find_packages(),
     package_data={
         'tiget': ['data/tigetrc'],
     },
@@ -41,5 +41,6 @@ setup(
         ],
     },
     requires=['pygit2', 'ansicolors'],
-    test_suite='tests',
+    setup_requires=['nose'],
+    test_suite='nose.collector',
 )

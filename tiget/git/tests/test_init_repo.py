@@ -1,3 +1,5 @@
+from nose.tools import *
+
 from tiget.testcases import GitTestCase
 from tiget.git import init_repo, GitError
 
@@ -14,4 +16,4 @@ class TestInitRepo(GitTestCase):
 
     def test_already_initialized(self):
         init_repo()
-        self.assertRaises(GitError, init_repo)
+        assert_raises(GitError, init_repo)

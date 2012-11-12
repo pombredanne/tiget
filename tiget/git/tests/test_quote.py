@@ -1,9 +1,9 @@
-import unittest
+from nose.tools import *
 
 from tiget.git.quote import quote_filename, unquote_filename
 
 
-class TestQuote(unittest.TestCase):
+class TestQuote(object):
     def test_quote_unquote(self):
         testnames = [
             'foo',
@@ -11,4 +11,4 @@ class TestQuote(unittest.TestCase):
             '!@#$%^&*()_+-[]\'\"|',
         ]
         for name in testnames:
-            self.assertEqual(unquote_filename(quote_filename(name)), name)
+            eq_(unquote_filename(quote_filename(name)), name)
