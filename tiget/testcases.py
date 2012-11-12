@@ -9,13 +9,13 @@ from tiget.conf import settings
 
 
 class GitTestCase(object):
-    def setUp(self):
+    def setup(self):
         self.repo = pygit2.init_repository(mkdtemp(), False)
         settings.core.repository = self.repo.path
         self.branchref = 'refs/heads/{}'.format(settings.core.branchname)
         self.assert_commit_count(0)
 
-    def tearDown(self):
+    def teardown(self):
         shutil.rmtree(self.repo.workdir)
 
     def assert_file_exists(self, filename):

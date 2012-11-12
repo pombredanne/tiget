@@ -14,8 +14,8 @@ class User(models.Model):
 
 
 class TestModelBase(GitTestCase):
-    def setUp(self):
-        super().setUp()
+    def setup(self):
+        super().setup()
         init_repo()
 
     def test_exceptions(self):

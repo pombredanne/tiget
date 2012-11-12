@@ -10,16 +10,15 @@ class Ticket(models.Model):
 
 
 class TestManager(GitTestCase):
-    def setUp(self):
-        super().setUp()
+    def setup(self):
+        super().setup()
         init_repo()
 
     def test_filter(self):
         ticket = Ticket.objects.create(title='test ticket')
         eq_(len(list(Ticket.objects.filter())), 1)
         eq_(len(list(Ticket.objects.filter(title='foo'))), 0)
-        eq_(
-            len(list(Ticket.objects.filter(title='test ticket'))), 1)
+        eq_(len(list(Ticket.objects.filter(title='test ticket'))), 1)
 
     def test_all(self):
         ticket = Ticket.objects.create(title='test ticket')

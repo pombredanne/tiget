@@ -25,17 +25,17 @@ def bar():
 
 
 class TestImporter(GitTestCase):
-    def setUp(self):
-        super().setUp()
+    def setup(self):
+        super().setup()
         init_repo()
         load_plugin('importer')
 
-    def tearDown(self):
+    def teardown(self):
         for mod in list(sys.modules.keys()):
             if mod == 'foo' or mod.startswith('foo'):
                 del sys.modules[mod]
         unload_plugin('importer')
-        super().tearDown()
+        super().teardown()
 
     def test_import_module(self):
         with transaction.wrap():
