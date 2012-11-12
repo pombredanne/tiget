@@ -41,6 +41,7 @@ setup(
         ],
     },
     requires=['pygit2', 'ansicolors'],
-    setup_requires=['nose'],
+    install_requires=['distribute'],
+    tests_require=['nose'],
     test_suite='nose.collector',
 )

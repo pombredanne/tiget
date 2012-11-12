@@ -30,4 +30,5 @@ setup(
         ],
     },
     requires=['tiget', 'ipython'],
+    install_requires=['distribute'],
 )
