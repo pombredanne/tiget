@@ -1,3 +1,5 @@
+from itertools import islice
+
 from tiget.git import transaction, GitError
 
 
@@ -30,6 +32,11 @@ class Query(object):
 
     def __invert__(self):
         return NotQuery(self)
+
+    def __getitem__(self, key):
+        if isinstance(key, slice):
+            return SliceQuery(self, key)
+        raise TypeError('index must be a slice')
 
     def __repr__(self):
         conditions = ' AND '.join(
@@ -93,3 +100,20 @@ class OrQuery(Query):
 
     def match(self, *args, **kwargs):
         return any(query.match(*args, **kwargs) for query in self.subqueries)
+
+
+class SliceQuery(Query):
+    def __init__(self, subquery, slice_):
+        self.subquery = subquery
+        self.slice = slice_
+
+    def __repr__(self):
+        bits = [self.slice.start, self.slice.stop]
+        if self.slice.step:
+            s.append(self.slice.step)
+        bits = ['' if bit is None else str(bit) for bit in bits]
+        return '({!r}[{}])'.format(self.subquery, ':'.join(bits))
+
+    def execute(self, model, obj_cache=None):
+        pks = self.subquery.execute(model, obj_cache=obj_cache)
+        return islice(pks, self.slice.start, self.slice.stop, self.slice.step)

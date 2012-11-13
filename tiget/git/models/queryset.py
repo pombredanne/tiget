@@ -19,6 +19,19 @@ class QuerySet(object):
         return QuerySet(self.model, ~self.query)
 
     @transaction.wrap()
+    def __getitem__(self, key):
+        if isinstance(key, slice):
+            return QuerySet(self.model, self.query[key])
+        elif isinstance(key, int):
+            try:
+                slice_ = slice(key, key+1)
+                return QuerySet(self.model, self.query[slice_]).get()
+            except self.model.DoesNotExist:
+                raise IndexError('index out of range')
+        else:
+            raise TypeError('indices must be integers')
+
+    @transaction.wrap()
     def __iter__(self):
         obj_cache = ObjCache(self.model)
         pks = self.query.execute(self.model, obj_cache)
