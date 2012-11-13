@@ -68,7 +68,7 @@ class NotQuery(Query):
     def __repr__(self):
         return '(NOT {!r})'.format(self.subquery)
 
-    def match(self, *arg, **kwargs):
+    def match(self, *args, **kwargs):
         return not self.subquery.match(*args, **kwargs)
 
 
