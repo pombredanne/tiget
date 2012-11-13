@@ -15,7 +15,7 @@ class QuerySet(object):
     def __and__(self, other):
         return QuerySet(self.model, self.query & other.query)
 
-    def __not__(self):
+    def __invert__(self):
         return QuerySet(self.model, ~self.query)
 
     @transaction.wrap()
