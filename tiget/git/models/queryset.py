@@ -1,12 +1,12 @@
 from tiget.git import transaction
-from tiget.git.models.query import Query, ObjCache
+from tiget.git.models.query import Query, Everything, ObjCache
 
 
 class QuerySet(object):
     def __init__(self, model, query=None):
         self.model = model
         if query is None:
-            query = Query()
+            query = Everything()
         self.query = query
 
     def __or__(self, other):

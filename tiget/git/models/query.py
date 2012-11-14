@@ -25,9 +25,17 @@ class Query(object):
         self.conditions = conditions
 
     def __or__(self, other):
+        if isinstance(other, Everything):
+            return other
+        elif isinstance(other, Nothing):
+            return self
         return OrQuery(self, other)
 
     def __and__(self, other):
+        if isinstance(other, Everything):
+            return self
+        elif isinstance(other, Nothing):
+            return other
         return AndQuery(self, other)
 
     def __invert__(self):
@@ -59,6 +67,46 @@ class Query(object):
             pk = model._meta.pk.loads(pk)
             if self.match(model, pk, obj_cache):
                 yield pk
+
+
+class Everything(Query):
+    def __init__(self):
+        pass
+
+    def __or__(self, other):
+        return self
+
+    def __and__(self, other):
+        return other
+
+    def __invert__(self):
+        return Nothing()
+
+    def __repr__(self):
+        return 'TRUE'
+
+    def match(self, model, pk, obj_cache):
+        return True
+
+
+class Nothing(Query):
+    def __init__(self):
+        pass
+
+    def __or__(self, other):
+        return other
+
+    def __and__(self, other):
+        return self
+
+    def __invert__(self):
+        return Everything()
+
+    def __repr__(self):
+        return 'FALSE'
+
+    def match(self, model, pk, obj_cache):
+        return False
 
 
 class NotQuery(Query):
