@@ -45,6 +45,7 @@ def load(plugin):
         branchname=StrSetting(default='tiget'),
         debug=BoolSetting(default=False),
         color=BoolSetting(default=sys.stdout.isatty()),
+        editor=StrSetting(default=os.environ.get('EDITOR', 'vi')),
         pdb_module=StrSetting(default='pdb'),
         repository=RepositorySetting(),
     )

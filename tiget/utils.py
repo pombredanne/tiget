@@ -18,11 +18,10 @@ __all__ = [
 
 
 def open_in_editor(content):
-    editor = os.environ.get('EDITOR', 'vi')
     with NamedTemporaryFile(prefix='tiget') as f:
         f.write(content.encode('utf-8'))
         f.seek(0)
-        os.system('{} {}'.format(editor, f.name))
+        os.system('{} {}'.format(settings.core.editor, f.name))
         content = f.read().decode('utf-8')
     return content
 
