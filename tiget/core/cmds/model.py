@@ -55,8 +55,8 @@ def edit_cmd(opts, model, pk):
         Edit MODEL instance with primary key PK.
     """
     try:
-        instance = model.objects.get(pk=pk)
-    except model.DoesNotExist as e:
+        instance = model.objects.get(pk__startswith=pk)
+    except (model.DoesNotExist, model.MultipleObjectsReturned) as e:
         raise CmdError(e)
     try:
         s = open_in_editor(instance.dumps())

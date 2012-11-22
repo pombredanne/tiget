@@ -15,7 +15,7 @@ def accept_cmd(opts, ticket_id):
         accept TICKET_ID
     """
     try:
-        ticket = Ticket.objects.get(id=ticket_id)
+        ticket = Ticket.objects.get(id__startswith=ticket_id)
         ticket.owner = User.current()
     except (Ticket.DoesNotExist, User.DoesNotExist) as e:
         raise CmdError(e)
