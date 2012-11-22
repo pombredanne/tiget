@@ -152,6 +152,9 @@ class NotQuery(Query):
     def __init__(self, subquery):
         self.subquery = subquery
 
+    def __invert__(self):
+        return self.subquery
+
     def __repr__(self):
         return '(NOT {!r})'.format(self.subquery)
 
