@@ -51,9 +51,10 @@ class QuerySet(object):
             if not found:
                 found = True
             else:
-                raise self.model.MultipleObjectsReturned()
+                raise self.model.MultipleObjectsReturned(
+                    'multiple objects returned')
         if not found:
-            raise self.model.DoesNotExist()
+            raise self.model.DoesNotExist('object does not exist')
         return obj
 
     @transaction.wrap()

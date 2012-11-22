@@ -14,7 +14,7 @@ class ObjCache(object):
             try:
                 content = transaction.current().get_blob(obj.path).decode('utf-8')
             except GitError:
-                raise self.model.DoesNotExist()
+                raise self.model.DoesNotExist('object does not exist')
             obj.loads(content)
             self.cache[pk] = obj
         return self.cache[pk]
