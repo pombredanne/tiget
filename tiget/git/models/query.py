@@ -70,9 +70,10 @@ class Query(object):
         raise TypeError('index must be a slice')
 
     def __repr__(self):
-        conditions = ' AND '.join(
-            '{}={!r}'.format(k, v) for k, v in self.conditions.items())
-        return '({})'.format(conditions)
+        conditions = []
+        for field, op, value in self.conditions:
+            conditions.append('{}__{}={!r}'.format(field, op, value))
+        return '({})'.format(' AND '.join(conditions))
 
     @classmethod
     def parse_conditions(cls, conditions):
