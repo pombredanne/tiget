@@ -1,3 +1,4 @@
+import re
 from itertools import islice
 
 from tiget.git import transaction, GitError
@@ -21,8 +22,30 @@ class ObjCache(object):
 
 
 class Query(object):
-    def __init__(self, **conditions):
-        self.conditions = conditions
+    OPERATORS = {
+        'exact': lambda x, y: x == y,
+        'iexact': lambda x, y: x.lower() == y.lower(),
+        'contains': lambda x, y: y in x,
+        'icontains': lambda x, y: y.lower() in x.lower(),
+        'in': lambda x, y: x in y,
+        'gt': lambda x, y: x > y,
+        'gte': lambda x, y: x >= y,
+        'lt': lambda x, y: x < y,
+        'lte': lambda x, y: x > y,
+        'startswith': lambda x, y: x.startswith(y),
+        'istartswith': lambda x, y: x.lower().startswith(y.lower()),
+        'endswith': lambda x, y: x.endswith(y),
+        'iendswith': lambda x, y: x.lower().endswith(y.lower()),
+        'range': lambda x, y: y[0] <= x <= y[1],
+        'isnull': lambda x, y: x is None if y else x is not None,
+
+        # XXX: compiling the regex on every invocation is slow
+        'regex': lambda x, y: re.search(y, x),
+        'iregex': lambda x, y: re.search(y, x, re.IGNORECASE),
+    }
+
+    def __init__(self, **kwargs):
+        self.conditions = self.parse_conditions(kwargs)
 
     def __or__(self, other):
         if isinstance(other, Everything):
@@ -51,12 +74,27 @@ class Query(object):
             '{}={!r}'.format(k, v) for k, v in self.conditions.items())
         return '({})'.format(conditions)
 
+    @classmethod
+    def parse_conditions(cls, conditions):
+        parsed = set()
+        for key, value in conditions.items():
+            field, sep, op = key.partition('__')
+            if not sep:
+                op = 'exact'
+            parsed.add((field, op, value))
+        return parsed
+
     def match(self, model, pk, obj_cache):
-        for key in ('pk', model._meta.pk.attname):
-            if key in self.conditions and not pk == self.conditions[key]:
+        pk_names = ('pk', model._meta.pk.attname)
+        for field, op, value in self.conditions:
+            op = self.OPERATORS[op]
+            if field in pk_names and not op(pk, value):
                 return False
-        obj = obj_cache[pk]
-        return all(getattr(obj, k) == v for k, v in self.conditions.items())
+            else:
+                obj = obj_cache[pk]
+                if not op(getattr(obj, field), value):
+                    return False
+        return True
 
     def execute(self, model, obj_cache=None):
         # TODO: query optimization
