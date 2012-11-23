@@ -158,7 +158,7 @@ class Intersection(Query):
         return Intersection(other, *self.subqueries)
 
     def __repr__(self):
-        r = ' & '.join('{!r}'.format(query) for query in self.subqueries)
+        r = ' & '.join(repr(query) for query in self.subqueries)
         return '({})'.format(r)
 
     def match(self, *args, **kwargs):
@@ -173,7 +173,7 @@ class Union(Query):
         return Union(other, *self.subqueries)
 
     def __repr__(self):
-        r = ' | '.join('{!r}'.format(query) for query in self.subqueries)
+        r = ' | '.join(repr(query) for query in self.subqueries)
         return '({})'.format(r)
 
     def match(self, *args, **kwargs):
