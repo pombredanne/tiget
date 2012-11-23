@@ -6,20 +6,23 @@ class Manager(object):
         setattr(cls, name, self)
         self.model = cls
 
-    def filter(self, **kwargs):
-        return QuerySet(self.model).filter(**kwargs)
-
     def all(self):
         return self.filter()
 
-    def get(self, **kwargs):
-        return self.filter(**kwargs).get()
+    def filter(self, *args, **kwargs):
+        return QuerySet(self.model).filter(*args, **kwargs)
 
-    def exists(self, **kwargs):
-        return self.filter(**kwargs).exists()
+    def exclude(self, *args, **kwargs):
+        return QuerySet(self.model).exclude(*args, **kwargs)
 
-    def count(self, **kwargs):
-        return self.filter(**kwargs).count()
+    def get(self, *args, **kwargs):
+        return self.filter(*args, **kwargs).get()
+
+    def exists(self, *args, **kwargs):
+        return self.filter(*args, **kwargs).exists()
+
+    def count(self, *args, **kwargs):
+        return self.filter(*args, **kwargs).count()
 
     def order_by(self, *order_by):
         return self.all().order_by(*order_by)

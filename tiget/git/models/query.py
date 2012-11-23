@@ -22,6 +22,59 @@ class ObjCache(object):
 
 
 class Query(object):
+    def __or__(self, other):
+        for a, b in ((self, other), (other, self)):
+            if isinstance(a, Q) and not a.conditions:
+                return a
+            elif (isinstance(a, InvertedQ) and isinstance(a.subquery, Q)
+                    and not a.subquery.conditions):
+                return b
+            elif isinstance(a, UnionQ) and isinstance(b, UnionQ):
+                return UnionQ(*(a.subqueries + b.subqueries))
+            elif (isinstance(a, InvertedQ) and isinstance(b, Q)
+                    and isinstance(a.subquery, Q)
+                    and a.subquery.conditions == b.conditions):
+                return Q()
+        return UnionQ(self, other)
+
+    def __and__(self, other):
+        for a, b in ((self, other), (other, self)):
+            if isinstance(a, Q) and not a.conditions:
+                return b
+            elif (isinstance(a, InvertedQ) and isinstance(a.subquery, Q)
+                    and not a.subquery.conditions):
+                return a
+            elif isinstance(a, IntersectionQ) and isinstance(b, IntersectionQ):
+                return IntersectionQ(*(a.subqueries + b.subqueries))
+            elif (isinstance(a, InvertedQ) and isinstance(b, Q)
+                    and isinstance(a.subquery, Q)
+                    and a.subquery.conditions == b.conditions):
+                return ~Q()
+        return IntersectionQ(self, other)
+
+    def __invert__(self):
+        return InvertedQ(self)
+
+    def __getitem__(self, key):
+        if isinstance(key, slice):
+            return SliceQ(self, key)
+        raise TypeError('index must be a slice')
+
+    def match(self, model, pk, obj_cache):
+        raise NotImplementedError
+
+    def execute(self, model, obj_cache=None):
+        # TODO: query optimization
+        if obj_cache is None:
+            obj_cache = ObjCache(model)
+        trans = transaction.current()
+        for pk in trans.list_blobs([model._meta.storage_name]):
+            pk = model._meta.pk.loads(pk)
+            if self.match(model, pk, obj_cache):
+                yield pk
+
+
+class Q(Query):
     OPERATORS = {
         'exact': lambda x, y: x == y,
         'iexact': lambda x, y: x.lower() == y.lower(),
@@ -47,33 +100,18 @@ class Query(object):
     def __init__(self, **kwargs):
         self.conditions = self.parse_conditions(kwargs)
 
-    def __or__(self, other):
-        if isinstance(other, Everything):
-            return other
-        elif isinstance(other, Nothing):
-            return self
-        return OrQuery(self, other)
-
     def __and__(self, other):
-        if isinstance(other, Everything):
-            return self
-        elif isinstance(other, Nothing):
-            return other
-        return AndQuery(self, other)
-
-    def __invert__(self):
-        return NotQuery(self)
-
-    def __getitem__(self, key):
-        if isinstance(key, slice):
-            return SliceQuery(self, key)
-        raise TypeError('index must be a slice')
+        if isinstance(other, Q):
+            q = Q()
+            q.conditions = self.conditions | other.conditions
+            return q
+        return super().__and__(other)
 
     def __repr__(self):
         conditions = []
         for field, op, value in self.conditions:
             conditions.append('{}__{}={!r}'.format(field, op, value))
-        return '({})'.format(' AND '.join(conditions))
+        return 'Q({})'.format(', '.join(conditions))
 
     @classmethod
     def parse_conditions(cls, conditions):
@@ -97,58 +135,8 @@ class Query(object):
                     return False
         return True
 
-    def execute(self, model, obj_cache=None):
-        # TODO: query optimization
-        if obj_cache is None:
-            obj_cache = ObjCache(model)
-        trans = transaction.current()
-        for pk in trans.list_blobs([model._meta.storage_name]):
-            pk = model._meta.pk.loads(pk)
-            if self.match(model, pk, obj_cache):
-                yield pk
 
-
-class Everything(Query):
-    def __init__(self):
-        pass
-
-    def __or__(self, other):
-        return self
-
-    def __and__(self, other):
-        return other
-
-    def __invert__(self):
-        return Nothing()
-
-    def __repr__(self):
-        return 'TRUE'
-
-    def match(self, model, pk, obj_cache):
-        return True
-
-
-class Nothing(Query):
-    def __init__(self):
-        pass
-
-    def __or__(self, other):
-        return other
-
-    def __and__(self, other):
-        return self
-
-    def __invert__(self):
-        return Everything()
-
-    def __repr__(self):
-        return 'FALSE'
-
-    def match(self, model, pk, obj_cache):
-        return False
-
-
-class NotQuery(Query):
+class InvertedQ(Query):
     def __init__(self, subquery):
         self.subquery = subquery
 
@@ -156,43 +144,43 @@ class NotQuery(Query):
         return self.subquery
 
     def __repr__(self):
-        return '(NOT {!r})'.format(self.subquery)
+        return '~{!r}'.format(self.subquery)
 
     def match(self, *args, **kwargs):
         return not self.subquery.match(*args, **kwargs)
 
 
-class AndQuery(Query):
+class IntersectionQ(Query):
     def __init__(self, *subqueries):
         self.subqueries = subqueries
 
     def __and__(self, other):
-        return AndQuery(other, *self.subqueries)
+        return IntersectionQ(other, *self.subqueries)
 
     def __repr__(self):
-        r = ' AND '.join('{!r}'.format(query) for query in self.subqueries)
+        r = ' & '.join('{!r}'.format(query) for query in self.subqueries)
         return '({})'.format(r)
 
     def match(self, *args, **kwargs):
         return all(query.match(*args, **kwargs) for query in self.subqueries)
 
 
-class OrQuery(Query):
+class UnionQ(Query):
     def __init__(self, *subqueries):
         self.subqueries = subqueries
 
     def __or__(self, other):
-        return OrQuery(other, *self.subqueries)
+        return UnionQ(other, *self.subqueries)
 
     def __repr__(self):
-        r = ' OR '.join('{!r}'.format(query) for query in self.subqueries)
+        r = ' | '.join('{!r}'.format(query) for query in self.subqueries)
         return '({})'.format(r)
 
     def match(self, *args, **kwargs):
         return any(query.match(*args, **kwargs) for query in self.subqueries)
 
 
-class SliceQuery(Query):
+class SliceQ(Query):
     def __init__(self, subquery, slice_):
         self.subquery = subquery
         self.slice = slice_
@@ -202,7 +190,7 @@ class SliceQuery(Query):
         if self.slice.step:
             s.append(self.slice.step)
         bits = ['' if bit is None else str(bit) for bit in bits]
-        return '({!r}[{}])'.format(self.subquery, ':'.join(bits))
+        return '{!r}[{}]'.format(self.subquery, ':'.join(bits))
 
     def execute(self, model, obj_cache=None):
         pks = self.subquery.execute(model, obj_cache=obj_cache)

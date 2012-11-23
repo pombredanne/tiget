@@ -1,12 +1,14 @@
+from functools import reduce
+
 from tiget.git import transaction
-from tiget.git.models.query import Query, Everything, ObjCache
+from tiget.git.models.query import Q, ObjCache
 
 
 class QuerySet(object):
     def __init__(self, model, query=None):
         self.model = model
         if query is None:
-            query = Everything()
+            query = Q()
         self.query = query
 
     def __or__(self, other):
@@ -37,13 +39,16 @@ class QuerySet(object):
         pks = self.query.execute(self.model, obj_cache)
         return iter([obj_cache[pk] for pk in pks])
 
-    def filter(self, **conditions):
-        query = self.query & Query(**conditions)
-        return QuerySet(self.model, query)
+    def all(self):
+        return self
 
-    def exclude(self, **conditions):
-        query = self.query & ~Query(**conditions)
-        return QuerySet(self.model, query)
+    def filter(self, *args, **kwargs):
+        query = reduce(lambda x, y: x & y, args, Q(**kwargs))
+        return QuerySet(self.model, self.query & query)
+
+    def exclude(self, *args, **kwargs):
+        query = reduce(lambda x, y: x & y, args, Q(**kwargs))
+        return QuerySet(self.model, self.query & ~query)
 
     def get(self):
         found = False
