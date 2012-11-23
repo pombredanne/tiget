@@ -31,7 +31,7 @@ class Query(object):
             elif (isinstance(a, Inversion) and a.subquery == b):
                 return Q()
         if isinstance(self, Union) and isinstance(other, Union):
-            return Union(*(self.subqueries + other.subqueries))
+            return Union(*(self.subqueries | other.subqueries))
         return Union(self, other)
 
     def __and__(self, other):
@@ -43,7 +43,7 @@ class Query(object):
             elif (isinstance(a, Inversion) and a.subquery == b):
                 return ~Q()
         if isinstance(self, Intersection) and isinstance(other, Intersection):
-            return Intersection(*(self.subqueries + other.subqueries))
+            return Intersection(*(self.subqueries | other.subqueries))
         return Intersection(self, other)
 
     def __invert__(self):
@@ -62,7 +62,6 @@ class Query(object):
         raise NotImplementedError
 
     def execute(self, model, obj_cache=None):
-        # TODO: query optimization
         if obj_cache is None:
             obj_cache = ObjCache(model)
         trans = transaction.current()
@@ -96,7 +95,13 @@ class Q(Query):
     }
 
     def __init__(self, **kwargs):
-        self.conditions = self.parse_conditions(kwargs)
+        conditions = set()
+        for key, value in kwargs.items():
+            field, sep, op = key.partition('__')
+            if not sep:
+                op = 'exact'
+            conditions.add((field, op, value))
+        self.conditions = frozenset(conditions)
 
     def __and__(self, other):
         if isinstance(other, Q):
@@ -115,15 +120,8 @@ class Q(Query):
         return (isinstance(other, self.__class__) and
             self.conditions == other.conditions)
 
-    @classmethod
-    def parse_conditions(cls, conditions):
-        parsed = set()
-        for key, value in conditions.items():
-            field, sep, op = key.partition('__')
-            if not sep:
-                op = 'exact'
-            parsed.add((field, op, value))
-        return parsed
+    def __hash__(self):
+        return hash(self.conditions)
 
     def match(self, model, pk, obj_cache):
         pk_names = ('pk', model._meta.pk.attname)
@@ -152,13 +150,16 @@ class Inversion(Query):
         return (isinstance(other, self.__class__) and
             self.subquery == other.subquery)
 
+    def __hash__(self):
+        return hash(self.subquery)
+
     def match(self, *args, **kwargs):
         return not self.subquery.match(*args, **kwargs)
 
 
 class Intersection(Query):
     def __init__(self, *subqueries):
-        self.subqueries = subqueries
+        self.subqueries = frozenset(subqueries)
 
     def __and__(self, other):
         return Intersection(other, *self.subqueries)
@@ -171,13 +172,16 @@ class Intersection(Query):
         return (isinstance(other, self.__class__) and
             self.subqueries == other.subqueries)
 
+    def __hash__(self):
+        return hash(self.subqueries)
+
     def match(self, *args, **kwargs):
         return all(query.match(*args, **kwargs) for query in self.subqueries)
 
 
 class Union(Query):
     def __init__(self, *subqueries):
-        self.subqueries = subqueries
+        self.subqueries = frozenset(subqueries)
 
     def __or__(self, other):
         return Union(other, *self.subqueries)
@@ -189,6 +193,9 @@ class Union(Query):
     def __eq__(self, other):
         return (isinstance(other, self.__class__) and
             self.subqueries == other.subqueries)
+
+    def __hash__(self):
+        return hash(self.subqueries)
 
     def match(self, *args, **kwargs):
         return any(query.match(*args, **kwargs) for query in self.subqueries)
@@ -209,6 +216,11 @@ class Slice(Query):
     def __eq__(self, other):
         return (isinstance(other, self.__class__) and
             self.subquery == other.subquery and self.slice == other.slice)
+
+    def __hash__(self):
+        # cheat python into hashing a slice, queries are immutable anyway
+        slice_ = (self.slice.start, self.slice.stop, self.slice.step)
+        return hash((self.subquery, slice_))
 
     def execute(self, model, obj_cache=None):
         pks = self.subquery.execute(model, obj_cache=obj_cache)
