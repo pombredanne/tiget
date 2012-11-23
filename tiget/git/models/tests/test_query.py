@@ -106,23 +106,23 @@ class TestUnionOptimizations(object):
         eq_(b | a, result)
 
     def test_with_everything(self):
-        self.check_both(Q(), Q(foo=42), Q())
+        self.check_both(Q(), Query(), Q())
 
     def test_with_nothing(self):
-        self.check_both(~Q(), Q(foo=42), Q(foo=42))
+        q = Query()
+        self.check_both(~Q(), q, q)
 
     def test_query_with_its_inversion(self):
-        self.check_both(Q(foo=42), ~Q(foo=42), Q())
+        q = Query()
+        self.check_both(q, ~q, Q())
 
     def test_query_with_union(self):
-        self.check_both(
-            Q(foo=42) | Q(bar=42), Q(baz=42),
-            Union(Q(foo=42), Q(bar=42), Q(baz=42)))
+        a, b, c = Query(), Query(), Query()
+        self.check_both(a | b, c, Union(a, b, c))
 
     def test_union_with_union(self):
-        self.check_both(
-            Q(foo=42) | Q(bar=42), Q(baz=42) | Q(frobz=42),
-            Union(Q(foo=42), Q(bar=42), Q(baz=42), Q(frobz=42)))
+        a, b, c, d = Query(), Query(), Query(), Query()
+        self.check_both(a | b, c | d, Union(a, b, c, d))
 
 
 class TestIntersectionOptimizations(object):
@@ -131,24 +131,23 @@ class TestIntersectionOptimizations(object):
         eq_(b & a, result)
 
     def test_intersection_everything(self):
-        self.check_both(Q(), Q(foo=42), Q(foo=42))
+        q = Query()
+        self.check_both(Q(), q, q)
 
     def test_intersection_nothing(self):
-        self.check_both(~Q(), Q(foo=42), ~Q())
+        self.check_both(~Q(), Query(), ~Q())
 
     def test_intersection_query_with_its_inversion(self):
-        self.check_both(Q(foo=42), ~Q(foo=42), ~Q())
+        q = Query()
+        self.check_both(q, ~q, ~Q())
 
     def test_query_with_intersection(self):
-        self.check_both(
-            Intersection(Q(foo=42), Q(bar=42)), Q(baz=42),
-            Intersection(Q(foo=42), Q(bar=42), Q(baz=42)))
+        a, b, c = Query(), Query(), Query()
+        self.check_both(a & b, c, Intersection(a, b, c))
 
     def test_intersection_with_intersection(self):
-        self.check_both(
-            Intersection(Q(foo=42), Q(bar=42)),
-            Intersection(Q(baz=42), Q(frobz=42)),
-            Intersection(Q(foo=42), Q(bar=42), Q(baz=42), Q(frobz=42)))
+        a, b, c, d = Query(), Query(), Query(), Query()
+        self.check_both(a & b, c & d, Intersection(a, b, c, d))
 
     def test_q_intersection(self):
         q = Q(foo=42) & Q(bar=42)
