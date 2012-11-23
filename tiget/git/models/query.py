@@ -24,32 +24,26 @@ class ObjCache(object):
 class Query(object):
     def __or__(self, other):
         for a, b in ((self, other), (other, self)):
-            if isinstance(a, Q) and not a.conditions:
+            if a == Q():
                 return a
-            elif (isinstance(a, Inversion) and isinstance(a.subquery, Q)
-                    and not a.subquery.conditions):
+            elif a == ~Q():
                 return b
-            elif isinstance(a, Union) and isinstance(b, Union):
-                return Union(*(a.subqueries + b.subqueries))
-            elif (isinstance(a, Inversion) and isinstance(b, Q)
-                    and isinstance(a.subquery, Q)
-                    and a.subquery.conditions == b.conditions):
+            elif (isinstance(a, Inversion) and a.subquery == b):
                 return Q()
+        if isinstance(self, Union) and isinstance(other, Union):
+            return Union(*(self.subqueries + other.subqueries))
         return Union(self, other)
 
     def __and__(self, other):
         for a, b in ((self, other), (other, self)):
-            if isinstance(a, Q) and not a.conditions:
+            if a == Q():
                 return b
-            elif (isinstance(a, Inversion) and isinstance(a.subquery, Q)
-                    and not a.subquery.conditions):
+            elif a == ~Q():
                 return a
-            elif isinstance(a, Intersection) and isinstance(b, Intersection):
-                return Intersection(*(a.subqueries + b.subqueries))
-            elif (isinstance(a, Inversion) and isinstance(b, Q)
-                    and isinstance(a.subquery, Q)
-                    and a.subquery.conditions == b.conditions):
+            elif (isinstance(a, Inversion) and a.subquery == b):
                 return ~Q()
+        if isinstance(self, Intersection) and isinstance(other, Intersection):
+            return Intersection(*(self.subqueries + other.subqueries))
         return Intersection(self, other)
 
     def __invert__(self):
@@ -59,6 +53,10 @@ class Query(object):
         if isinstance(key, slice):
             return Slice(self, key)
         raise TypeError('index must be a slice')
+
+    def __ne__(self, other):
+        # __eq__ has to be implemented for every subclass separately
+        return not self == other
 
     def match(self, model, pk, obj_cache):
         raise NotImplementedError
@@ -113,6 +111,10 @@ class Q(Query):
             conditions.append('{}__{}={!r}'.format(field, op, value))
         return 'Q({})'.format(', '.join(conditions))
 
+    def __eq__(self, other):
+        return (isinstance(other, self.__class__) and
+            self.conditions == other.conditions)
+
     @classmethod
     def parse_conditions(cls, conditions):
         parsed = set()
@@ -146,6 +148,10 @@ class Inversion(Query):
     def __repr__(self):
         return '~{!r}'.format(self.subquery)
 
+    def __eq__(self, other):
+        return (isinstance(other, self.__class__) and
+            self.subquery == other.subquery)
+
     def match(self, *args, **kwargs):
         return not self.subquery.match(*args, **kwargs)
 
@@ -160,6 +166,10 @@ class Intersection(Query):
     def __repr__(self):
         r = ' & '.join(repr(query) for query in self.subqueries)
         return '({})'.format(r)
+
+    def __eq__(self, other):
+        return (isinstance(other, self.__class__) and
+            self.subqueries == other.subqueries)
 
     def match(self, *args, **kwargs):
         return all(query.match(*args, **kwargs) for query in self.subqueries)
@@ -176,6 +186,10 @@ class Union(Query):
         r = ' | '.join(repr(query) for query in self.subqueries)
         return '({})'.format(r)
 
+    def __eq__(self, other):
+        return (isinstance(other, self.__class__) and
+            self.subqueries == other.subqueries)
+
     def match(self, *args, **kwargs):
         return any(query.match(*args, **kwargs) for query in self.subqueries)
 
@@ -191,6 +205,10 @@ class Slice(Query):
             s.append(self.slice.step)
         bits = ['' if bit is None else str(bit) for bit in bits]
         return '{!r}[{}]'.format(self.subquery, ':'.join(bits))
+
+    def __eq__(self, other):
+        return (isinstance(other, self.__class__) and
+            self.subquery == other.subquery and self.slice == other.slice)
 
     def execute(self, model, obj_cache=None):
         pks = self.subquery.execute(model, obj_cache=obj_cache)
