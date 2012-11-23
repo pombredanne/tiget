@@ -209,7 +209,7 @@ class Slice(Query):
     def __repr__(self):
         bits = [self.slice.start, self.slice.stop]
         if self.slice.step:
-            s.append(self.slice.step)
+            bits.append(self.slice.step)
         bits = ['' if bit is None else str(bit) for bit in bits]
         return '{!r}[{}]'.format(self.subquery, ':'.join(bits))
 
