@@ -26,38 +26,38 @@ class Query(object):
         for a, b in ((self, other), (other, self)):
             if isinstance(a, Q) and not a.conditions:
                 return a
-            elif (isinstance(a, InvertedQ) and isinstance(a.subquery, Q)
+            elif (isinstance(a, Inversion) and isinstance(a.subquery, Q)
                     and not a.subquery.conditions):
                 return b
-            elif isinstance(a, UnionQ) and isinstance(b, UnionQ):
-                return UnionQ(*(a.subqueries + b.subqueries))
-            elif (isinstance(a, InvertedQ) and isinstance(b, Q)
+            elif isinstance(a, Union) and isinstance(b, Union):
+                return Union(*(a.subqueries + b.subqueries))
+            elif (isinstance(a, Inversion) and isinstance(b, Q)
                     and isinstance(a.subquery, Q)
                     and a.subquery.conditions == b.conditions):
                 return Q()
-        return UnionQ(self, other)
+        return Union(self, other)
 
     def __and__(self, other):
         for a, b in ((self, other), (other, self)):
             if isinstance(a, Q) and not a.conditions:
                 return b
-            elif (isinstance(a, InvertedQ) and isinstance(a.subquery, Q)
+            elif (isinstance(a, Inversion) and isinstance(a.subquery, Q)
                     and not a.subquery.conditions):
                 return a
-            elif isinstance(a, IntersectionQ) and isinstance(b, IntersectionQ):
-                return IntersectionQ(*(a.subqueries + b.subqueries))
-            elif (isinstance(a, InvertedQ) and isinstance(b, Q)
+            elif isinstance(a, Intersection) and isinstance(b, Intersection):
+                return Intersection(*(a.subqueries + b.subqueries))
+            elif (isinstance(a, Inversion) and isinstance(b, Q)
                     and isinstance(a.subquery, Q)
                     and a.subquery.conditions == b.conditions):
                 return ~Q()
-        return IntersectionQ(self, other)
+        return Intersection(self, other)
 
     def __invert__(self):
-        return InvertedQ(self)
+        return Inversion(self)
 
     def __getitem__(self, key):
         if isinstance(key, slice):
-            return SliceQ(self, key)
+            return Slice(self, key)
         raise TypeError('index must be a slice')
 
     def match(self, model, pk, obj_cache):
@@ -136,7 +136,7 @@ class Q(Query):
         return True
 
 
-class InvertedQ(Query):
+class Inversion(Query):
     def __init__(self, subquery):
         self.subquery = subquery
 
@@ -150,12 +150,12 @@ class InvertedQ(Query):
         return not self.subquery.match(*args, **kwargs)
 
 
-class IntersectionQ(Query):
+class Intersection(Query):
     def __init__(self, *subqueries):
         self.subqueries = subqueries
 
     def __and__(self, other):
-        return IntersectionQ(other, *self.subqueries)
+        return Intersection(other, *self.subqueries)
 
     def __repr__(self):
         r = ' & '.join('{!r}'.format(query) for query in self.subqueries)
@@ -165,12 +165,12 @@ class IntersectionQ(Query):
         return all(query.match(*args, **kwargs) for query in self.subqueries)
 
 
-class UnionQ(Query):
+class Union(Query):
     def __init__(self, *subqueries):
         self.subqueries = subqueries
 
     def __or__(self, other):
-        return UnionQ(other, *self.subqueries)
+        return Union(other, *self.subqueries)
 
     def __repr__(self):
         r = ' | '.join('{!r}'.format(query) for query in self.subqueries)
@@ -180,7 +180,7 @@ class UnionQ(Query):
         return any(query.match(*args, **kwargs) for query in self.subqueries)
 
 
-class SliceQ(Query):
+class Slice(Query):
     def __init__(self, subquery, slice_):
         self.subquery = subquery
         self.slice = slice_
