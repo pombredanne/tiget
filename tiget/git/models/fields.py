@@ -1,6 +1,4 @@
-from uuid import UUID
-
-__all__ = ['UUIDField', 'TextField', 'ForeignKey']
+__all__ = ['TextField', 'ForeignKey']
 
 
 class Field(object):
@@ -48,23 +46,6 @@ class TextField(Field):
         super().validate(value)
         if not value is None and not isinstance(value, str):
             raise ValueError('{} must be a string'.format(self.name))
-
-
-class UUIDField(Field):
-    def validate(self, value):
-        super().validate(value)
-        if not value is None and not isinstance(value, UUID):
-            raise ValueError('{} must be a UUID'.format(self.name))
-
-    def dumps(self, value):
-        if not value is None:
-            return value.hex
-        return None
-
-    def loads(self, value):
-        if not value is None:
-            return UUID(value)
-        return None
 
 
 class ForeignKeyDescriptor(object):

@@ -43,7 +43,7 @@ class TestModelBase(GitTestCase):
 
     def test_path(self):
         ticket = Ticket(title='')
-        eq_(ticket.path, ['tickets', ticket.id.hex])
+        eq_(ticket.path, ['tickets', ticket.id])
 
     def test_save(self):
         self.assert_commit_count(1)
