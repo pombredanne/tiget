@@ -28,8 +28,10 @@ class Query(object):
                 return a
             elif a == ~Q():
                 return b
-            elif (isinstance(a, Inversion) and a.subquery == b):
+            elif isinstance(a, Inversion) and a.subquery == b:
                 return Q()
+            elif isinstance(a, Union) and not isinstance(b, Union):
+                return Union(b, *a.subqueries)
         if isinstance(self, Union) and isinstance(other, Union):
             return Union(*(self.subqueries | other.subqueries))
         return Union(self, other)
@@ -40,13 +42,21 @@ class Query(object):
                 return b
             elif a == ~Q():
                 return a
-            elif (isinstance(a, Inversion) and a.subquery == b):
+            elif isinstance(a, Inversion) and a.subquery == b:
                 return ~Q()
+            elif isinstance(a, Intersection) and not isinstance(b, Intersection):
+                return Intersection(b, *a.subqueries)
         if isinstance(self, Intersection) and isinstance(other, Intersection):
             return Intersection(*(self.subqueries | other.subqueries))
+        elif isinstance(self, Q) and isinstance(other, Q):
+            q = Q()
+            q.conditions = self.conditions | other.conditions
+            return q
         return Intersection(self, other)
 
     def __invert__(self):
+        if isinstance(self, Inversion):
+            return self.subquery
         return Inversion(self)
 
     def __getitem__(self, key):
@@ -103,13 +113,6 @@ class Q(Query):
             conditions.add((field, op, value))
         self.conditions = frozenset(conditions)
 
-    def __and__(self, other):
-        if isinstance(other, Q):
-            q = Q()
-            q.conditions = self.conditions | other.conditions
-            return q
-        return super().__and__(other)
-
     def __repr__(self):
         conditions = []
         for field, op, value in self.conditions:
@@ -140,9 +143,6 @@ class Inversion(Query):
     def __init__(self, subquery):
         self.subquery = subquery
 
-    def __invert__(self):
-        return self.subquery
-
     def __repr__(self):
         return '~{!r}'.format(self.subquery)
 
@@ -160,9 +160,6 @@ class Inversion(Query):
 class Intersection(Query):
     def __init__(self, *subqueries):
         self.subqueries = frozenset(subqueries)
-
-    def __and__(self, other):
-        return Intersection(other, *self.subqueries)
 
     def __repr__(self):
         r = ' & '.join(repr(query) for query in self.subqueries)
@@ -182,9 +179,6 @@ class Intersection(Query):
 class Union(Query):
     def __init__(self, *subqueries):
         self.subqueries = frozenset(subqueries)
-
-    def __or__(self, other):
-        return Union(other, *self.subqueries)
 
     def __repr__(self):
         r = ' | '.join(repr(query) for query in self.subqueries)
