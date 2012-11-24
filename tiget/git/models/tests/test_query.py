@@ -1,4 +1,4 @@
-from itertools import permutations
+from itertools import combinations
 from random import choice
 
 from nose.tools import *
@@ -7,22 +7,26 @@ from tiget.git.models.query import Query, Q, Inversion, Intersection, Union, Sli
 
 
 def generate_conditions():
-    operators = list(Q.OPERATORS.keys())
-    operators.append(None)
+    operators = Q.OPERATORS.keys()
     for i in range(3):
-        d = {}
-        for ops in permutations(operators, i):
+        for ops in combinations(operators, i):
+            d = {}
             for op in ops:
                 field_name = choice(('foo', 'bar', 'baz'))
                 lookup = '{}__{}'.format(field_name, op) if op else field_name
                 d[lookup] = 42
-        yield d
+            yield d
 
 
 class TestQ(object):
     def test_equality(self):
         for conditions in generate_conditions():
             eq_(Q(**conditions), Q(**conditions))
+
+    def test_inequality(self):
+        cond = iter(generate_conditions())
+        for conditions1, conditions2 in zip(cond, cond):
+            assert_not_equal(Q(**conditions1), Q(**conditions2))
 
     def test_repr(self):
         for conditions in generate_conditions():
@@ -36,6 +40,11 @@ class TestInversion(object):
             q = Q(**conditions)
             eq_(Inversion(q), Inversion(q))
 
+    def test_inequality(self):
+        cond = iter(generate_conditions())
+        for conditions1, conditions2 in zip(cond, cond):
+            assert_not_equal(~Q(**conditions1), ~Q(**conditions2))
+
     def test_repr(self):
         for conditions in generate_conditions():
             q = ~Q(**conditions)
@@ -48,6 +57,14 @@ class TestIntersection(object):
         for conditions1, conditions2 in zip(cond, cond):
             qs = (Q(**conditions1), Q(**conditions2))
             eq_(Intersection(*qs), Intersection(*qs))
+
+    def test_inequality(self):
+        cond = iter(generate_conditions())
+        cond = iter(zip(cond, cond))
+        for conditions1, conditions2 in zip(cond, cond):
+            qs1 = (Q(**conditions1[0]), Q(**conditions1[1]))
+            qs2 = (Q(**conditions2[0]), Q(**conditions2[1]))
+            assert_not_equal(Intersection(*qs1), Intersection(*qs2))
 
     def test_repr(self):
         cond = iter(generate_conditions())
@@ -63,6 +80,14 @@ class TestUnion(object):
             qs = (Q(**conditions1), Q(**conditions2))
             eq_(Union(*qs), Union(*qs))
 
+    def test_inequality(self):
+        cond = iter(generate_conditions())
+        cond = iter(zip(cond, cond))
+        for conditions1, conditions2 in zip(cond, cond):
+            qs1 = (Q(**conditions1[0]), Q(**conditions1[1]))
+            qs2 = (Q(**conditions2[0]), Q(**conditions2[1]))
+            assert_not_equal(Union(*qs1), Union(*qs2))
+
     def test_repr(self):
         cond = iter(generate_conditions())
         for conditions1, conditions2 in zip(cond, cond):
@@ -74,6 +99,11 @@ class TestSlice(object):
     def test_equality(self):
         for s in ((None,), (0,), (0, 3), (0, 3, 2)):
             eq_(Slice(Q(), slice(*s)), Slice(Q(), slice(*s)))
+
+    def test_inequality(self):
+        args = iter(((None,), (0,), (0, 3), (0, 3, 2)))
+        for s1, s2 in zip(args, args):
+            assert_not_equal(Slice(Q(), slice(*s1)), Slice(Q(), slice(*s2)))
 
     def test_repr(self):
         for s in ((None,), (0,), (0, 3), (0, 3, 2)):
