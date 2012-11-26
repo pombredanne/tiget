@@ -164,6 +164,9 @@ def current(initialized=True):
 
 
 class wrap(object):
+    def __init__(self, message=None):
+        self.message = message
+
     def __call__(self, fn):
         @wraps(fn)
         def _inner(*args, **kwargs):
@@ -180,6 +183,6 @@ class wrap(object):
     def __exit__(self, type, value, traceback):
         if self.active:
             if not type and _transaction.has_changes:
-                commit()
+                commit(self.message)
             else:
                 rollback()
