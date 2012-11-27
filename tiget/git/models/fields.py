@@ -1,4 +1,8 @@
-__all__ = ['TextField', 'ForeignKey']
+import time
+from datetime import datetime, timedelta, timezone
+
+
+__all__ = ['TextField', 'ForeignKey', 'DateTimeField']
 
 
 class Field(object):
@@ -105,4 +109,30 @@ class ForeignKey(Field):
         if not value is None:
             pk_field = self.target._meta.pk
             return pk_field.loads(value)
+        return None
+
+
+class DateTimeField(Field):
+    FORMAT = '%Y-%m-%d %H:%M:%S %z'
+
+    def validate(self, value):
+        super().validate(value)
+        if not value is None and not isinstance(value, datetime):
+            raise ValueError('{} must be a datetime object'.format(self.name))
+
+    def dumps(self, value):
+        if not value is None:
+            if not value.tzinfo:
+                # Take a deep breath...
+                zone = time.timezone
+                if time.daylight and time.localtime().tm_isdst == 1:
+                    zone = time.altzone
+                tz = timezone(timedelta(seconds=-zone))
+                value = value.replace(tzinfo=tz)
+            return value.strftime(self.FORMAT)
+        return None
+
+    def loads(self, value):
+        if not value is None:
+            return datetime.strptime(value, self.FORMAT)
         return None
