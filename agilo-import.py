@@ -9,6 +9,10 @@ from tiget.git import transaction
 from tiget.simple_workflow.models import Milestone, Ticket
 
 
+def make_datetime(timestamp):
+    return datetime.fromtimestamp(timestamp, timezone.utc)
+
+
 @transaction.wrap('agilo import')
 def main():
     conn = psycopg2.connect(' '.join(sys.argv[1:]))
@@ -17,16 +21,17 @@ def main():
     print('Importing Milestones')
     cur.execute('select name, description, completed from milestone')
     for name, description, completed in cur:
-        completed_at = datetime.fromtimestamp(completed, timezone.utc)
         Milestone.objects.create(name=name, description=description,
-            completed_at=completed_at)
+            completed_at=make_datetime(completed))
 
     print('TODO: import users')
 
     print('Importing Tickets')
-    cur.execute('select summary, description from ticket')
-    for summary, description in cur:
-        Ticket.objects.create(summary=summary, description=description)
+    cur.execute('select summary, description, milestone from ticket')
+    for summary, description, milestone in cur:
+        milestone = Milestone.objects.get(name=milestone) if milestone else None
+        Ticket.objects.create(summary=summary, description=description,
+            milestone=milestone)
 
     cur.close()
     conn.close()
