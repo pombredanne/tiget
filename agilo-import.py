@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 import psycopg2
 
 from tiget.git import transaction
-from tiget.simple_workflow.models import Milestone, Ticket
+from tiget.scrum.models import Milestone, Ticket
 
 
 def make_datetime(timestamp):

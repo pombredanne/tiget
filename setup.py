@@ -37,7 +37,7 @@ setup(
         'tiget.plugins': [
             'core = tiget.core',
             'importer = tiget.git.importer',
-            'simple-workflow = tiget.simple_workflow',
+            'scrum = tiget.scrum',
         ],
     },
     requires=['pygit2', 'ansicolors'],

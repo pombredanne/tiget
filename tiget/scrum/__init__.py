@@ -5,7 +5,7 @@ __version__ = tiget.__version__
 
 
 def load(plugin):
-    from tiget.simple_workflow import models
-    from tiget.simple_workflow.cmds import accept_cmd
+    from tiget.scrum import models
+    from tiget.scrum.cmds import accept_cmd
     plugin.add_models(models)
     plugin.add_cmd(accept_cmd)

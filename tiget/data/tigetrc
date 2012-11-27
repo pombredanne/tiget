@@ -1,6 +1,6 @@
 alias ?=help man=help
+alias .=source
 alias new=create
 alias ls=list
-alias .=source
 
-load simple-workflow
+load scrum
