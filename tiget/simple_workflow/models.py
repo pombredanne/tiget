@@ -13,6 +13,7 @@ class User(models.Model):
 class Milestone(models.Model):
     name = models.TextField(primary_key=True)
     description = models.TextField(null=True)
+    completed_at = models.DateTimeField(null=True)
 
 
 def get_current_user():
