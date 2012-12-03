@@ -22,8 +22,7 @@ class GitTestCase(object):
         oid = self.repo.lookup_reference(self.branchref).oid
         tree = self.repo[oid].tree
         *path, filename = filename.split('/')
-        while path:
-            name = path.pop()
+        for name in path:
             assert_in(name, tree)
             entry = tree[name]
             ok_(entry.attributes & stat.S_IFDIR)

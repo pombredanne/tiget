@@ -47,8 +47,7 @@ class Transaction(object):
         return memory_tree
 
     def exists(self, path):
-        path = list(map(quote_filename, path))
-        filename = path.pop()
+        *path, filename = map(quote_filename, path)
         memory_tree = self.get_memory_tree(path)
         for files in (memory_tree.blobs, memory_tree.childs, memory_tree.tree):
             if filename in files:

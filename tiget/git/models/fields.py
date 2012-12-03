@@ -97,7 +97,7 @@ class ForeignKey(Field):
         if not value is None and not self.target.objects.exists(pk=value):
             target_name = self.target.__name__
             raise ValueError(
-                '{} with pk={} does not exist'.format(target_name, repr(value)))
+                '{} with pk={!r} does not exist'.format(target_name, value))
 
     def dumps(self, value):
         if not value is None:
