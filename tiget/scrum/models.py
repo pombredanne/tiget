@@ -1,4 +1,5 @@
-from tiget.git import models, get_config
+from tiget.conf import settings
+from tiget.git import models
 
 
 class User(models.Model):
@@ -7,7 +8,7 @@ class User(models.Model):
 
     @classmethod
     def current(cls, **kwargs):
-        return cls.objects.get(email=get_config('user.email'))
+        return cls.objects.get(email=settings.scrum.current_user)
 
 
 class Milestone(models.Model):
