@@ -80,8 +80,8 @@ class Transaction(object):
         names = set(memory_tree.blobs.keys())
         for entry in memory_tree.tree:
             if entry.attributes & stat.S_IFREG:
-                names.add(unquote_filename(entry.name))
-        return names
+                names.add(entry.name)
+        return set(map(unquote_filename, names))
 
     def add_message(self, message):
         self.messages += [message]
