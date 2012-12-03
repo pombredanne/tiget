@@ -19,7 +19,11 @@ class Setting:
 
 class BoolSetting(Setting):
     def clean(self, value):
-        if not isinstance(value, bool):
+        if value == 'on':
+            value = True
+        elif value == 'off':
+            value = False
+        elif not isinstance(value, bool):
             raise ValueError('value must be a boolean')
         return super().clean(value)
 
