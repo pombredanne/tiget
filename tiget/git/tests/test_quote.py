@@ -3,7 +3,7 @@ from nose.tools import *
 from tiget.git.quote import quote_filename, unquote_filename
 
 
-class TestQuote(object):
+class TestQuote:
     def test_quote_unquote(self):
         testnames = [
             'foo',

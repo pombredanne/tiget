@@ -12,7 +12,7 @@ from tiget.git.quote import quote_filename, unquote_filename
 MemoryTree = namedtuple('MemoryTree', ['tree', 'childs', 'blobs'])
 
 
-class Transaction(object):
+class Transaction:
     def __init__(self):
         repo = settings.core.repository
         if repo is None:
@@ -162,7 +162,7 @@ def current(initialized=True):
     return _transaction
 
 
-class wrap(object):
+class wrap:
     def __init__(self, message=None):
         self.message = message
 

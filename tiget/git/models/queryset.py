@@ -4,7 +4,7 @@ from tiget.git import transaction
 from tiget.git.models.query import Q, ObjCache
 
 
-class QuerySet(object):
+class QuerySet:
     def __init__(self, model, query=None):
         self.model = model
         if query is None:

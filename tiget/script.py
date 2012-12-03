@@ -13,7 +13,7 @@ from tiget.cmds import aliases, CmdError, run
 from tiget.utils import print_error, post_mortem, load_file
 
 
-class Script(object):
+class Script:
     def __init__(self, instream, infile, ignore_errors=False):
         if isinstance(instream, str):
             instream = StringIO(instream)

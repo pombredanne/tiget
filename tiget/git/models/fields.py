@@ -5,7 +5,7 @@ from datetime import datetime, timedelta, timezone
 __all__ = ['TextField', 'ForeignKey', 'DateTimeField']
 
 
-class Field(object):
+class Field:
     def __init__(
             self, hidden=False, null=False, primary_key=False, choices=None,
             default=None, name=None):
@@ -52,7 +52,7 @@ class TextField(Field):
             raise ValueError('{} must be a string'.format(self.name))
 
 
-class ForeignKeyDescriptor(object):
+class ForeignKeyDescriptor:
     def __init__(self, field):
         self.field = field
 

@@ -8,7 +8,7 @@ import pygit2
 from tiget.conf import settings
 
 
-class GitTestCase(object):
+class GitTestCase:
     def setup(self):
         self.repo = pygit2.init_repository(mkdtemp(), False)
         settings.core.repository = self.repo.path

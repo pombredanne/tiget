@@ -9,7 +9,7 @@ from tiget.plugins.settings import Settings
 plugins = OrderedDict()
 
 
-class Plugin(object):
+class Plugin:
     def __init__(self, mod, name):
         self.mod = mod
         self.name = name

@@ -1,4 +1,4 @@
-class Setting(object):
+class Setting:
     def __init__(self, default=None, choices=None):
         self.default = default
         self.choices = choices
@@ -39,7 +39,7 @@ class StrSetting(Setting):
         return super().clean(value)
 
 
-class Settings(object):
+class Settings:
     def __init__(self):
         self.variables = {}
         self.data = {}

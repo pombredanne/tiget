@@ -3,7 +3,7 @@ from nose.tools import *
 from tiget.serializer import dumps, loads
 
 
-class TestDump(object):
+class TestDump:
     def test_none(self):
         s = dumps({'none': None})
         eq_(s, 'none: \n')
@@ -17,7 +17,7 @@ class TestDump(object):
         eq_(s, 'multiline: foo\n    bar\n    baz\n')
 
 
-class TestLoad(object):
+class TestLoad:
     def test_none(self):
         data = loads('none: ')
         eq_(len(data), 1)
@@ -53,7 +53,7 @@ class TestLoad(object):
         assert_raises(ValueError, loads, 'b0rked')
 
 
-class TestDumpLoad(object):
+class TestDumpLoad:
     def dump_load(self, **data):
         s = dumps(data)
         restored = loads(s)

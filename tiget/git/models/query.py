@@ -4,7 +4,7 @@ from itertools import islice
 from tiget.git import transaction, GitError
 
 
-class ObjCache(object):
+class ObjCache:
     def __init__(self, model):
         self.model = model
         self.cache = {}
@@ -21,7 +21,7 @@ class ObjCache(object):
         return self.cache[pk]
 
 
-class Query(object):
+class Query:
     def __or__(self, other):
         for a, b in ((self, other), (other, self)):
             if a == Q():

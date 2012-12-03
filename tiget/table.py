@@ -8,7 +8,7 @@ LJUST = lambda x, width: x.ljust(width)
 RJUST = lambda x, width: x.rjust(width)
 
 
-class Table(object):
+class Table:
     def __init__(self, *args):
         self.columns = args
         self.rows = []

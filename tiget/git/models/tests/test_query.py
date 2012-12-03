@@ -18,7 +18,7 @@ def generate_conditions():
             yield d
 
 
-class TestQ(object):
+class TestQ:
     def test_equality(self):
         for conditions in generate_conditions():
             eq_(Q(**conditions), Q(**conditions))
@@ -34,7 +34,7 @@ class TestQ(object):
             eq_(q, eval(repr(q)))
 
 
-class TestInversion(object):
+class TestInversion:
     def test_equality(self):
         for conditions in generate_conditions():
             q = Q(**conditions)
@@ -51,7 +51,7 @@ class TestInversion(object):
             eq_(q, eval(repr(q)))
 
 
-class TestIntersection(object):
+class TestIntersection:
     def test_equality(self):
         cond = iter(generate_conditions())
         for conditions1, conditions2 in zip(cond, cond):
@@ -73,7 +73,7 @@ class TestIntersection(object):
             eq_(q, eval(repr(q)))
 
 
-class TestUnion(object):
+class TestUnion:
     def test_equality(self):
         cond = iter(generate_conditions())
         for conditions1, conditions2 in zip(cond, cond):
@@ -95,7 +95,7 @@ class TestUnion(object):
             eq_(q, eval(repr(q)))
 
 
-class TestSlice(object):
+class TestSlice:
     def test_equality(self):
         for s in ((None,), (0,), (0, 3), (0, 3, 2)):
             eq_(Slice(Q(), slice(*s)), Slice(Q(), slice(*s)))
@@ -111,7 +111,7 @@ class TestSlice(object):
             eq_(q, eval(repr(q)))
 
 
-class TestOperators(object):
+class TestOperators:
     def test_union(self):
         a, b = Query(), Query()
         q = a | b
@@ -130,7 +130,7 @@ class TestOperators(object):
         eq_((~q).subquery, q)
 
 
-class TestUnionOptimizations(object):
+class TestUnionOptimizations:
     def check_both(self, a, b, result):
         eq_(a | b, result)
         eq_(b | a, result)
@@ -155,7 +155,7 @@ class TestUnionOptimizations(object):
         self.check_both(a | b, c | d, Union(a, b, c, d))
 
 
-class TestIntersectionOptimizations(object):
+class TestIntersectionOptimizations:
     def check_both(self, a, b, result):
         eq_(a & b, result)
         eq_(b & a, result)
@@ -185,7 +185,7 @@ class TestIntersectionOptimizations(object):
         assert_is_instance(q, Q)
 
 
-class TestInversionOptimizations(object):
+class TestInversionOptimizations:
     def test_inversion_inversion(self):
         q = Q(foo=42)
         assert_is(~~q, q)

@@ -1,7 +1,7 @@
 from tiget.plugins import plugins
 
 
-class Settings(object):
+class Settings:
     def __getattr__(self, key):
         try:
             return self[key]

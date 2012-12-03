@@ -17,7 +17,7 @@ def cmd(**kwargs):
     return _decorator
 
 
-class Cmd(object):
+class Cmd:
     def __init__(self, fn, name=None, options=''):
         self.fn = fn
         if not name:

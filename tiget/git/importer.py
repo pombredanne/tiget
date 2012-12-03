@@ -24,7 +24,7 @@ def unload(plugin):
     sys.path_hooks.remove(GitImporter)
 
 
-class GitImporter(object):
+class GitImporter:
     def __init__(self, path):
         if not path.startswith(PATH_PREFIX):
             raise ImportError()

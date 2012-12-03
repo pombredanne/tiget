@@ -1,7 +1,7 @@
 from tiget.git.models.queryset import QuerySet
 
 
-class Manager(object):
+class Manager:
     def contribute_to_class(self, cls, name):
         setattr(cls, name, self)
         self.model = cls

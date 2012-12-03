@@ -3,7 +3,7 @@ from uuid import uuid4
 from tiget.git.models.fields import TextField
 
 
-class Options(object):
+class Options:
     def __init__(self, meta):
         self.meta = meta
         self.fields = []

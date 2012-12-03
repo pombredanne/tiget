@@ -57,7 +57,7 @@ class ModelBase(type):
             setattr(cls, name, value)
 
 
-class Model(object, metaclass=ModelBase):
+class Model(metaclass=ModelBase):
     def __init__(self, **kwargs):
         for field in self._meta.fields:
             attname = field.attname
