@@ -75,14 +75,13 @@ def help_cmd(opts, name=None):
         else:
             raise CmdError('no usage information for command "{}"'.format(name))
     else:
-        for plugin in plugins.values():
+        for plugin in sorted(plugins.values(), key=lambda p: p.name):
             cmds = list(plugin.cmds.values())
             if not cmds:
                 continue
             print('[{}]'.format(plugin.name))
-            cmds.sort(key=lambda cmd: cmd.name)
             longest = max(len(cmd.name) for cmd in cmds)
-            for cmd in cmds:
+            for cmd in sorted(cmds, key=lambda cmd: cmd.name):
                 cmd_name = cmd.name.ljust(longest)
                 print('{} - {}'.format(cmd_name, cmd.help_text))
             print('')
@@ -120,7 +119,7 @@ def set_cmd(opts, *args):
         except (ValueError, KeyError) as e:
             raise CmdError(e)
     if not args:
-        for plugin in plugins.values():
+        for plugin in sorted(plugins.values(), key=lambda p: p.name):
             if not plugin.settings:
                 continue
             print('[{}]'.format(plugin.name))
