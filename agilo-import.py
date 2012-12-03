@@ -7,7 +7,7 @@ import psycopg2
 from psycopg2.extras import DictCursor
 
 from tiget.git import transaction
-from tiget.scrum.models import Milestone, Sprint, Ticket
+from tiget.scrum.models import Milestone, Sprint, User, Ticket
 
 
 @transaction.wrap('agilo import')
@@ -38,7 +38,32 @@ def main():
     for row in cur:
         Sprint.objects.create(**row)
 
-    print('TODO: import users')
+    print('Importing users')
+    users = {}
+    # there is no user table, so we do our best to collect the user names
+    cur.execute('''
+        select distinct trim(raw.user) as name
+        from (select owner as user from ticket
+              union all
+              select reporter as user from ticket
+              union all
+              select author as user from ticket_change
+             ) as raw
+        where raw.user != '' and raw.user is not null
+        order by trim(raw.user)
+    ''')
+    for row in cur:
+        name = row['name']
+        default_email = '{}@example.org'.format(name)
+        email = input(
+            'Email for user "{}" [{}]: '.format(name, default_email)).strip()
+        if not email:
+            email = default_email
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            user = User.objects.create(email=email, name=name)
+        users[name] = user
 
     print('Importing Tickets')
     cur.execute('''
@@ -56,12 +81,17 @@ def main():
                                         else 'fixed'
                         end
                     else status
-               end as status
+               end as status,
+               trim(reporter) as reporter,
+               trim(owner) as owner
         from ticket
         where type in ('idea', 'requirement', 'bug', 'feature', 'wording',
                        'story', 'task', 'training')
     ''')
     for row in cur:
+        for key in ('reporter', 'owner'):
+            name = row[key]
+            row[key] = users[name] if name else None
         Ticket.objects.create(**row)
 
     cur.close()
