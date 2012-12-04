@@ -93,6 +93,22 @@ class Model(metaclass=ModelBase):
 
     pk = property(_get_pk_val, _set_pk_val)
 
+    @property
+    @transaction.wrap()
+    def created_at(self):
+        trans = transaction.current()
+        if self.pk:
+            return trans.stat(self.path).created_at
+        return None
+
+    @property
+    @transaction.wrap()
+    def updated_at(self):
+        trans = transaction.current()
+        if self.pk:
+            return trans.stat(self.path).updated_at
+        return None
+
     def dumps(self, include_hidden=False, include_pk=True):
         data = OrderedDict()
         for field in self._meta.fields:

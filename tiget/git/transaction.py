@@ -1,6 +1,7 @@
 import stat
 from functools import wraps
 from collections import namedtuple
+from datetime import datetime, timezone, timedelta
 
 import pygit2
 
@@ -10,6 +11,7 @@ from tiget.git.quote import quote_filename, unquote_filename
 
 
 MemoryTree = namedtuple('MemoryTree', ['tree', 'childs', 'blobs'])
+FileStat = namedtuple('FileStat', ['created_at', 'updated_at'])
 
 
 class Transaction:
@@ -82,6 +84,33 @@ class Transaction:
             if entry.attributes & stat.S_IFREG:
                 names.add(entry.name)
         return set(map(unquote_filename, names))
+
+    def walk(self, reverse=False):
+        sort = pygit2.GIT_SORT_TOPOLOGICAL | pygit2.GIT_SORT_TIME
+        if not reverse: # sic
+            sort |= pygit2.GIT_SORT_REVERSE
+        # FIXME: does not work for merge transactions
+        return self.repo.walk(self.parents[0], sort)
+
+    def stat(self, path):
+        *path, filename = map(quote_filename, path)
+        created_at = updated_at = None
+        previous_oid = None
+        for commit in self.walk():
+            tree = commit.tree
+            try:
+                for part in path:
+                    tree = tree[part].to_object()
+                entry = tree[filename].to_object()
+            except KeyError:
+                continue
+            if not previous_oid == entry.oid:
+                updated_at = datetime.fromtimestamp(commit.commit_time,
+                    timezone(timedelta(minutes=commit.commit_time_offset)))
+                if previous_oid is None:
+                    created_at = updated_at
+                previous_oid = commit.oid
+        return FileStat(created_at, updated_at)
 
     def add_message(self, message):
         self.messages += [message]
