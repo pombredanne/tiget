@@ -3,6 +3,6 @@ python:
     - "3.2"
     - "3.3"
 install:
-    - "pip install . --use-mirrors"
-    - "pip install ./plugins/tiget_ipython --use-mirrors"
+    - "pip install --use-mirrors ."
+    - "pip install --use-mirrors ./plugins/tiget_ipython"
 script: "./setup.py test"
