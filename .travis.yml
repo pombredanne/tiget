@@ -10,9 +10,10 @@ before_install:
     - "cd libgit2-0.17.0"
     - "mkdir build"
     - "cd build"
-    - "cmake .. -DCMAKE_INSTALL_PREFIX=/usr"
-    - "cmake --build ."
-    - "sudo cmake --build . --target install"
+    - "cmake -q .. -DCMAKE_INSTALL_PREFIX=/usr"
+    - "cmake -q --build ."
+    - "sudo cmake -q --build . --target install"
+    - "cd ../.."
 install:
     - "pip install --use-mirrors ."
     - "pip install --use-mirrors ./plugins/tiget_ipython"
