@@ -39,7 +39,6 @@ def main():
         Sprint.objects.create(**row)
 
     print('Importing users')
-    users = {}
     # there is no user table, so we do our best to collect the user names
     cur.execute('''
         select distinct trim(raw.user) as name
@@ -52,6 +51,7 @@ def main():
         where raw.user != '' and raw.user is not null
         order by trim(raw.user)
     ''')
+    user_pks = {}
     for row in cur:
         name = row['name']
         default_email = '{}@example.org'.format(name)
@@ -63,11 +63,12 @@ def main():
             user = User.objects.get(email=email)
         except User.DoesNotExist:
             user = User.objects.create(email=email, name=name)
-        users[name] = user
+        user_pks[name] = user.pk
 
     print('Importing Tickets')
     cur.execute('''
-        select summary,
+        select id,
+               summary,
                description,
                case milestone when '' then null else milestone end as milestone,
                case type when 'task' then 'feature' else type end as ticket_type,
@@ -88,11 +89,14 @@ def main():
         where type in ('idea', 'requirement', 'bug', 'feature', 'wording',
                        'story', 'task', 'training')
     ''')
+    ticket_pks = {}
     for row in cur:
+        ticket_id = row.pop('id')
         for key in ('reporter', 'owner'):
             name = row[key]
-            row[key] = users[name] if name else None
-        Ticket.objects.create(**row)
+            row[key] = User.objects.get(pk=user_pks[name]) if name else None
+        ticket = Ticket.objects.create(**row)
+        ticket_pks[ticket_id] = ticket.pk
 
     cur.close()
     conn.close()
