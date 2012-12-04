@@ -2,6 +2,7 @@ import os
 import sys
 from subprocess import list2cmdline
 
+from tiget.plugins import load_plugin
 from tiget.script import Script, Repl
 from tiget.conf import settings
 from tiget.utils import print_error
@@ -22,6 +23,7 @@ def load_config():
 
 
 def main():
+    load_plugin('tiget.core')
     load_config()
 
     args = sys.argv[1:]

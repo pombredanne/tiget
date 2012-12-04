@@ -4,8 +4,9 @@ import getopt
 from datetime import datetime, timezone
 
 import psycopg2
-from psycopg2.extras import DictCursor
+from psycopg2.extras import RealDictCursor
 
+from tiget.plugins import load_plugin
 from tiget.git import transaction
 from tiget.scrum.models import Milestone, Sprint, User, Ticket
 
@@ -13,7 +14,7 @@ from tiget.scrum.models import Milestone, Sprint, User, Ticket
 @transaction.wrap('agilo import')
 def main():
     conn = psycopg2.connect(' '.join(sys.argv[1:]))
-    cur = conn.cursor(cursor_factory=DictCursor)
+    cur = conn.cursor(cursor_factory=RealDictCursor)
 
     print('Importing Milestones')
     cur.execute('''
@@ -102,4 +103,5 @@ def main():
     conn.close()
 
 if __name__ == '__main__':
+    load_plugin('tiget.core')
     main()

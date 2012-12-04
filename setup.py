@@ -43,5 +43,5 @@ setup(
     requires=['pygit2', 'ansicolors'],
     install_requires=['distribute'],
     tests_require=['nose'],
-    test_suite='nose.collector',
+    test_suite='tiget.testrunner.collector',
 )
