@@ -12,7 +12,7 @@ before_install:
     - "cd build"
     - "cmake -q .. -DCMAKE_INSTALL_PREFIX=/usr"
     - "cmake -q --build ."
-    - "sudo cmake -q --build . --target install"
+    - "sudo cmake --build . --target install"
     - "cd ../.."
 install:
     - "pip install --use-mirrors ."
