@@ -60,3 +60,9 @@ class Ticket(models.Model):
     owner = models.ForeignKey(User, null=True)
     status = models.TextField(choices=STATUS_CHOICES, default='new')
     ticket_type = models.TextField(choices=TYPE_CHOICES, default='bug')
+
+
+class Comment(models.Model):
+    ticket = models.ForeignKey(Ticket)
+    author = models.ForeignKey(User)
+    text = models.TextField()
