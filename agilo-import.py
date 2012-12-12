@@ -8,7 +8,7 @@ from psycopg2.extras import RealDictCursor
 
 from tiget.plugins import load_plugin
 from tiget.git import transaction
-from tiget.scrum.models import Milestone, Sprint, User, Ticket
+from tiget.scrum.models import Milestone, Sprint, User, Ticket, Comment
 
 
 @transaction.wrap('agilo import')
@@ -101,6 +101,25 @@ def main():
         ticket = Ticket.objects.create(**row)
         ticket_pks[ticket_id] = ticket.pk
         # TODO: add comment with original ticket id
+
+    # TODO: import ticket changes
+
+    print('Importing Comments')
+    cur.execute('''
+        select ticket,
+               author,
+               newvalue as text
+        from ticket_change
+        where ticket in %s and
+              field = 'comment' and
+              newvalue is not null and trim(newvalue) != ''
+    ''', (tuple(ticket_pks.keys()),))
+    for row in cur:
+        ticket = row['ticket']
+        row['ticket'] = Ticket.objects.get(pk=ticket_pks[ticket])
+        row['author'] = _get_user(row['author'])
+        Comment.objects.create(**row)
+        # TODO: import timestamp?
 
     cur.close()
     conn.close()
