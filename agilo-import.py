@@ -39,7 +39,7 @@ def main():
     for row in cur:
         Sprint.objects.create(**row)
 
-    print('Importing users')
+    print('Importing Users')
     # there is no user table, so we do our best to collect the user names
     cur.execute('''
         select distinct trim(raw.user) as name
@@ -49,7 +49,7 @@ def main():
               union all
               select author as user from ticket_change
              ) as raw
-        where raw.user != '' and raw.user is not null
+        where raw.user is not null and trim(raw.user) != ''
         order by trim(raw.user)
     ''')
     user_pks = {}
@@ -65,6 +65,9 @@ def main():
         except User.DoesNotExist:
             user = User.objects.create(email=email, name=name)
         user_pks[name] = user.pk
+
+    def _get_user(trac_name):
+        return User.objects.get(pk=user_pks[trac_name])
 
     print('Importing Tickets')
     cur.execute('''
@@ -94,10 +97,10 @@ def main():
     for row in cur:
         ticket_id = row.pop('id')
         for key in ('reporter', 'owner'):
-            name = row[key]
-            row[key] = User.objects.get(pk=user_pks[name]) if name else None
+            row[key] = _get_user(row[key]) if row[key] else None
         ticket = Ticket.objects.create(**row)
         ticket_pks[ticket_id] = ticket.pk
+        # TODO: add comment with original ticket id
 
     cur.close()
     conn.close()
