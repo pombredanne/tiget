@@ -50,6 +50,9 @@ class Query:
         # __eq__ has to be implemented for every subclass separately
         return not self == other
 
+    def order_by(self, *order_by):
+        return Ordered(self, *order_by)
+
     def execute(self, obj_cache, pks):
         raise NotImplementedError
 
@@ -202,3 +205,45 @@ class Slice(Query):
 
     def execute(self, obj_cache, pks):
         return self.subquery.execute(obj_cache, pks)[self.slice]
+
+
+class Ordered(Query):
+    def __init__(self, subquery, *order_by):
+        self.subquery = subquery
+        self.order_by = order_by
+
+    def __repr__(self):
+        bits = (repr(bit) for bit in self.order_by)
+        return '{!r}.order_by({})'.format(self.subquery, ', '.join(bits))
+
+    def execute(self, obj_cache, pks):
+        pks = self.subquery.execute(obj_cache, pks)
+        pk_names = ('pk', obj_cache.model._meta.pk.attname)
+        for field in reversed(self.order_by):
+            reverse = False
+            if field.startswith('-'):
+                field = field[1:]
+                reverse = True
+            if field in pk_names:
+                pks.sort(reverse=reverse)
+                continue
+
+            def _key(pk):
+                return getattr(obj_cache[pk], field)
+            keys = [_key(pk) for pk in pks]
+            key_null = []
+            i = 0
+            while True:
+                try:
+                    keys.index(None, i)
+                except ValueError:
+                    break
+                del keys[i]
+                key_null.append(pks.pop(i))
+            pks.sort(key=_key, reverse=reverse)
+            if reverse:
+                pks.extend(key_null)
+            else:
+                for i, pk in enumerate(key_null):
+                    pks.insert(i, pk)
+        return pks

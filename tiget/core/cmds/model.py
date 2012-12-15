@@ -77,7 +77,7 @@ def list_cmd(opts, model):
         list [-f FIELDS] [-s SORT_ORDER] MODEL
     """
     fields = model._meta.fields
-    order_by = [model._meta.pk.attname]
+    order_by = None
     for opt, arg in opts:
         if opt == '-f':
             try:
@@ -86,8 +86,18 @@ def list_cmd(opts, model):
                 raise CmdError(e)
         elif opt == '-s':
             order_by = arg.split(',')
+            for field in order_by:
+                if field.startswith('-'):
+                    field = field[1:]
+                try:
+                    model._meta.get_field(field)
+                except KeyError as e:
+                    raise CmdError(e)
     table = Table(*(f.name for f in fields))
-    for instance in model.objects.all().order_by(*order_by):
+    objs = model.objects.all()
+    if order_by:
+        objs = objs.order_by(*order_by)
+    for instance in objs:
         values = [f.dumps(getattr(instance, f.attname)) for f in fields]
         table.add_row(*values)
     print(table.render())

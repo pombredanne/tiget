@@ -103,5 +103,4 @@ class QuerySet:
         return len(self.execute())
 
     def order_by(self, *order_by):
-        # TODO: implement
-        return self
+        return QuerySet(self.model, self.query.order_by(*order_by))
