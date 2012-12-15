@@ -53,15 +53,15 @@ class QuerySet:
             raise TypeError('indices must be integers')
 
     @transaction.wrap()
+    def __iter__(self):
+        obj_cache = ObjCache(self.model)
+        return iter([obj_cache[pk] for pk in self.execute(obj_cache)])
+
+    @transaction.wrap()
     def execute(self, obj_cache=None):
         if obj_cache is None:
             obj_cache = ObjCache(self.model)
         return self.query.execute(obj_cache, pks=obj_cache.pks)
-
-    @transaction.wrap()
-    def __iter__(self):
-        obj_cache = ObjCache(self.model)
-        return iter([obj_cache[pk] for pk in self.execute(obj_cache)])
 
     def all(self):
         return self
