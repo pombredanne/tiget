@@ -3,7 +3,8 @@ from random import choice
 
 from nose.tools import *
 
-from tiget.git.models.query import Query, Q, Inversion, Intersection, Union, Slice
+from tiget.git.models.query import (
+    Query, Q, Inversion, Intersection, Union, Slice, Ordered)
 
 
 def generate_conditions():
@@ -107,7 +108,23 @@ class TestSlice:
 
     def test_repr(self):
         for s in ((None,), (0,), (0, 3), (0, 3, 2)):
-            q = Q().__getitem__(slice(*s))
+            q = Q()[slice(*s)]
+            eq_(q, eval(repr(q)))
+
+
+class TestOrdered:
+    def test_equality(self):
+        for fields in ((), ('foo',), ('foo', '-bar'), ('foo', '-bar', 'baz')):
+            eq_(Ordered(Q(), *fields), Ordered(Q(), *fields))
+
+    def test_inequality(self):
+        args = iter(((), ('foo',), ('foo', '-bar'), ('foo', '-bar', 'baz')))
+        for fields1, fields2 in zip(args, args):
+            assert_not_equal(Ordered(Q(), *fields1), Ordered(Q(), *fields2))
+
+    def test_repr(self):
+        for fields in ((), ('foo',), ('foo', '-bar'), ('foo', '-bar', 'baz')):
+            q = Q().order_by(*fields)
             eq_(q, eval(repr(q)))
 
 

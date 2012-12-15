@@ -142,8 +142,8 @@ class Intersection(Query):
         self.subqueries = frozenset(subqueries)
 
     def __repr__(self):
-        r = ' & '.join(repr(query) for query in self.subqueries)
-        return '({})'.format(r)
+        bits = (repr(query) for query in self.subqueries)
+        return '({})'.format(' & '.join(bits))
 
     def __eq__(self, other):
         return (isinstance(other, self.__class__) and
@@ -163,8 +163,8 @@ class Union(Query):
         self.subqueries = frozenset(subqueries)
 
     def __repr__(self):
-        r = ' | '.join(repr(query) for query in self.subqueries)
-        return '({})'.format(r)
+        bits = (repr(query) for query in self.subqueries)
+        return '({})'.format(' | '.join(bits))
 
     def __eq__(self, other):
         return (isinstance(other, self.__class__) and
@@ -215,6 +215,13 @@ class Ordered(Query):
     def __repr__(self):
         bits = (repr(bit) for bit in self.order_by)
         return '{!r}.order_by({})'.format(self.subquery, ', '.join(bits))
+
+    def __eq__(self, other):
+        return (isinstance(other, self.__class__) and
+            self.subquery == other.subquery and self.order_by == other.order_by)
+
+    def __hash__(self):
+        return hash((self.subquery, self.order_by))
 
     def execute(self, obj_cache, pks):
         pks = self.subquery.execute(obj_cache, pks)
