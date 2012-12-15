@@ -16,7 +16,9 @@ class Table:
         self.styles = [LJUST] * len(args)
 
     def add_row(self, *args):
-        # FIXME: check number of arguments
+        column_count = len(self.columns)
+        if not len(args) == column_count:
+            raise TypeError('expected exactly {} arguments'.format(column_count))
         args = [str(x or '') for x in args]
         self.rows.append(args)
         for i, col in enumerate(args):
@@ -29,16 +31,13 @@ class Table:
 
     def render(self):
         unscaled = sum(self.col_width)
-        available_width = (
-            get_termsize().cols -
-            (len(self.col_width) - 1) * 3 - 4)
+        sep_width = (len(self.col_width) - 1) * 3
+        available_width = get_termsize().cols - sep_width - 4
         ratio = min(1, available_width / unscaled)
         widths = [max(1, math.floor(w * ratio)) for w in self.col_width]
 
         def _render_row(row, header=False):
-            cells = []
-            for value, width in zip(row, widths):
-                cells += [wrap(value, width)]
+            cells = [wrap(value, width) for value, width in zip(row, widths)]
             lines = []
             while any(cells):
                 values = []
@@ -47,7 +46,8 @@ class Table:
                         style = CENTER
                     value = style(cell.pop(0) if cell else '', width)
                     values += [value]
-                lines += ['| ' + ' | '.join(values) + ' |']
+                line = '| {} |'.format(' | '.join(values))
+                lines.append(line)
             return '\n'.join(lines) + '\n'
 
         separator = '+-' + '-+-'.join('-' * w for w in widths) + '-+\n'
