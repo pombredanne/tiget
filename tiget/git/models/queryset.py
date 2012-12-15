@@ -1,7 +1,26 @@
 from functools import reduce
 
 from tiget.git import transaction
-from tiget.git.models.query import Q, ObjCache
+from tiget.git.models.query import Q
+
+
+class ObjCache:
+    def __init__(self, model):
+        self.model = model
+        self.cache = {}
+        pks = transaction.current().list_blobs([model._meta.storage_name])
+        self.pks = set(map(model._meta.pk.loads, pks))
+
+    def __getitem__(self, pk):
+        if not pk in self.cache:
+            obj = self.model(pk=pk)
+            try:
+                content = transaction.current().get_blob(obj.path).decode('utf-8')
+            except GitError:
+                raise self.model.DoesNotExist('object does not exist')
+            obj.loads(content)
+            self.cache[pk] = obj
+        return self.cache[pk]
 
 
 class QuerySet:
@@ -34,10 +53,15 @@ class QuerySet:
             raise TypeError('indices must be integers')
 
     @transaction.wrap()
+    def execute(self, obj_cache=None):
+        if obj_cache is None:
+            obj_cache = ObjCache(self.model)
+        return self.query.execute(obj_cache, pks=obj_cache.pks)
+
+    @transaction.wrap()
     def __iter__(self):
         obj_cache = ObjCache(self.model)
-        pks = self.query.execute(self.model, obj_cache)
-        return iter([obj_cache[pk] for pk in pks])
+        return iter([obj_cache[pk] for pk in self.execute(obj_cache)])
 
     def all(self):
         return self
@@ -62,13 +86,11 @@ class QuerySet:
             raise self.model.DoesNotExist('object does not exist')
         return obj
 
-    @transaction.wrap()
     def exists(self):
-        return any(True for _ in self.query.execute(self.model))
+        return bool(self.execute())
 
-    @transaction.wrap()
     def count(self):
-        return sum(1 for _ in self.query.execute(self.model))
+        return len(self.execute())
 
     def order_by(self, *order_by):
         # TODO: implement

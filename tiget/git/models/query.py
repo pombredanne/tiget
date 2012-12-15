@@ -1,24 +1,6 @@
 import re
-from itertools import islice
 
 from tiget.git import transaction, GitError
-
-
-class ObjCache:
-    def __init__(self, model):
-        self.model = model
-        self.cache = {}
-
-    def __getitem__(self, pk):
-        if not pk in self.cache:
-            obj = self.model(pk=pk)
-            try:
-                content = transaction.current().get_blob(obj.path).decode('utf-8')
-            except GitError:
-                raise self.model.DoesNotExist('object does not exist')
-            obj.loads(content)
-            self.cache[pk] = obj
-        return self.cache[pk]
 
 
 class Query:
@@ -68,17 +50,8 @@ class Query:
         # __eq__ has to be implemented for every subclass separately
         return not self == other
 
-    def match(self, model, pk, obj_cache):
+    def execute(self, obj_cache, pks):
         raise NotImplementedError
-
-    def execute(self, model, obj_cache=None):
-        if obj_cache is None:
-            obj_cache = ObjCache(model)
-        trans = transaction.current()
-        for pk in trans.list_blobs([model._meta.storage_name]):
-            pk = model._meta.pk.loads(pk)
-            if self.match(model, pk, obj_cache):
-                yield pk
 
 
 class Q(Query):
@@ -126,8 +99,8 @@ class Q(Query):
     def __hash__(self):
         return hash(self.conditions)
 
-    def match(self, model, pk, obj_cache):
-        pk_names = ('pk', model._meta.pk.attname)
+    def match(self, pk, obj_cache):
+        pk_names = ('pk', obj_cache.model._meta.pk.attname)
         for field, op, value in self.conditions:
             op = self.OPERATORS[op]
             if field in pk_names and not op(pk, value):
@@ -137,6 +110,9 @@ class Q(Query):
                 if not op(getattr(obj, field), value):
                     return False
         return True
+
+    def execute(self, obj_cache, pks):
+        return [pk for pk in pks if self.match(pk, obj_cache)]
 
 
 class Inversion(Query):
@@ -153,8 +129,9 @@ class Inversion(Query):
     def __hash__(self):
         return hash(self.subquery)
 
-    def match(self, *args, **kwargs):
-        return not self.subquery.match(*args, **kwargs)
+    def execute(self, obj_cache, pks):
+        matched = self.subquery.execute(obj_cache, pks)
+        return [pk for pk in pks if not pk in matched]
 
 
 class Intersection(Query):
@@ -172,8 +149,10 @@ class Intersection(Query):
     def __hash__(self):
         return hash(self.subqueries)
 
-    def match(self, *args, **kwargs):
-        return all(query.match(*args, **kwargs) for query in self.subqueries)
+    def execute(self, obj_cache, pks):
+        for subquery in self.subqueries:
+            pks = subquery.execute(obj_cache, pks)
+        return pks
 
 
 class Union(Query):
@@ -191,8 +170,13 @@ class Union(Query):
     def __hash__(self):
         return hash(self.subqueries)
 
-    def match(self, *args, **kwargs):
-        return any(query.match(*args, **kwargs) for query in self.subqueries)
+    def execute(self, obj_cache, pks):
+        pks = set(pks)
+        result = []
+        for subquery in self.subqueries:
+            result += subquery.execute(obj_cache, pks)
+            pks.difference_update(result)
+        return result
 
 
 class Slice(Query):
@@ -216,6 +200,5 @@ class Slice(Query):
         slice_ = (self.slice.start, self.slice.stop, self.slice.step)
         return hash((self.subquery, slice_))
 
-    def execute(self, model, obj_cache=None):
-        pks = self.subquery.execute(model, obj_cache=obj_cache)
-        return islice(pks, self.slice.start, self.slice.stop, self.slice.step)
+    def execute(self, obj_cache, pks):
+        return self.subquery.execute(obj_cache, pks)[self.slice]
