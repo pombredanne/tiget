@@ -1,6 +1,6 @@
 from functools import reduce
 
-from tiget.git import transaction
+from tiget.git import transaction, GitError
 from tiget.git.models.query import Q
 
 

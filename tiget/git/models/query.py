@@ -1,6 +1,6 @@
 import re
 
-from tiget.git import transaction, GitError
+from tiget.git import transaction
 
 
 class Query:
