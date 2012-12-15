@@ -24,11 +24,20 @@ class ObjCache:
 
 
 class QuerySet:
+    REPR_MAXLEN = 10
+
     def __init__(self, model, query=None):
         self.model = model
         if query is None:
             query = Q()
         self.query = query
+
+    def __repr__(self):
+        evaluated = list(self[:self.REPR_MAXLEN+1])
+        if len(evaluated) > self.REPR_MAXLEN:
+            bits = (repr(bit) for bit in evaluated[:self.REPR_MAXLEN-1])
+            return '[{}, ...]'.format(', '.join(bits))
+        return repr(evaluated)
 
     def __or__(self, other):
         return QuerySet(self.model, self.query | other.query)
