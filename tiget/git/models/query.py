@@ -242,7 +242,7 @@ class Ordered(Query):
             i = 0
             while True:
                 try:
-                    keys.index(None, i)
+                    i = keys.index(None, i)
                 except ValueError:
                     break
                 del keys[i]
