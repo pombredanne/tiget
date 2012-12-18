@@ -4,6 +4,11 @@ from setuptools import setup, find_packages
 version = __import__('tiget').__version__
 
 
+# work around error in atexit when running ./setup.py test
+# see http://www.eby-sarna.com/pipermail/peak/2010-May/003357.html
+import multiprocessing
+
+
 setup(
     name='tiget',
     version=version,
