@@ -55,8 +55,10 @@ class QuerySet:
             return QuerySet(self.model, self.query[key])
         elif isinstance(key, int):
             try:
-                slice_ = slice(key, key+1)
-                return QuerySet(self.model, self.query[slice_]).get()
+                stop = key + 1
+                if stop == 0:
+                    stop = None
+                return QuerySet(self.model, self.query[key:stop]).get()
             except self.model.DoesNotExist:
                 raise IndexError('index out of range')
         else:
