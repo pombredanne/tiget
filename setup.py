@@ -34,6 +34,9 @@ setup(
         'console_scripts': [
             'tiget = tiget.main:main',
         ],
+        'nose.plugins.0.10': [
+            'tigetconfig = tiget.noseconfig:TigetConfig',
+        ],
         'tiget.plugins': [
             'core = tiget.core',
             'importer = tiget.git.importer',
@@ -42,5 +45,5 @@ setup(
     },
     install_requires=['pygit2', 'ansicolors', 'distribute'],
     tests_require=['nose'],
-    test_suite='tiget.testrunner.collector',
+    test_suite='nose.collector',
 )
