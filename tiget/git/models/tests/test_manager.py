@@ -1,5 +1,4 @@
 from nose.tools import *
-from nose.plugins.skip import SkipTest
 
 from tiget.testcases import GitTestCase
 from tiget.git import models, init_repo
@@ -7,6 +6,7 @@ from tiget.git import models, init_repo
 
 class Ticket(models.Model):
     title = models.TextField()
+    description = models.TextField(null=True)
 
 
 class TestManager(GitTestCase):
@@ -45,7 +45,18 @@ class TestManager(GitTestCase):
             eq_(Ticket.objects.count(), i)
 
     def test_order_by(self):
-        raise SkipTest('not implemented yet')
+        ascending = [str(i) for i in range(10)]
+        descending = list(reversed(ascending))
+        for title, description in zip(ascending, descending):
+            Ticket.objects.create(title=title, description=description)
+        eq_([t.title for t in Ticket.objects.order_by('title')], ascending)
+        eq_([t.title for t in Ticket.objects.order_by('-title')], descending)
+        eq_([t.description for t in Ticket.objects.order_by('description')], ascending)
+        eq_([t.description for t in Ticket.objects.order_by('-description')], descending)
+
+        t = Ticket.objects.create(title='10', description=None)
+        eq_(Ticket.objects.order_by('description')[0], t)
+        eq_(Ticket.objects.order_by('-description')[-1], t)
 
     def test_create(self):
         ticket = Ticket.objects.create(title='test ticket')
