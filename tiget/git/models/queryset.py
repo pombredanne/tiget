@@ -86,7 +86,9 @@ class QuerySet:
         query = reduce(lambda x, y: x & y, args, Q(**kwargs))
         return QuerySet(self.model, self.query & ~query)
 
-    def get(self):
+    def get(self, *args, **kwargs):
+        if args or kwargs:
+            return self.filter(*args, **kwargs).get()
         found = False
         for obj in self:
             if not found:
@@ -98,10 +100,14 @@ class QuerySet:
             raise self.model.DoesNotExist('object does not exist')
         return obj
 
-    def exists(self):
+    def exists(self, *args, **kwargs):
+        if args or kwargs:
+            return self.filter(*args, **kwargs).exists()
         return bool(self.execute())
 
-    def count(self):
+    def count(self, *args, **kwargs):
+        if args or kwargs:
+            return self.filter(*args, **kwargs).count()
         return len(self.execute())
 
     def order_by(self, *order_by):

@@ -25,7 +25,7 @@ def main():
         from milestone
     ''')
     for row in cur:
-        Milestone.objects.create(**row)
+        Milestone.create(**row)
 
     print('Importing Sprints')
     cur.execute('''
@@ -37,7 +37,7 @@ def main():
         from agilo_sprint
     ''')
     for row in cur:
-        Sprint.objects.create(**row)
+        Sprint.create(**row)
 
     print('Importing Users')
     # there is no user table, so we do our best to collect the user names
@@ -63,7 +63,7 @@ def main():
         try:
             user = User.objects.get(email=email)
         except User.DoesNotExist:
-            user = User.objects.create(email=email, name=name)
+            user = User.create(email=email, name=name)
         user_pks[name] = user.pk
 
     def _get_user(trac_name):
@@ -98,7 +98,7 @@ def main():
         ticket_id = row.pop('id')
         for key in ('reporter', 'owner'):
             row[key] = _get_user(row[key]) if row[key] else None
-        ticket = Ticket.objects.create(**row)
+        ticket = Ticket.create(**row)
         ticket_pks[ticket_id] = ticket.pk
         # TODO: add comment with original ticket id
 
@@ -118,7 +118,7 @@ def main():
         ticket = row['ticket']
         row['ticket'] = Ticket.objects.get(pk=ticket_pks[ticket])
         row['author'] = _get_user(row['author'])
-        Comment.objects.create(**row)
+        Comment.create(**row)
         # TODO: import timestamp?
 
     cur.close()

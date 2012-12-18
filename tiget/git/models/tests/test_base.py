@@ -30,6 +30,17 @@ class TestModelBase(GitTestCase):
         ticket = Ticket()
         eq_(ticket.title, None)
 
+    def test_equality(self):
+        ticket = Ticket()
+        ticket2 = Ticket(id=ticket.id)
+        eq_(ticket, ticket2)
+
+    def test_equality_unequal(self):
+        assert_not_equal(Ticket(), Ticket())
+
+    def test_equality_other_model(self):
+        assert_not_equal(Ticket(), User())
+
     def test_new_with_argument(self):
         ticket = Ticket(title='test ticket')
         eq_(ticket.title, 'test ticket')
@@ -48,6 +59,7 @@ class TestModelBase(GitTestCase):
     def test_save(self):
         self.assert_commit_count(1)
         ticket = Ticket(title='')
+        self.assert_commit_count(1)
         ticket.save()
         # TODO: test validations
         self.assert_commit_count(2)
@@ -56,13 +68,8 @@ class TestModelBase(GitTestCase):
     def test_delete(self):
         raise SkipTest('not implemented yet')
 
-    def test_equality(self):
-        ticket = Ticket()
-        ticket2 = Ticket(id=ticket.id)
-        eq_(ticket, ticket2)
-
-    def test_equality_unequal(self):
-        assert_not_equal(Ticket(), Ticket())
-
-    def test_equality_other_model(self):
-        assert_not_equal(Ticket(), User())
+    def test_create(self):
+        self.assert_commit_count(1)
+        ticket = Ticket.create(title='')
+        self.assert_commit_count(2)
+        self.assert_file_exists('/'.join(ticket.path))

@@ -3,8 +3,8 @@ from collections import OrderedDict
 from tiget import serializer
 from tiget.git import transaction
 from tiget.git.models.options import Options
-from tiget.git.models.manager import Manager
 from tiget.git.models.fields import ForeignKey
+from tiget.git.models.queryset import QuerySet
 
 
 class DoesNotExist(Exception): pass
@@ -34,10 +34,10 @@ class ModelBase(type):
         opts = Options(attrs.pop('Meta', None))
         new_class.add_to_class('_meta', opts)
 
-        manager = attrs.pop('objects', None)
-        if manager is None:
-            manager = Manager()
-        new_class.add_to_class('objects', manager)
+        objects = attrs.pop('objects', None)
+        if objects is None:
+            objects = QuerySet(new_class)
+        new_class.add_to_class('objects', objects)
 
         for exc_class in MODEL_EXCEPTIONS:
             name = exc_class.__name__
@@ -84,6 +84,15 @@ class Model(metaclass=ModelBase):
 
     def __str__(self):
         return '{} {}'.format(self.__class__.__name__, self.pk)
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.pk == other.pk
+
+    def __ne__(self, other):
+        return not self == other
+
+    def __hash__(self):
+        return hash(self.pk)
 
     def _get_pk_val(self):
         return getattr(self, self._meta.pk.attname)
@@ -154,11 +163,8 @@ class Model(metaclass=ModelBase):
     def delete(self):
         raise NotImplementedError()
 
-    def __eq__(self, other):
-        return isinstance(other, self.__class__) and self.pk == other.pk
-
-    def __ne__(self, other):
-        return not self == other
-
-    def __hash__(self):
-        return hash(self.pk)
+    @classmethod
+    def create(cls, **kwargs):
+        obj = cls(**kwargs)
+        obj.save()
+        return obj
