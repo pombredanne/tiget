@@ -25,9 +25,11 @@ setup(
         'Intended Audience :: Developers',
         'License :: OSI Approved :: ISC License (ISCL)',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.2',
         'Topic :: Utilities',
         'Topic :: System :: Shells',
+        'Topic :: Software Development :: Bug Tracking',
+        'Topic :: Software Development :: Quality Assurance',
         'Development Status :: 3 - Alpha',
     ],
     entry_points={
