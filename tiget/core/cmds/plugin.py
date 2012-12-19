@@ -15,7 +15,7 @@ def load_cmd(opts, plugin_name=None):
     if plugin_name:
         try:
             load_plugin(plugin_name)
-        except ImportError as e :
+        except ImportError as e:
             raise CmdError(e)
     else:
         print('Available plugins:')
