@@ -3,6 +3,7 @@ from nose.plugins.skip import SkipTest
 
 from tiget.testcases import GitTestCase
 from tiget.git import models, init_repo
+from tiget.git.models import Q
 
 
 class Ticket(models.Model):
@@ -25,6 +26,10 @@ class TestModelBase(GitTestCase):
 
     def test_storage_name(self):
         eq_(Ticket._meta.storage_name, 'tickets')
+
+    def test_objects(self):
+        eq_(Ticket.objects.model, Ticket)
+        eq_(Ticket.objects.query, Q())
 
     def test_new(self):
         ticket = Ticket()
