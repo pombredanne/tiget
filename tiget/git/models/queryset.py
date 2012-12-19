@@ -40,6 +40,13 @@ class QuerySet:
             return '[{}, ...]'.format(', '.join(bits))
         return repr(evaluated)
 
+    def __eq__(self, other):
+        return (isinstance(other, self.__class__) and
+            self.model == other.model and self.query == other.query)
+
+    def __ne__(self, other):
+        return not self == other
+
     def __or__(self, other):
         return QuerySet(self.model, self.query | other.query)
 
