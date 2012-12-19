@@ -42,6 +42,7 @@ class Query:
         return Inversion(self)
 
     def __getitem__(self, key):
+        # XXX: implement optimizations for slicing?
         if isinstance(key, slice):
             return Slice(self, key)
         raise TypeError('index must be a slice')
@@ -51,6 +52,8 @@ class Query:
         return not self == other
 
     def order_by(self, *order_by):
+        # XXX: does it make sense to call order_by without arguments?
+        # XXX: implement optimizations for order_by?
         return Ordered(self, *order_by)
 
     def execute(self, obj_cache, pks):
