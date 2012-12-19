@@ -2,6 +2,7 @@ from itertools import combinations
 from random import choice
 
 from nose.tools import *
+from nose.plugins.skip import SkipTest
 
 from tiget.git.models.query import (
     Query, Q, Inversion, Intersection, Union, Slice, Ordered)
@@ -34,6 +35,9 @@ class TestQ:
             q = Q(**conditions)
             eq_(q, eval(repr(q)))
 
+    def test_execute(self):
+        raise SkipTest()
+
 
 class TestInversion:
     def test_equality(self):
@@ -50,6 +54,9 @@ class TestInversion:
         for conditions in generate_conditions():
             q = ~Q(**conditions)
             eq_(q, eval(repr(q)))
+
+    def test_execute(self):
+        raise SkipTest()
 
 
 class TestIntersection:
@@ -73,6 +80,9 @@ class TestIntersection:
             q = Q(**conditions1) | Q(**conditions2)
             eq_(q, eval(repr(q)))
 
+    def test_execute(self):
+        raise SkipTest()
+
 
 class TestUnion:
     def test_equality(self):
@@ -95,6 +105,9 @@ class TestUnion:
             q = Q(**conditions1) & Q(**conditions2)
             eq_(q, eval(repr(q)))
 
+    def test_execute(self):
+        raise SkipTest()
+
 
 class TestSlice:
     def test_equality(self):
@@ -111,6 +124,9 @@ class TestSlice:
             q = Q()[slice(*s)]
             eq_(q, eval(repr(q)))
 
+    def test_execute(self):
+        raise SkipTest()
+
 
 class TestOrdered:
     def test_equality(self):
@@ -126,6 +142,9 @@ class TestOrdered:
         for fields in ((), ('foo',), ('foo', '-bar'), ('foo', '-bar', 'baz')):
             q = Q().order_by(*fields)
             eq_(q, eval(repr(q)))
+
+    def test_execute(self):
+        raise SkipTest()
 
 
 class TestOperators:
