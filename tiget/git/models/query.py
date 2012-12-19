@@ -207,6 +207,21 @@ class Slice(Query):
         return self.subquery.execute(obj_cache, pks)[self.slice]
 
 
+class SortableNix:
+    def __init__(self, reverse):
+        self.reverse = reverse
+
+    def __lt__(self, other):
+        if isinstance(other, SortableNix):
+            return self.reverse
+        return True
+
+    def __gt__(self, other):
+        if isinstance(other, SortableNix):
+            return not self.reverse
+        return False
+
+
 class Ordered(Query):
     def __init__(self, subquery, *order_by):
         self.subquery = subquery
@@ -236,21 +251,10 @@ class Ordered(Query):
                 continue
 
             def _key(pk):
-                return getattr(obj_cache[pk], field)
-            keys = [_key(pk) for pk in pks]
-            key_null = []
-            i = 0
-            while True:
-                try:
-                    i = keys.index(None, i)
-                except ValueError:
-                    break
-                del keys[i]
-                key_null.append(pks.pop(i))
+                val = getattr(obj_cache[pk], field)
+                if val is None:
+                    val = SortableNix(reverse)
+                return val
+
             pks.sort(key=_key, reverse=reverse)
-            if reverse:
-                pks.extend(key_null)
-            else:
-                for i, pk in enumerate(key_null):
-                    pks.insert(i, pk)
         return pks
