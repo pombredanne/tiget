@@ -9,7 +9,7 @@ class ObjCache:
         self.model = model
         self.cache = {}
         pks = transaction.current().list_blobs([model._meta.storage_name])
-        self.pks = set(map(model._meta.pk.loads, pks))
+        self.pks = list(map(model._meta.pk.loads, pks))
 
     def __getitem__(self, pk):
         if not pk in self.cache:
@@ -66,49 +66,48 @@ class QuerySet:
 
     @transaction.wrap()
     def __iter__(self):
-        obj_cache = ObjCache(self.model)
-        return iter([obj_cache[pk] for pk in self.execute(obj_cache)])
+        pks, obj_cache = self._execute()
+        return iter([obj_cache[pk] for pk in pks])
 
     @transaction.wrap()
-    def execute(self, obj_cache=None):
-        if obj_cache is None:
-            obj_cache = ObjCache(self.model)
-        return self.query.execute(obj_cache, pks=obj_cache.pks)
+    def _execute(self, *args, **kwargs):
+        query = self.query & self._filter(*args, **kwargs)
+        obj_cache = ObjCache(self.model)
+        return query.execute(obj_cache, obj_cache.pks), obj_cache
+
+    def _filter(self, *args, **kwargs):
+        return reduce(lambda x, y: x & y, args, Q(**kwargs))
 
     def all(self):
         return self
 
     def filter(self, *args, **kwargs):
-        query = reduce(lambda x, y: x & y, args, Q(**kwargs))
-        return QuerySet(self.model, self.query & query)
+        query = self.query & self._filter(*args, **kwargs)
+        return QuerySet(self.model, query)
 
     def exclude(self, *args, **kwargs):
-        query = reduce(lambda x, y: x & y, args, Q(**kwargs))
-        return QuerySet(self.model, self.query & ~query)
+        query = self.query & ~self._filter(*args, **kwargs)
+        return QuerySet(self.model, query)
 
+    @transaction.wrap()
     def get(self, *args, **kwargs):
-        if args or kwargs:
-            return self.filter(*args, **kwargs).get()
-        found = False
-        for obj in self:
-            if not found:
-                found = True
-            else:
-                raise self.model.MultipleObjectsReturned(
-                    'multiple objects returned')
-        if not found:
+        pks, obj_cache = self._execute(*args, **kwargs)
+        try:
+            pk = pks.pop()
+        except IndexError:
             raise self.model.DoesNotExist('object does not exist')
-        return obj
+        if pks:
+            raise self.model.MultipleObjectsReturned(
+                'multiple objects returned')
+        return obj_cache[pk]
 
     def exists(self, *args, **kwargs):
-        if args or kwargs:
-            return self.filter(*args, **kwargs).exists()
-        return bool(self.execute())
+        pks, _ = self._execute(*args, **kwargs)
+        return bool(pks)
 
     def count(self, *args, **kwargs):
-        if args or kwargs:
-            return self.filter(*args, **kwargs).count()
-        return len(self.execute())
+        pks, _ = self._execute(*args, **kwargs)
+        return len(pks)
 
     def order_by(self, *order_by):
         return QuerySet(self.model, self.query.order_by(*order_by))
