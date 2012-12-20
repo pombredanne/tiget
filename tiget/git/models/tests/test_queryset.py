@@ -179,7 +179,7 @@ class TestExecute(_TestCase):
         qs = QuerySet(X)
         qs.query = MagicMock()
         qs.query.__and__.return_value = qs.query
-        qs.query.execute.return_value = [1,2,3]
+        qs.query.execute.return_value = [1, 2, 3]
 
         eq_(qs._execute(a=1, b=2), ([1, 2, 3], obj_cache))
         qs.query.__and__.assert_called_once_with(Q(a=1, b=2))
