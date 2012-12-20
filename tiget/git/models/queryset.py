@@ -100,10 +100,10 @@ class QuerySet:
     def get(self, *args, **kwargs):
         pks, obj_cache = self._execute(*args, **kwargs)
         try:
-            pk = pks.pop()
+            pk = pks[0]
         except IndexError:
             raise self.model.DoesNotExist('object does not exist')
-        if pks:
+        if len(pks) > 1:
             raise self.model.MultipleObjectsReturned(
                 'multiple objects returned')
         return obj_cache[pk]
