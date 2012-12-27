@@ -66,7 +66,7 @@ def edit_cmd(opts, model, pk):
         raise CmdError(e)
 
 
-@cmd(options='f:s:')
+@cmd(options='f:s:l:')
 @transaction.wrap()
 @with_model
 def list_cmd(opts, model):
@@ -74,10 +74,11 @@ def list_cmd(opts, model):
     list records
 
     SYNOPSIS
-        list [-f FIELDS] [-s SORT_ORDER] MODEL
+        list [-f FIELDS] [-s SORT_ORDER] [-l LIMIT] MODEL
     """
     fields = model._meta.fields
     order_by = None
+    limit = None
     for opt, arg in opts:
         if opt == '-f':
             try:
@@ -93,10 +94,17 @@ def list_cmd(opts, model):
                     model._meta.get_field(field)
                 except KeyError as e:
                     raise CmdError(e)
+        elif opt == '-l':
+            try:
+                limit = int(arg)
+            except ValueError as e:
+                raise CmdError(e)
     table = Table(*(f.name for f in fields))
     objs = model.objects.all()
     if order_by:
         objs = objs.order_by(*order_by)
+    if not limit is None:
+        objs = objs[:limit]
     for instance in objs:
         values = [f.dumps(getattr(instance, f.attname)) for f in fields]
         table.add_row(*values)
