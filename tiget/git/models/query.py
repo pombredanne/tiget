@@ -107,10 +107,9 @@ class Q(Query):
         return hash(self.conditions)
 
     def match(self, obj_cache, pk):
-        pk_names = ('pk', obj_cache.model._meta.pk.attname)
         for field, op, value in self.conditions:
             op = self.OPERATORS[op]
-            if field in pk_names and not op(pk, value):
+            if field in obj_cache.pk_names and not op(pk, value):
                 return False
             else:
                 obj = obj_cache[pk]
@@ -241,13 +240,12 @@ class Ordered(Query):
 
     def execute(self, obj_cache, pks):
         pks = list(self.subquery.execute(obj_cache, pks))
-        pk_names = ('pk', obj_cache.model._meta.pk.attname)
         for field in reversed(self.order_by):
             reverse = False
             if field.startswith('-'):
                 field = field[1:]
                 reverse = True
-            if field in pk_names:
+            if field in obj_cache.pk_names:
                 pks.sort(reverse=reverse)
                 continue
 

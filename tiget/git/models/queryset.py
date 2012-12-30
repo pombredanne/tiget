@@ -10,6 +10,7 @@ class ObjCache:
         self.cache = {}
         pks = transaction.current().list_blobs([model._meta.storage_name])
         self.pks = set(map(model._meta.pk.loads, pks))
+        self.pk_names = ('pk', model._meta.pk.attname)
 
     def __getitem__(self, pk):
         if not pk in self.cache:
