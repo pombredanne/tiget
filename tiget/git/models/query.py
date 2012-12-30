@@ -1,4 +1,5 @@
 import re
+from itertools import islice
 
 from tiget.git import transaction
 
@@ -105,7 +106,7 @@ class Q(Query):
     def __hash__(self):
         return hash(self.conditions)
 
-    def match(self, pk, obj_cache):
+    def match(self, obj_cache, pk):
         pk_names = ('pk', obj_cache.model._meta.pk.attname)
         for field, op, value in self.conditions:
             op = self.OPERATORS[op]
@@ -118,7 +119,7 @@ class Q(Query):
         return True
 
     def execute(self, obj_cache, pks):
-        return [pk for pk in pks if self.match(pk, obj_cache)]
+        return (pk for pk in pks if self.match(obj_cache, pk))
 
 
 class Inversion(Query):
@@ -136,8 +137,8 @@ class Inversion(Query):
         return hash(self.subquery)
 
     def execute(self, obj_cache, pks):
-        matched = self.subquery.execute(obj_cache, pks)
-        return [pk for pk in pks if not pk in matched]
+        matched = set(self.subquery.execute(obj_cache, pks))
+        return (pk for pk in pks if not pk in matched)
 
 
 class Intersection(Query):
@@ -157,7 +158,7 @@ class Intersection(Query):
 
     def execute(self, obj_cache, pks):
         for subquery in self.subqueries:
-            pks = subquery.execute(obj_cache, pks)
+            pks = subquery.execute(obj_cache, list(pks))
         return pks
 
 
@@ -178,22 +179,21 @@ class Union(Query):
 
     def execute(self, obj_cache, pks):
         pks = set(pks)
-        result = []
         for subquery in self.subqueries:
-            result += subquery.execute(obj_cache, pks)
-            pks.difference_update(result)
-        return result
+            for pk in subquery.execute(obj_cache, list(pks)):
+                pks.discard(pk)
+                yield pk
 
 
 class Slice(Query):
     def __init__(self, subquery, slice_):
         self.subquery = subquery
-        self.slice = slice_
+        self.slice = (slice_.start, slice_.stop, slice_.step)
 
     def __repr__(self):
-        bits = [self.slice.start, self.slice.stop]
-        if self.slice.step:
-            bits.append(self.slice.step)
+        bits = list(self.slice[:2])
+        if not self.slice[2] is None:
+            bits.append(self.slice[2])
         bits = ['' if bit is None else str(bit) for bit in bits]
         return '{!r}[{}]'.format(self.subquery, ':'.join(bits))
 
@@ -202,12 +202,10 @@ class Slice(Query):
             self.subquery == other.subquery and self.slice == other.slice)
 
     def __hash__(self):
-        # cheat python into hashing a slice, queries are immutable anyway
-        slice_ = (self.slice.start, self.slice.stop, self.slice.step)
-        return hash((self.subquery, slice_))
+        return hash((self.subquery, self.slice))
 
     def execute(self, obj_cache, pks):
-        return self.subquery.execute(obj_cache, pks)[self.slice]
+        return islice(self.subquery.execute(obj_cache, pks), *self.slice)
 
 
 class SortableNix:
@@ -242,7 +240,7 @@ class Ordered(Query):
         return hash((self.subquery, self.order_by))
 
     def execute(self, obj_cache, pks):
-        pks = self.subquery.execute(obj_cache, pks)
+        pks = list(self.subquery.execute(obj_cache, pks))
         pk_names = ('pk', obj_cache.model._meta.pk.attname)
         for field in reversed(self.order_by):
             reverse = False
@@ -260,4 +258,4 @@ class Ordered(Query):
                 return val
 
             pks.sort(key=_key, reverse=reverse)
-        return pks
+        return iter(pks)

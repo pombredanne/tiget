@@ -187,7 +187,7 @@ class TestExecute(_TestCase):
 
     def test_zero(self):
         qs = QuerySet(X)
-        qs._execute = Mock(return_value=([], {}))
+        qs._execute = lambda: (iter([]), {})
         assert_raises(X.DoesNotExist, qs.get)
         ok_(not qs.exists())
         eq_(qs.count(), 0)
@@ -196,7 +196,7 @@ class TestExecute(_TestCase):
     def test_one(self):
         x = X()
         qs = QuerySet(X)
-        qs._execute = Mock(return_value=([0], {0: x}))
+        qs._execute = lambda: (iter([0]), {0: x})
         eq_(qs.get(), x)
         ok_(qs.exists())
         eq_(qs.count(), 1)
@@ -206,7 +206,7 @@ class TestExecute(_TestCase):
         x1 = X()
         x2 = X()
         qs = QuerySet(X)
-        qs._execute = Mock(return_value=([0, 1], {0: x1, 1: x2}))
+        qs._execute = lambda: (iter([0, 1]), {0: x1, 1: x2})
         assert_raises(X.MultipleObjectsReturned, qs.get)
         ok_(qs.exists())
         eq_(qs.count(), 2)

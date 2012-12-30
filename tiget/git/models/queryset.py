@@ -9,7 +9,7 @@ class ObjCache:
         self.model = model
         self.cache = {}
         pks = transaction.current().list_blobs([model._meta.storage_name])
-        self.pks = list(map(model._meta.pk.loads, pks))
+        self.pks = set(map(model._meta.pk.loads, pks))
 
     def __getitem__(self, pk):
         if not pk in self.cache:
@@ -76,7 +76,6 @@ class QuerySet:
         pks, obj_cache = self._execute()
         return iter([obj_cache[pk] for pk in pks])
 
-    @transaction.wrap()
     def _execute(self, *args, **kwargs):
         query = self.query & self._filter(*args, **kwargs)
         obj_cache = ObjCache(self.model)
@@ -100,21 +99,31 @@ class QuerySet:
     def get(self, *args, **kwargs):
         pks, obj_cache = self._execute(*args, **kwargs)
         try:
-            pk = pks[0]
-        except IndexError:
+            pk = next(pks)
+        except StopIteration:
             raise self.model.DoesNotExist('object does not exist')
-        if len(pks) > 1:
+        try:
+            next(pks)
+        except StopIteration:
+            pass
+        else:
             raise self.model.MultipleObjectsReturned(
                 'multiple objects returned')
         return obj_cache[pk]
 
+    @transaction.wrap()
     def exists(self, *args, **kwargs):
         pks, _ = self._execute(*args, **kwargs)
-        return bool(pks)
+        try:
+            next(pks)
+        except StopIteration:
+            return False
+        return True
 
+    @transaction.wrap()
     def count(self, *args, **kwargs):
         pks, _ = self._execute(*args, **kwargs)
-        return len(pks)
+        return sum(1 for _ in pks)
 
     def order_by(self, *order_by):
         return QuerySet(self.model, self.query.order_by(*order_by))
