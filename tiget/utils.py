@@ -13,7 +13,8 @@ from tiget.conf import settings
 from tiget.git import transaction, GitError
 
 __all__ = [
-    'open_in_editor', 'get_termsize', 'print_error', 'post_mortem', 'load_file',
+    'open_in_editor', 'paginate', 'get_termsize', 'print_error', 'post_mortem',
+    'load_file',
 ]
 
 
@@ -24,6 +25,21 @@ def open_in_editor(content):
         os.system('{} {}'.format(settings.core.editor, f.name))
         content = f.read().decode('utf-8')
     return content
+
+
+def paginate(content):
+    geometry = get_termsize()
+    needs_pagination = False
+    # TODO: better performance; consider long lines
+    if len(content.splitlines()) > geometry.lines - 1:
+        needs_pagination = True
+    if needs_pagination:
+        with NamedTemporaryFile(prefix='tiget') as f:
+            f.write(content.encode('utf-8'))
+            f.seek(0)
+            os.system('{} {}'.format(settings.core.pager, f.name))
+    else:
+        print(content)
 
 
 TerminalGeometry = namedtuple('TerminalGeometry', ('lines', 'cols'))

@@ -4,7 +4,7 @@ from collections import OrderedDict
 from tiget.cmds import cmd, CmdError
 from tiget.git import transaction
 from tiget.git.models import get_model
-from tiget.utils import open_in_editor
+from tiget.utils import open_in_editor, paginate
 from tiget.table import Table
 
 
@@ -108,4 +108,4 @@ def list_cmd(opts, model):
     for instance in objs:
         values = [f.dumps(getattr(instance, f.attname)) for f in fields]
         table.add_row(*values)
-    print(table.render())
+    paginate(table.render())

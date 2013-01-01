@@ -46,6 +46,7 @@ def load(plugin):
         debug=BoolSetting(default=False),
         color=BoolSetting(default=sys.stdout.isatty()),
         editor=StrSetting(default=os.environ.get('EDITOR', 'vi')),
+        pager=StrSetting(default=os.environ.get('PAGER', 'less')),
         pdb_module=StrSetting(default='pdb'),
         repository=RepositorySetting(),
     )
