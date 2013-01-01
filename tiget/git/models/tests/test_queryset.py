@@ -12,13 +12,11 @@ class X(models.Model):
         return 'x'
 
 
-class _TestCase(GitTestCase):
+class TestRepr(GitTestCase):
     def setup(self):
         super().setup()
         init_repo()
 
-
-class TestRepr(_TestCase):
     def test_repr(self):
         qs = QuerySet(X)
         qs.REPR_MAXLEN = 2
@@ -31,7 +29,7 @@ class TestRepr(_TestCase):
         eq_(repr(qs), '[x, x, x, x]')
 
 
-class TestEq(_TestCase):
+class TestEq:
     def test_eq(self):
         qs = QuerySet(X)
         eq_(qs, qs)
@@ -53,7 +51,7 @@ class TestEq(_TestCase):
         assert_not_equal(QuerySet(X), QuerySet(X).filter(title='foo'))
 
 
-class TestOperators(_TestCase):
+class TestOperators:
     def test_or(self):
         qs = QuerySet(X)
         eq_((qs.filter(a=1) | qs.filter(b=2)).query, Q(a=1) | Q(b=2))
@@ -71,12 +69,12 @@ class TestOperators(_TestCase):
         eq_(qs[:3].query, Q()[:3])
 
 
-class TestAll(_TestCase):
+class TestAll:
     def test_all(self):
         eq_(QuerySet(X).all().query, Q())
 
 
-class TestFilter(_TestCase):
+class TestFilter:
     def filter(self, *args, **kwargs):
         return QuerySet(X).filter(*args, **kwargs).query
 
@@ -98,7 +96,7 @@ class TestFilter(_TestCase):
         eq_(self.filter(Q(a=1), Q(b=2), c=3, d=4), Q(a=1, b=2, c=3, d=4))
 
 
-class TestExclude(_TestCase):
+class TestExclude:
     def exclude(self, *args, **kwargs):
         return QuerySet(X).exclude(*args, **kwargs).query
 
@@ -120,7 +118,7 @@ class TestExclude(_TestCase):
         eq_(self.exclude(Q(a=1), Q(b=2), c=3, d=4), ~Q(a=1, b=2, c=3, d=4))
 
 
-class TestOrderBy(_TestCase):
+class TestOrderBy:
     def order_by(self, *args):
         return QuerySet(X).order_by(*args).query
 
@@ -130,7 +128,7 @@ class TestOrderBy(_TestCase):
         eq_(self.order_by('a', '-b'), Q().order_by('a', '-b'))
 
 
-class TestChaining(_TestCase):
+class TestChaining:
     def filter_exclude(self):
         eq_(QuerySet(X).filter(a=1).exclude(b=2).query, Q(a=1) & ~Q(b=2))
 
@@ -170,7 +168,7 @@ class TestChaining(_TestCase):
         eq_(QuerySet(X)[:3].order_by('a').query, Q()[:3].order_by('a'))
 
 
-class TestExecute(_TestCase):
+class TestExecute:
     @patch('tiget.git.models.queryset.ObjCache')
     def test_execute(self, MockCache):
         obj_cache = Mock(pks=[1, 2, 3, 4])
