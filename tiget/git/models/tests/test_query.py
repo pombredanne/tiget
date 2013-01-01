@@ -1,8 +1,9 @@
 from itertools import combinations
-from random import choice
+from random import choice, shuffle
 
 from nose.tools import *
 from nose.plugins.skip import SkipTest
+from mock import Mock
 
 from tiget.git.models.query import (
     Query, Q, Inversion, Intersection, Union, Slice, Ordered)
@@ -35,7 +36,7 @@ class TestQ:
             q = Q(**conditions)
             eq_(q, eval(repr(q)))
 
-    def test_execute(self):
+    def test_match(self):
         raise SkipTest()
 
 
@@ -54,9 +55,6 @@ class TestInversion:
         for conditions in generate_conditions():
             q = ~Q(**conditions)
             eq_(q, eval(repr(q)))
-
-    def test_execute(self):
-        raise SkipTest()
 
 
 class TestIntersection:
@@ -80,9 +78,6 @@ class TestIntersection:
             q = Q(**conditions1) | Q(**conditions2)
             eq_(q, eval(repr(q)))
 
-    def test_execute(self):
-        raise SkipTest()
-
 
 class TestUnion:
     def test_equality(self):
@@ -105,9 +100,6 @@ class TestUnion:
             q = Q(**conditions1) & Q(**conditions2)
             eq_(q, eval(repr(q)))
 
-    def test_execute(self):
-        raise SkipTest()
-
 
 class TestSlice:
     def test_equality(self):
@@ -123,9 +115,6 @@ class TestSlice:
         for s in ((None,), (0,), (0, 3), (0, 3, 2)):
             q = Q()[slice(*s)]
             eq_(q, eval(repr(q)))
-
-    def test_execute(self):
-        raise SkipTest()
 
 
 class TestOrdered:
@@ -143,8 +132,65 @@ class TestOrdered:
             q = Q().order_by(*fields)
             eq_(q, eval(repr(q)))
 
-    def test_execute(self):
-        raise SkipTest()
+
+class TestExecute:
+    def setup(self):
+        self.pks = list(range(10))
+        self.obj_cache = Mock()
+        self.mock_qs = []
+
+    def teardown(self):
+        for q, expected_pks in self.mock_qs:
+            q.execute.assert_called_once_with(self.obj_cache, expected_pks)
+
+    def assert_execute(self, q, expected_result):
+        eq_(list(q.execute(self.obj_cache, self.pks)), expected_result)
+
+    def mock_q(self, expected_pks, rval):
+        q = Mock(execute=Mock(return_value=rval))
+        self.mock_qs.append((q, expected_pks))
+        return q
+
+    def test_q(self):
+        matching = [2, 3, 5, 7]
+        q = Q()
+        q.match = lambda obj_cache, pk: pk in matching
+        self.assert_execute(q, matching)
+
+    def test_inversion(self):
+        subquery = self.mock_q(self.pks, [0, 4, 6, 7, 8, 9])
+        self.assert_execute(Inversion(subquery), [1, 2, 3, 5])
+
+    def test_intersection(self):
+        subqueries = (
+            self.mock_q(self.pks, [0, 1, 2, 3, 4]),
+            self.mock_q([0, 1, 2, 3, 4], [0, 2, 4]),
+            self.mock_q([0, 2, 4], [4]),
+        )
+        q = Intersection()
+        q.subqueries = subqueries
+        self.assert_execute(q, [4])
+
+    def test_union(self):
+        subqueries = (
+            self.mock_q(self.pks, [4, 7, 8]),
+            self.mock_q([0, 1, 2, 3, 5, 6, 9], [1, 2, 3]),
+            self.mock_q([0, 5, 6, 9], [5]),
+        )
+        q = Union()
+        q.subqueries = subqueries
+        self.assert_execute(q, [4, 7, 8, 1, 2, 3, 5])
+
+    def test_slice(self):
+        subquery = self.mock_q(self.pks, [0, 1, 2, 3, 4])
+        self.assert_execute(Slice(subquery, slice(1, 4)), [1, 2, 3])
+
+    def test_ordered(self):
+        shuffled = self.pks[:]
+        shuffle(shuffled)
+        subquery = self.mock_q(self.pks, shuffled)
+        self.obj_cache.pk_names = ('pk', 'id')
+        self.assert_execute(Ordered(subquery, 'pk'), self.pks)
 
 
 class TestOperators:
