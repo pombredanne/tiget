@@ -76,7 +76,7 @@ def list_cmd(opts, model):
     SYNOPSIS
         list [-f FIELDS] [-s SORT_ORDER] [-l LIMIT] MODEL
     """
-    fields = model._meta.fields
+    fields = model._meta.writable_fields
     order_by = None
     limit = None
     for opt, arg in opts:

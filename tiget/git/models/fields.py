@@ -1,8 +1,13 @@
 import time
 from datetime import datetime, timedelta, timezone
 
+from tiget.git import transaction
 
-__all__ = ['TextField', 'ForeignKey', 'DateTimeField']
+
+__all__ = [
+    'TextField', 'ForeignKey', 'DateTimeField', 'CreatedAtField',
+    'UpdatedAtField'
+]
 
 
 class Field:
@@ -136,3 +141,41 @@ class DateTimeField(Field):
         if not value is None:
             return datetime.strptime(value, self.FORMAT)
         return None
+
+
+class CreatedAtField(Field):
+    def get_attname(self):
+        return None
+
+    def contribute_to_class(self, cls, name):
+        super().contribute_to_class(cls, name)
+        setattr(cls, self.name, CreatedAtDescriptor())
+
+
+class CreatedAtDescriptor:
+    def __get__(self, instance, owner):
+        if instance is None:
+            return self
+        with transaction.wrap() as trans:
+            if instance.pk:
+                return trans.stat(instance.path).created_at
+            return None
+
+
+class UpdatedAtField(Field):
+    def get_attname(self):
+        return None
+
+    def contribute_to_class(self, cls, name):
+        super().contribute_to_class(cls, name)
+        setattr(cls, self.name, UpdatedAtDescriptor())
+
+
+class UpdatedAtDescriptor:
+    def __get__(self, instance, owner):
+        if instance is None:
+            return self
+        with transaction.wrap() as trans:
+            if instance.pk:
+                return trans.stat(instance.path).updated_at
+            return None

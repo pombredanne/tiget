@@ -1,6 +1,6 @@
 from uuid import uuid4
 
-from tiget.git.models.fields import TextField
+from tiget.git.models.fields import TextField, CreatedAtField, UpdatedAtField
 
 
 class Options:
@@ -31,9 +31,15 @@ class Options:
         raise KeyError(
             '{} has no field named {}'.format(self.model.__name__, name))
 
+    @property
+    def writable_fields(self):
+        return [f for f in self.fields if f.attname]
+
     def _prepare(self):
         if not self.pk:
             id_field = TextField(
                 primary_key=True, hidden=True, default=lambda: uuid4().hex)
             self.model.add_to_class('id', id_field)
             self.fields.insert(0, self.fields.pop())
+        self.model.add_to_class('created_at', CreatedAtField())
+        self.model.add_to_class('updated_at', UpdatedAtField())

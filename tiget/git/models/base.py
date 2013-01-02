@@ -59,7 +59,7 @@ class ModelBase(type):
 
 class Model(metaclass=ModelBase):
     def __init__(self, **kwargs):
-        for field in self._meta.fields:
+        for field in self._meta.writable_fields:
             attname = field.attname
             if isinstance(field, ForeignKey):
                 attname = field.name
@@ -102,25 +102,9 @@ class Model(metaclass=ModelBase):
 
     pk = property(_get_pk_val, _set_pk_val)
 
-    @property
-    @transaction.wrap()
-    def created_at(self):
-        trans = transaction.current()
-        if self.pk:
-            return trans.stat(self.path).created_at
-        return None
-
-    @property
-    @transaction.wrap()
-    def updated_at(self):
-        trans = transaction.current()
-        if self.pk:
-            return trans.stat(self.path).updated_at
-        return None
-
     def dumps(self, include_hidden=False, include_pk=True):
         data = OrderedDict()
-        for field in self._meta.fields:
+        for field in self._meta.writable_fields:
             if field.name == self._meta.pk.name and not include_pk:
                 continue
             if field.hidden and not include_hidden:
@@ -148,7 +132,7 @@ class Model(metaclass=ModelBase):
 
     @transaction.wrap()
     def save(self):
-        for field in self._meta.fields:
+        for field in self._meta.writable_fields:
             try:
                 field.validate(getattr(self, field.attname))
             except ValueError as e:
