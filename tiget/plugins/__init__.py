@@ -9,6 +9,16 @@ from tiget.plugins.settings import Settings
 plugins = OrderedDict()
 
 
+def _get_subclasses(mod, klass):
+    all_ = getattr(mod, '__all__', mod.__dict__.keys())
+    for key in all_:
+        value = mod.__dict__[key]
+        if key.startswith('_') or value == klass:
+            continue
+        if isclass(value) and issubclass(value, klass):
+            yield value
+
+
 class Plugin:
     def __init__(self, mod, name):
         self.mod = mod
@@ -49,12 +59,9 @@ class Plugin:
     def add_models(self, models):
         from tiget.git.models import Model
         if ismodule(models):
-            for k, v in models.__dict__.items():
-                if not k.startswith('_') and isclass(v) and issubclass(v, Model):
-                    self.add_model(v)
-        else:
-            for model in models:
-                self.add_model(model)
+            models = _get_subclasses(models, Model)
+        for model in models:
+            self.add_model(model)
 
     def add_model(self, model):
         self.models[model.__name__.lower()] = model
@@ -62,14 +69,12 @@ class Plugin:
     def add_cmds(self, cmds):
         from tiget.cmds import Cmd
         if ismodule(cmds):
-            for k, v in cmds.__dict__.items():
-                if not k.startswith('_') and isinstance(v, Cmd):
-                    self.add_cmd(v)
-        else:
-            for cmd in cmds:
-                self.add_cmd(cmd)
+            cmds = _get_subclasses(cmds, Cmd)
+        for cmd in cmds:
+            self.add_cmd(cmd)
 
-    def add_cmd(self, cmd):
+    def add_cmd(self, cmd_class):
+        cmd = cmd_class()
         self.cmds[cmd.name] = cmd
 
     def add_settings(self, **kwargs):
