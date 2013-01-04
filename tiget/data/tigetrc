@@ -1,6 +1,2 @@
-alias ?=help man=help
-alias .=source
-alias new=create
-alias ls=list
-
+# put you initialization code here
 load scrum

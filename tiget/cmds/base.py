@@ -2,7 +2,11 @@ import re
 from argparse import ArgumentParser, Action, ArgumentTypeError
 
 
-aliases = {}
+aliases = {
+    'man': 'help',
+    '.': 'source',
+    'ls': 'list',
+}
 
 
 class CmdError(Exception): pass
