@@ -5,8 +5,8 @@ __version__ = '0.1a0'
 
 
 def load(plugin):
-    from tiget_ipython.cmds import ipython_cmd
-    plugin.add_cmd(ipython_cmd)
+    from tiget_ipython.cmds import IPythonCmd
+    plugin.add_cmd(IPythonCmd)
     plugin.add_setting('prompt', StrSetting(default='IPython[\\#]> '))
 
 

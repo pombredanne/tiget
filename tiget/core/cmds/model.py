@@ -1,111 +1,92 @@
 from functools import wraps
 from collections import OrderedDict
 
-from tiget.cmds import cmd, CmdError
+from tiget.cmds import Cmd
 from tiget.git import transaction
 from tiget.git.models import get_model
 from tiget.utils import open_in_editor, paginate
 from tiget.table import Table
 
 
-def with_model(fn):
-    @wraps(fn)
-    def _inner(opts, model_name, *args):
+__all__ = ['Create', 'Edit', 'List']
+
+
+def model_type(model_name):
+    try:
+        model = get_model(model_name)
+    except KeyError:
+        raise TypeError
+    return model
+
+
+class Create(Cmd):
+    description = 'create new model instance'
+
+    def setup(self):
+        self.parser.add_argument('model', type=model_type)
+
+    @transaction.wrap()
+    def do(self, args):
         try:
-            model = get_model(model_name)
-        except KeyError:
-            raise CmdError('model "{}" does not exist'.format(model_name))
-        return fn(opts, model, *args)
-    return _inner
+            instance = args.model()
+            s = open_in_editor(instance.dumps())
+            instance.loads(s)
+            instance.save()
+        except args.model.InvalidObject as e:
+            raise self.error(e)
 
 
-@cmd()
-@transaction.wrap()
-@with_model
-def create_cmd(opts, model):
-    """
-    create new model instance
+class Edit(Cmd):
+    description = 'edit model instance'
 
-    SYNOPSIS
-        create MODEL
+    def setup(self):
+        self.parser.add_argument('model', type=model_type)
+        self.parser.add_argument('pk')
 
-    DESCRIPTION
-        Create a new instance of MODEL.
-    """
-    try:
-        instance = model()
-        s = open_in_editor(instance.dumps())
-        instance.loads(s)
-        instance.save()
-    except model.InvalidObject as e:
-        raise CmdError(e)
-
-
-@cmd()
-@transaction.wrap()
-@with_model
-def edit_cmd(opts, model, pk):
-    """
-    edit model instance
-
-    SYNOPSIS
-        edit MODEL PK
-
-    DESCRIPTION
-        Edit MODEL instance with primary key PK.
-    """
-    try:
-        instance = model.objects.get(pk__startswith=pk)
-    except (model.DoesNotExist, model.MultipleObjectsReturned) as e:
-        raise CmdError(e)
-    try:
-        s = open_in_editor(instance.dumps())
-        instance.loads(s)
-        instance.save()
-    except model.InvalidObject as e:
-        raise CmdError(e)
+    @transaction.wrap()
+    def do(self, args):
+        try:
+            instance = args.model.objects.get(pk__startswith=args.pk)
+        except (args.model.DoesNotExist, args.model.MultipleObjectsReturned) as e:
+            raise self.error(e)
+        try:
+            s = open_in_editor(instance.dumps())
+            instance.loads(s)
+            instance.save()
+        except args.model.InvalidObject as e:
+            raise self.error(e)
 
 
-@cmd(options='f:s:l:')
-@transaction.wrap()
-@with_model
-def list_cmd(opts, model):
-    """
-    list records
+class List(Cmd):
+    description = 'list records'
 
-    SYNOPSIS
-        list [-f FIELDS] [-s SORT_ORDER] [-l LIMIT] MODEL
-    """
-    fields = model._meta.writable_fields
-    order_by = None
-    limit = None
-    for opt, arg in opts:
-        if opt == '-f':
-            try:
-                fields = [model._meta.get_field(f) for f in arg.split(',')]
-            except KeyError as e:
-                raise CmdError(e)
-        elif opt == '-s':
-            order_by = arg.split(',')
-            for field in order_by:
+    def setup(self):
+        self.parser.add_argument('-f', '--fields')
+        self.parser.add_argument('-s', '--sort')
+        self.parser.add_argument('-l', '--limit', type=int)
+        self.parser.add_argument('model', type=model_type)
+
+    @transaction.wrap()
+    def do(self, args):
+        fields = args.model._meta.writable_fields
+        if args.fields:
+            fields = [args.model._meta.get_field(f) for f in args.fields.split(',')]
+        if args.sort:
+            args.sort = args.sort.split(',')
+            for field in args.sort:
                 if field.startswith('-'):
                     field = field[1:]
                 try:
-                    model._meta.get_field(field)
+                    args.model._meta.get_field(field)
                 except KeyError as e:
-                    raise CmdError(e)
-        elif opt == '-l':
-            try:
-                limit = int(arg)
-            except ValueError as e:
-                raise CmdError(e)
-    table = Table(*(f.name for f in fields))
-    objs = model.objects.all()
-    if order_by:
-        objs = objs.order_by(*order_by)
-    if not limit is None:
-        objs = objs[:limit]
-    for instance in objs:
-        values = [f.dumps(getattr(instance, f.attname)) for f in fields]
-        table.add_row(*values)
-    paginate(table.render())
+                    raise self.error(e)
+        table = Table(*(f.name for f in fields))
+        objs = args.model.objects.all()
+        if args.sort:
+            objs = objs.order_by(*args.sort)
+        if not args.limit is None:
+            objs = objs[:args.limit]
+        for instance in objs:
+            values = [f.dumps(getattr(instance, f.attname)) for f in fields]
+            table.add_row(*values)
+        paginate(table.render())

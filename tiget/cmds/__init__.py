@@ -1,6 +1,6 @@
 import shlex
 
-from tiget.cmds.base import aliases, CmdError, cmd, Cmd
+from tiget.cmds.base import aliases, CmdError, Cmd
 
 
 def get_command(name):
@@ -24,4 +24,4 @@ def run(argv):
         cmd = get_command(name)
     except KeyError:
         raise CmdError('{}: command not found'.format(name))
-    cmd(*argv)
+    cmd.run(*argv)

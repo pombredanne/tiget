@@ -1,7 +1,5 @@
 import re
-import textwrap
-from functools import wraps
-from getopt import getopt, GetoptError
+from argparse import ArgumentParser, Action, ArgumentTypeError
 
 
 aliases = {}
@@ -10,45 +8,56 @@ aliases = {}
 class CmdError(Exception): pass
 
 
-def cmd(**kwargs):
-    def _decorator(fn):
-        cmd = Cmd(fn, **kwargs)
-        return wraps(fn)(cmd)
-    return _decorator
+class CmdExit(Exception):
+    def __init__(self, status=None):
+        super().__init__()
+        self.status = status
 
 
-class Cmd:
-    def __init__(self, fn, name=None, options=''):
-        self.fn = fn
-        if not name:
-            m = re.match(r'(.*?)(?:_?cmd)?$', fn.__name__, re.IGNORECASE)
-            name = m.group(1).replace('_', '-').lower()
-        self.name = name
-        self.options = options
+class CmdArgumentParser(ArgumentParser):
+    def __init__(self, cmd):
+        super().__init__(prog=cmd.name, description=cmd.description)
+        self.cmd = cmd
 
-    def __call__(self, *argv):
+    def exit(self, status=0, message=None):
+        if message:
+            self._print_message(message)
+        raise CmdExit(status)
+
+    def error(self, message):
+        raise self.cmd.error(message)
+
+
+class CmdBase(type):
+    def __new__(cls, cls_name, bases, attrs):
+        parents = [b for b in bases if isinstance(b, CmdBase)]
+        if parents:
+            attrs.setdefault('name', cls_name.lower())
+        return super().__new__(cls, cls_name, bases, attrs)
+
+
+class Cmd(metaclass=CmdBase):
+    description = 'undocumented'
+
+    def __init__(self):
+        self.parser = CmdArgumentParser(self)
+        self.setup()
+
+    def setup(self):
+        pass
+
+    def format_help(self):
+        return self.parser.format_help()
+
+    def run(self, *argv):
         try:
-            opts, args = getopt(argv, self.options)
-        except GetoptError as e:
-            raise CmdError(e)
-        try:
-            self.fn(opts, *args)
-        except TypeError:
-            # FIXME: may obscure other errors
-            raise CmdError('{}: wrong number of arguments'.format(self.name))
-        except CmdError as e:
-            raise CmdError('{}: {}'.format(self.name, e))
+            args = self.parser.parse_args(argv)
+            self.do(args)
+        except CmdExit:
+            return
 
-    @property
-    def usage(self):
-        usage = self.fn.__doc__
-        if usage:
-            usage = self.name + ' - ' + textwrap.dedent(usage).strip()
-        return usage
+    def error(self, message):
+        return CmdError('{}: {}'.format(self.name, message))
 
-    @property
-    def help_text(self):
-        help_text = 'undocumented'
-        if self.fn.__doc__:
-            help_text = self.fn.__doc__.strip().splitlines()[0]
-        return help_text
+    def do(self, args):
+        raise NotImplementedError

@@ -1,58 +1,49 @@
 from tiget.git import transaction, init_repo, GitError
-from tiget.cmds import cmd, CmdError
+from tiget.cmds import Cmd
 
 
-@cmd()
-def begin_cmd(opts):
-    """
-    begin transaction
-
-    SYNOPSIS
-        begin
-    """
-    try:
-        transaction.begin()
-    except GitError as e:
-        raise CmdError(e)
+__all__ = ['Begin', 'Commit', 'Rollback', 'InitRepo']
 
 
-@cmd()
-def commit_cmd(opts, message=None):
-    """
-    commit transaction
+class Begin(Cmd):
+    description = 'begin transaction'
 
-    SYNOPSIS
-        commit [MESSAGE]
-    """
-    try:
-        transaction.commit(message)
-    except GitError as e:
-        raise CmdError(e)
+    def do(self, args):
+        try:
+            transaction.begin()
+        except GitError as e:
+            raise self.error(e)
 
 
-@cmd()
-def rollback_cmd(opts):
-    """
-    roll back transaction
+class Commit(Cmd):
+    description = 'commit transaction'
 
-    SYNOPSIS
-        rollback
-    """
-    try:
-        transaction.rollback()
-    except GitError as e:
-        raise CmdError(e)
+    def setup(self):
+        self.parser.add_argument('message', nargs='?')
+
+    def do(self, args):
+        try:
+            transaction.commit(args.message)
+        except GitError as e:
+            raise self.error(e)
 
 
-@cmd()
-def init_repo_cmd(opts):
-    """
-    initialize repository
+class Rollback(Cmd):
+    description = 'roll back transaction'
 
-    SYNOPSIS
-        init-repo
-    """
-    try:
-        init_repo()
-    except GitError as e:
-        raise CmdError(e)
+    def do(self, args):
+        try:
+            transaction.rollback()
+        except GitError as e:
+            raise self.error(e)
+
+
+class InitRepo(Cmd):
+    name = 'init-repo'
+    description = 'initialize repository'
+
+    def do(self, args):
+        try:
+            init_repo()
+        except GitError as e:
+            raise self.error(e)

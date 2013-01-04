@@ -1,55 +1,55 @@
 import pkg_resources
 
-from tiget.cmds import cmd, CmdError
+from tiget.cmds import Cmd
 from tiget.plugins import load_plugin, unload_plugin, reload_plugin, plugins
 
 
-@cmd()
-def load_cmd(opts, plugin_name=None):
-    """
-    load plugin
+__all__ = ['Load', 'Reload', 'Unload']
 
-    SYNOPSIS
-        load PLUGIN
-    """
-    if plugin_name:
+
+class Load(Cmd):
+    description = 'load plugin'
+
+    def setup(self):
+        self.parser.add_argument('plugin_name', nargs='?')
+
+    def do(self, args):
+        if args.plugin_name:
+            try:
+                load_plugin(args.plugin_name)
+            except ImportError as e:
+                raise self.error(e)
+        else:
+            print('Available plugins:')
+            names = set(
+                ep.name for ep in pkg_resources.iter_entry_points('tiget.plugins'))
+            names.update(plugins.keys())
+            for name in sorted(names):
+                loaded = name in plugins
+                print('[{}] {}'.format('*' if loaded else ' ', name))
+
+
+class Reload(Cmd):
+    description = 'reload plugin'
+
+    def setup(self):
+        self.parser.add_argument('plugin_name')
+
+    def do(self, args):
         try:
-            load_plugin(plugin_name)
-        except ImportError as e:
-            raise CmdError(e)
-    else:
-        print('Available plugins:')
-        names = set(
-            ep.name for ep in pkg_resources.iter_entry_points('tiget.plugins'))
-        names.update(plugins.keys())
-        for name in sorted(names):
-            loaded = name in plugins
-            print('[{}] {}'.format('*' if loaded else ' ', name))
+            reload_plugin(args.plugin_name)
+        except KeyError:
+            raise self.error('no plugin "{}" loaded'.format(args.plugin_name))
 
 
-@cmd()
-def reload_cmd(opts, plugin_name):
-    """
-    reload plugin
+class Unload(Cmd):
+    description = 'unload plugin'
 
-    SYNOPSIS
-        reload PLUGIN
-    """
-    try:
-        reload_plugin(plugin_name)
-    except KeyError:
-        raise CmdError('no plugin "{}" loaded'.format(plugin_name))
+    def setup(self):
+        self.parser.add_argument('plugin_name')
 
-
-@cmd()
-def unload_cmd(opts, plugin_name):
-    """
-    unload plugin
-
-    SYNOPSIS
-        unload PLUGIN
-    """
-    try:
-        unload_plugin(plugin_name)
-    except KeyError:
-        raise CmdError('no plugin "{}" loaded'.format(plugin_name))
+    def do(self, args):
+        try:
+            unload_plugin(args.plugin_name)
+        except KeyError:
+            raise self.error('no plugin "{}" loaded'.format(args.plugin_name))
