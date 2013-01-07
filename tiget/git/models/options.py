@@ -41,5 +41,8 @@ class Options:
                 primary_key=True, hidden=True, default=lambda: uuid4().hex)
             self.model.add_to_class('id', id_field)
             self.fields.insert(0, self.fields.pop())
-        self.model.add_to_class('created_at', CreatedAtField())
-        self.model.add_to_class('updated_at', UpdatedAtField())
+        fieldnames = [f.name for f in self.fields]
+        if not 'created_at' in fieldnames:
+            self.model.add_to_class('created_at', CreatedAtField())
+        if not 'updated_at' in fieldnames:
+            self.model.add_to_class('updated_at', UpdatedAtField())
