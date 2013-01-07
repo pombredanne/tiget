@@ -5,7 +5,7 @@ from tiget.table import Table
 from tiget.scrum.models import Ticket, User
 
 
-def AcceptCmd(Cmd):
+class Accept(Cmd):
     description = 'accept ticket'
 
     def setup(self):
@@ -21,7 +21,7 @@ def AcceptCmd(Cmd):
         ticket.save()
 
 
-class MineCmd(Cmd):
+class Mine(Cmd):
     description = 'list tickets owned by the current user'
 
     def setup(self):
