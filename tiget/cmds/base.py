@@ -1,5 +1,5 @@
 import re
-from argparse import ArgumentParser, Action, ArgumentTypeError
+from argparse import ArgumentParser
 
 
 aliases = {
