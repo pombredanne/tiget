@@ -46,6 +46,8 @@ def load(plugin):
         debug=BoolSetting(default=False),
         color=BoolSetting(default=sys.stdout.isatty()),
         editor=StrSetting(default=os.environ.get('EDITOR', 'vi')),
+        history_file=StrSetting(default='~/.tiget_history'),
+        history_limit=IntSetting(default=1000),
         pager=StrSetting(default=os.environ.get('PAGER', 'less')),
         pdb_module=StrSetting(default='pdb'),
         repository=RepositorySetting(),

@@ -114,9 +114,19 @@ class Repl(Script):
             self.lineno -= 1
         return line
 
+    @property
+    def histfile(self):
+        return os.path.expanduser(settings.core.history_file)
+
     def run(self):
         print('tiget {}'.format(tiget.__version__))
         print('Type "help" for help')
         print('')
         readline.parse_and_bind('tab: complete')
+        try:
+            readline.read_history_file(self.histfile)
+        except IOError:
+            pass        # The file might not exist yet
         super().run()
+        readline.set_history_length(settings.core.history_limit)
+        readline.write_history_file(self.histfile)
