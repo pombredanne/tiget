@@ -1,13 +1,12 @@
 from subprocess import list2cmdline
 
-import tiget
 from tiget.conf import settings
 from tiget.plugins import plugins
 from tiget.cmds import get_command, aliases, Cmd
 from tiget.utils import paginate
 
 
-__all__ = ['Alias', 'Unalias', 'Echo', 'Help', 'Set', 'Source', 'Version']
+__all__ = ['Alias', 'Unalias', 'Echo', 'Help', 'Set', 'Source']
 
 
 class Alias(Cmd):
@@ -126,16 +125,3 @@ class Source(Cmd):
         except IOError as e:
             raise self.error(e)
         script.run()
-
-
-class Version(Cmd):
-    description = 'print version information'
-
-    def setup(self):
-        self.parser.epilog = '''
-            Print the version. Can be used for version detection in command
-            line scripts.
-        '''
-
-    def do(self, args):
-        print(tiget.__version__)

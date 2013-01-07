@@ -2,6 +2,7 @@ import os
 import sys
 from argparse import ArgumentParser, REMAINDER
 
+import tiget
 from tiget.plugins import load_plugin
 from tiget.script import Script, Repl
 from tiget.conf import settings
@@ -32,9 +33,16 @@ def main():
     parser.add_argument(
         '-o', '--add-option', action='append', dest='options',
         default=[], help='set an option for this session')
+    parser.add_argument(
+        '-v', '--version', action='store_true', dest='print_version',
+        default=False, help='print version information')
     parser.add_argument('cmd', nargs=REMAINDER, help='execute a command')
 
     args = parser.parse_args()
+
+    if args.print_version:
+        print('tiget {}'.format(tiget.__version__))
+        return
 
     load_plugin('tiget.core')
     if args.load_config:
