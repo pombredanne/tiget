@@ -98,17 +98,8 @@ class Set(Cmd):
 
     def do(self, args):
         for var in args.args:
-            var, eq, value = var.partition('=')
-            plugin, _, var = var.rpartition('.')
-            if not plugin:
-                plugin = 'core'
-            if not eq:
-                value = True
-                if var.startswith('no'):
-                    var = var[2:]
-                    value = False
             try:
-                settings[plugin][var] = value
+                settings.parse_and_set(var)
             except (ValueError, KeyError) as e:
                 raise self.error(e)
         if not args.args:
