@@ -3,6 +3,7 @@ import sys
 import readline
 import shlex
 from io import StringIO
+from subprocess import list2cmdline
 
 from colors import blue
 
@@ -30,6 +31,10 @@ class Script:
         else:
             name = f.name
         return cls(f, name)
+
+    @classmethod
+    def from_args(cls, args):
+        return cls(list2cmdline(args), '<argv>')
 
     def print_error(self, e):
         print_error('"{}", line {}: {}'.format(self.infile, self.lineno, e))

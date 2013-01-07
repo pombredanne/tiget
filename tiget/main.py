@@ -1,7 +1,6 @@
 import os
 import sys
 from argparse import ArgumentParser, REMAINDER
-from subprocess import list2cmdline
 
 from tiget.plugins import load_plugin
 from tiget.script import Script, Repl
@@ -25,6 +24,9 @@ def load_config():
 def main():
     parser = ArgumentParser(description='ticketing system with git backend')
     parser.add_argument(
+        '-i', '--interactive', action='store_true', default=sys.stdin.isatty(),
+        help='force start of an interactive session, even if stdin is no tty')
+    parser.add_argument(
         '-n', '--no-config', action='store_false', dest='load_config',
         default=True, help='prevent loading of default configuration files')
     parser.add_argument(
@@ -45,10 +47,9 @@ def main():
             raise self.error(e)
 
     if args.cmd:
-        script = Script(list2cmdline(args.cmd), '<argv>')
+        script = Script.from_args(args.cmd)
+    elif args.interactive:
+        script = Repl()
     else:
-        if sys.stdin.isatty():
-            script = Repl()
-        else:
-            script = Script.from_file(sys.stdin)
+        script = Script.from_file(sys.stdin)
     return script.run()
