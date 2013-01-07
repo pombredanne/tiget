@@ -36,6 +36,13 @@ class BoolSetting(Setting):
             return super().format(value)
 
 
+class IntSetting(Setting):
+    def clean(self, value):
+        if not isinstance(value, int):
+            value = int(value)
+        return super().clean(value)
+
+
 class StrSetting(Setting):
     def clean(self, value):
         if not isinstance(value, str):
