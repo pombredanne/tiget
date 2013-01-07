@@ -1,5 +1,6 @@
 import os
 import sys
+from argparse import ArgumentParser, REMAINDER
 from subprocess import list2cmdline
 
 from tiget.plugins import load_plugin
@@ -21,12 +22,20 @@ def load_config():
 
 
 def main():
-    load_plugin('tiget.core')
-    load_config()
+    parser = ArgumentParser(description='ticketing system with git backend')
+    parser.add_argument(
+        '-n', '--no-config', action='store_false', dest='load_config',
+        default=True, help='prevent loading of default configuration files')
+    parser.add_argument('cmd', nargs=REMAINDER, help='execute a command')
 
-    args = sys.argv[1:]
-    if args:
-        script = Script(list2cmdline(args), '<argv>')
+    args = parser.parse_args()
+
+    load_plugin('tiget.core')
+    if args.load_config:
+        load_config()
+
+    if args.cmd:
+        script = Script(list2cmdline(args.cmd), '<argv>')
     else:
         if sys.stdin.isatty():
             script = Repl()
