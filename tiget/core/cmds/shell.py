@@ -111,7 +111,7 @@ class Set(Cmd):
                 settings[plugin][var] = value
             except (ValueError, KeyError) as e:
                 raise self.error(e)
-        if not args:
+        if not args.args:
             for plugin in sorted(plugins.values(), key=lambda p: p.name):
                 if not plugin.settings:
                     continue
