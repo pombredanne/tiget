@@ -9,7 +9,11 @@ class Settings:
             raise AttributeError(e)
 
     def __getitem__(self, key):
-        return plugins[key].settings
+        try:
+            plugin = plugins[key]
+        except KeyError:
+            raise KeyError('invalid plugin "{}"'.format(key))
+        return plugin.settings
 
     def keys(self):
         return plugins.keys()
@@ -24,10 +28,7 @@ class Settings:
             if var.startswith('no'):
                 var = var[2:]
                 value = False
-        try:
-            self[plugin][var] = value
-        except (ValueError, KeyError) as e:
-            raise self.error(e)
+        self[plugin][var] = value
 
 
 settings = Settings()
