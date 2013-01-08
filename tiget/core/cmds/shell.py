@@ -3,10 +3,11 @@ from subprocess import list2cmdline
 from tiget.conf import settings
 from tiget.plugins import plugins
 from tiget.cmds import get_command, aliases, Cmd
-from tiget.utils import paginate
+from tiget.utils import paginate, open_in_editor
+from tiget.git import transaction, GitError
 
 
-__all__ = ['Alias', 'Unalias', 'Echo', 'Help', 'Set', 'Source']
+__all__ = ['Alias', 'Unalias', 'Echo', 'EditConfig', 'Help', 'Set', 'Source']
 
 
 class Alias(Cmd):
@@ -50,6 +51,36 @@ class Echo(Cmd):
 
     def do(self, args):
         print(' '.join(args.args))
+
+
+class EditConfig(Cmd):
+    description = 'edit a file located in the repository'
+
+    def setup(self):
+        self.parser.add_argument('-c', '--create', action='store_true')
+        self.parser.add_argument('filename', nargs='?', default='tigetrc')
+
+    @transaction.wrap()
+    def do(self, args):
+        path = args.filename.lstrip('/').split('/')
+        if not args.filename.startswith('/'):
+            path.insert(0, 'config')
+        try:
+            trans = transaction.current()
+        except GitError as e:
+            raise self.error(e)
+        try:
+            current_content = trans.get_blob(path).decode('utf-8')
+        except GitError as e:
+            if args.create:
+                current_content = ''
+            else:
+                raise self.error(e)
+        new_content = open_in_editor(current_content)
+        trans.set_blob(path, new_content.encode('utf-8'))
+        if new_content == current_content:
+            raise self.error('nothing changed')
+        trans.add_message('Changed {}'.format(args.filename))
 
 
 class Help(Cmd):
