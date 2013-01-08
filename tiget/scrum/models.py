@@ -8,7 +8,12 @@ class User(models.Model):
 
     @classmethod
     def current(cls, **kwargs):
-        return cls.objects.get(email=settings.scrum.current_user)
+        email = settings.scrum.current_user
+        try:
+            user = cls.objects.get(email=email)
+        except User.DoesNotExist:
+            raise User.DoesNotExist('user "{}" not found'.format(email))
+        return user
 
 
 class Milestone(models.Model):
