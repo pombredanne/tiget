@@ -39,7 +39,6 @@ class Rollback(Cmd):
 
 
 class InitRepo(Cmd):
-    name = 'init-repo'
     description = 'initialize repository'
 
     def do(self, args):

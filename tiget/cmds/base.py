@@ -36,7 +36,8 @@ class CmdBase(type):
     def __new__(cls, cls_name, bases, attrs):
         parents = [b for b in bases if isinstance(b, CmdBase)]
         if parents:
-            attrs.setdefault('name', cls_name.lower())
+            name = re.sub(r'(?!^)([A-Z])', r'-\1', cls_name).lower()
+            attrs.setdefault('name', name)
         return super().__new__(cls, cls_name, bases, attrs)
 
 
