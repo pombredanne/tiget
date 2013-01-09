@@ -1,5 +1,3 @@
-from pkg_resources import Requirement, resource_string
-
 import pygit2
 
 from tiget.conf import settings
@@ -24,7 +22,7 @@ def get_config(name):
     return repo.config[name]
 
 
-def init_repo():
+def init_repo(load_plugins=True):
     from tiget import __version__
     from tiget.git import transaction
 
@@ -34,9 +32,10 @@ def init_repo():
         version = '{}\n'.format(__version__)
         trans.set_blob(['config', 'VERSION'], version.encode('utf-8'))
 
-        req = Requirement.parse('tiget')
-        tigetrc = resource_string(req, 'tiget/data/tigetrc')
-        trans.set_blob(['config', 'tigetrc'], tigetrc)
+        tigetrc = '# put your initialization code here\n'
+        if load_plugins:
+            tigetrc += 'load scrum\n'
+        trans.set_blob(['config', 'tigetrc'], tigetrc.encode('utf-8'))
 
         trans.add_message('Initialize Repository')
         trans.is_initialized = True

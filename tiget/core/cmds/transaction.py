@@ -2,7 +2,7 @@ from tiget.git import transaction, init_repo, GitError
 from tiget.cmds import Cmd
 
 
-__all__ = ['Begin', 'Commit', 'Rollback', 'InitRepo']
+__all__ = ['Begin', 'Commit', 'Rollback', 'Setup']
 
 
 class Begin(Cmd):
@@ -38,11 +38,16 @@ class Rollback(Cmd):
             raise self.error(e)
 
 
-class InitRepo(Cmd):
-    description = 'initialize repository'
+class Setup(Cmd):
+    description = 'set up repository for use with tiget'
+
+    def setup(self):
+        self.parser.add_argument(
+            '-n', '--no-plugins', action='store_false', dest='load_plugins',
+            default=True, help='disable loading of plugins')
 
     def do(self, args):
         try:
-            init_repo()
+            init_repo(load_plugins=args.load_plugins)
         except GitError as e:
             raise self.error(e)

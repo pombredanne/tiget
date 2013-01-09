@@ -23,9 +23,6 @@ setup(
         'Ticketing', 'Tracker',
     ],
     packages=find_packages(),
-    package_data={
-        'tiget': ['data/tigetrc'],
-    },
     classifiers=[
         'Intended Audience :: Developers',
         'License :: OSI Approved :: ISC License (ISCL)',
