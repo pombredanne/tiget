@@ -48,14 +48,6 @@ class Plugin:
         self.mod = deep_reload(self.mod)
         self.load()
 
-    @property
-    def author(self):
-        return getattr(self.mod, '__author__', None)
-
-    @property
-    def version(self):
-        return getattr(self.mod, '__version__', None)
-
     def add_models(self, models):
         from tiget.git.models import Model
         if ismodule(models):
