@@ -1,9 +1,6 @@
 #!/usr/bin/env python3
 from setuptools import setup, find_packages
 
-from tiget.version import VERSION
-
-
 # work around error in atexit when running ./setup.py test
 # see http://www.eby-sarna.com/pipermail/peak/2010-May/003357.html
 import multiprocessing
@@ -11,7 +8,7 @@ import multiprocessing
 
 setup(
     name='tiget',
-    version=VERSION,
+    version='0.1a0',
     author='Martin Natano',
     author_email='natano@natano.net',
     description='ticketing system with git backend',
