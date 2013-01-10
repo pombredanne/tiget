@@ -1,44 +1,32 @@
 #!/usr/bin/env python3
+# requires: psycopg2, progressbar
 import sys
 import getopt
 from datetime import datetime, timezone
 
 import psycopg2
 from psycopg2.extras import RealDictCursor
+from progressbar import ProgressBar, Percentage, ETA, Bar
 
 from tiget.git import transaction
 from tiget.scrum.models import Milestone, Sprint, User, Ticket, Comment
 
 
-@transaction.wrap('agilo import')
+def _bar(label, cur):
+    widgets = ['Importing {} {} '.format(cur.rowcount, label),
+        Bar(), ' ', Percentage(), ' ', ETA()]
+    bar = ProgressBar(widgets=widgets, maxval=cur.rowcount).start()
+    for row in cur:
+        yield row
+        bar.update(cur.rownumber)
+    bar.finish()
+
+
+@transaction.wrap('Imported data from agilo trac')
 def main():
     conn = psycopg2.connect(' '.join(sys.argv[1:]))
     cur = conn.cursor(cursor_factory=RealDictCursor)
 
-    print('Importing Milestones')
-    cur.execute('''
-        select name,
-               description,
-               to_timestamp(due) as due,
-               to_timestamp(completed) as completed_at
-        from milestone
-    ''')
-    for row in cur:
-        Milestone.create(**row)
-
-    print('Importing Sprints')
-    cur.execute('''
-        select name,
-               description,
-               case milestone when '' then null else milestone end as milestone,
-               to_timestamp(start) as start,
-               to_timestamp(sprint_end) as end
-        from agilo_sprint
-    ''')
-    for row in cur:
-        Sprint.create(**row)
-
-    print('Importing Users')
     # there is no user table, so we do our best to collect the user names
     cur.execute('''
         select distinct trim(raw.user) as name
@@ -51,12 +39,13 @@ def main():
         where raw.user is not null and trim(raw.user) != ''
         order by trim(raw.user)
     ''')
+    print('Importing {} users (please provide an email address):'.format(cur.rowcount))
     user_pks = {}
     for row in cur:
         name = row['name']
         default_email = '{}@example.org'.format(name)
         email = input(
-            'Email for user "{}" [{}]: '.format(name, default_email)).strip()
+            '{} [{}]: '.format(name, default_email)).strip()
         if not email:
             email = default_email
         try:
@@ -68,7 +57,27 @@ def main():
     def _get_user(trac_name):
         return User.objects.get(pk=user_pks[trac_name])
 
-    print('Importing Tickets')
+    cur.execute('''
+        select name,
+               description,
+               to_timestamp(due) as due,
+               to_timestamp(completed) as completed_at
+        from milestone
+    ''')
+    for row in _bar('milestones', cur):
+        Milestone.create(**row)
+
+    cur.execute('''
+        select name,
+               description,
+               case milestone when '' then null else milestone end as milestone,
+               to_timestamp(start) as start,
+               to_timestamp(sprint_end) as end
+        from agilo_sprint
+    ''')
+    for row in _bar('sprints', cur):
+        Sprint.create(**row)
+
     cur.execute('''
         select id,
                summary,
@@ -93,7 +102,7 @@ def main():
                        'story', 'task', 'training')
     ''')
     ticket_pks = {}
-    for row in cur:
+    for row in _bar('tickets', cur):
         ticket_id = row.pop('id')
         for key in ('reporter', 'owner'):
             row[key] = _get_user(row[key]) if row[key] else None
@@ -103,7 +112,6 @@ def main():
 
     # TODO: import ticket changes
 
-    print('Importing Comments')
     cur.execute('''
         select ticket,
                author,
@@ -113,7 +121,7 @@ def main():
               field = 'comment' and
               newvalue is not null and trim(newvalue) != ''
     ''', (tuple(ticket_pks.keys()),))
-    for row in cur:
+    for row in _bar('comments', cur):
         ticket = row['ticket']
         row['ticket'] = Ticket.objects.get(pk=ticket_pks[ticket])
         row['author'] = _get_user(row['author'])
