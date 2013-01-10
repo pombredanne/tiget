@@ -1,9 +1,5 @@
-import tiget
-from tiget.git import get_config
 from tiget.plugins.api import *
-
-__author__ = tiget.__author__
-__version__ = tiget.__version__
+from tiget.git import get_config
 
 
 def load(plugin):

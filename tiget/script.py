@@ -7,7 +7,7 @@ from subprocess import list2cmdline
 
 from colors import blue
 
-import tiget
+from tiget.version import VERSION
 from tiget.conf import settings
 from tiget.plugins import plugins
 from tiget.cmds import aliases, CmdError, run
@@ -124,7 +124,7 @@ class Repl(Script):
         return os.path.expanduser(settings.core.history_file)
 
     def run(self):
-        print('tiget {}'.format(tiget.__version__))
+        print('tiget {}'.format(VERSION))
         print('Type "help" for help')
         print('')
         readline.parse_and_bind('tab: complete')

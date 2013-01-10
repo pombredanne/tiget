@@ -1,12 +1,10 @@
 #!/usr/bin/env python
 from setuptools import setup
 
-version = __import__('tiget_ipython').__version__
-
 
 setup(
     name='tiget-ipython',
-    version=version,
+    version='0.1a0',
     author='Martin Natano',
     author_email='natano@natano.net',
     description='ipython plugin for tiget',

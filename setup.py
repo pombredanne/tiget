@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from setuptools import setup, find_packages
 
-version = __import__('tiget').__version__
+from tiget.version import VERSION
 
 
 # work around error in atexit when running ./setup.py test
@@ -11,7 +11,7 @@ import multiprocessing
 
 setup(
     name='tiget',
-    version=version,
+    version=VERSION,
     author='Martin Natano',
     author_email='natano@natano.net',
     description='ticketing system with git backend',
@@ -37,9 +37,6 @@ setup(
     entry_points={
         'console_scripts': [
             'tiget = tiget.main:main',
-        ],
-        'nose.plugins.0.10': [
-            'tigetconfig = tiget.noseconfig:TigetConfig',
         ],
         'tiget.plugins': [
             'core = tiget.core',

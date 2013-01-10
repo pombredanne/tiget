@@ -4,9 +4,6 @@ import sys
 import tiget
 from tiget.git import transaction, GitError
 
-__author__ = tiget.__author__
-__version__ = tiget.__version__
-
 
 PATH_PREFIX = 'tiget-git-import:'
 DEFAULT_PATH = '{}/config'.format(PATH_PREFIX)

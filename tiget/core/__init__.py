@@ -1,14 +1,10 @@
 import os
 import sys
 
-import tiget
 from tiget.plugins.api import *
 from tiget.conf import settings
 from tiget.git import find_repository, GitError
 from tiget.script import Script
-
-__author__ = tiget.__author__
-__version__ = tiget.__version__
 
 
 class RepositorySetting(Setting):

@@ -6,7 +6,6 @@ from datetime import datetime, timezone
 import psycopg2
 from psycopg2.extras import RealDictCursor
 
-from tiget.plugins import load_plugin
 from tiget.git import transaction
 from tiget.scrum.models import Milestone, Sprint, User, Ticket, Comment
 
@@ -125,5 +124,4 @@ def main():
     conn.close()
 
 if __name__ == '__main__':
-    load_plugin('tiget.core')
     main()
