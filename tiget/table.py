@@ -15,6 +15,18 @@ class Table:
         self.col_width = [len(col) for col in args]
         self.styles = [LJUST] * len(args)
 
+    @classmethod
+    def from_queryset(cls, queryset, fields=None):
+        if fields is None:
+            fields = queryset.model._meta.writable_fields
+        else:
+            fields = [queryset.model._meta.get_field(f) for f in fields]
+        table = cls(*(f.name for f in fields))
+        for instance in queryset:
+            values = (f.dumps(getattr(instance, f.attname)) for f in fields)
+            table.add_row(*values)
+        return table
+
     def add_row(self, *args):
         column_count = len(self.columns)
         if not len(args) == column_count:

@@ -68,25 +68,13 @@ class List(Cmd):
 
     @transaction.wrap()
     def do(self, args):
-        fields = args.model._meta.writable_fields
-        if args.fields:
-            fields = [args.model._meta.get_field(f) for f in args.fields.split(',')]
-        if args.sort:
-            args.sort = args.sort.split(',')
-            for field in args.sort:
-                if field.startswith('-'):
-                    field = field[1:]
-                try:
-                    args.model._meta.get_field(field)
-                except KeyError as e:
-                    raise self.error(e)
-        table = Table(*(f.name for f in fields))
         objs = args.model.objects.all()
         if args.sort:
-            objs = objs.order_by(*args.sort)
+            objs = objs.order_by(*args.sort.split(','))
         if not args.limit is None:
             objs = objs[:args.limit]
-        for instance in objs:
-            values = [f.dumps(getattr(instance, f.attname)) for f in fields]
-            table.add_row(*values)
+        fields = None
+        if args.fields:
+            fields = args.fields.split(',')
+        table = Table.from_queryset(objs, fields=fields)
         paginate(table.render())
