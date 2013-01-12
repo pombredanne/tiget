@@ -1,6 +1,3 @@
-from functools import wraps
-from collections import OrderedDict
-
 from tiget.cmds import Cmd
 from tiget.git import transaction
 from tiget.git.models import get_model
