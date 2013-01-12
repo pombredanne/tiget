@@ -7,7 +7,7 @@ class User(models.Model):
     name = models.TextField(null=True)
 
     @classmethod
-    def current(cls, **kwargs):
+    def current(cls):
         email = settings.scrum.current_user
         try:
             user = cls.objects.get(email=email)
