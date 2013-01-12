@@ -1,9 +1,10 @@
-import IPython
+from IPython import embed
+from IPython.frontend import terminal
 
-import tiget
 from tiget.cmds import Cmd
 from tiget.conf import settings
 from tiget.plugins import plugins
+from tiget.plugins.api import *
 
 
 class IPythonCmd(Cmd):
@@ -15,11 +16,19 @@ class IPythonCmd(Cmd):
         for plugin in plugins.values():
             models = plugin.models
             ns.update({model.__name__: model for model in models.values()})
-        config = IPython.frontend.terminal.ipapp.load_default_config()
+        config = terminal.ipapp.load_default_config()
         config.InteractiveShellEmbed = config.TerminalInteractiveShell
         config.PromptManager.in_template = settings.ipython.prompt
         if not settings.core.color:
             config.InteractiveShellEmbed.colors = 'NoColor'
         config.InteractiveShellEmbed.confirm_exit = False
-        IPython.embed(
-            user_module=tiget, user_ns=ns, config=config, display_banner=False)
+        embed(user_ns=ns, config=config, display_banner=False)
+
+
+def load(plugin):
+    plugin.add_cmd(IPythonCmd)
+    plugin.add_setting('prompt', StrSetting(default='IPython [\\#]: '))
+
+
+def unload(plugin):
+    terminal.embed._embedded_shell = None
