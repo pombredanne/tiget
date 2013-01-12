@@ -3,7 +3,7 @@ from subprocess import list2cmdline
 from tiget.conf import settings
 from tiget.plugins import plugins
 from tiget.cmds import get_command, aliases, Cmd
-from tiget.utils import paginate, open_in_editor
+from tiget.utils import open_in_editor
 from tiget.git import transaction, GitError
 
 
@@ -26,7 +26,7 @@ class Alias(Cmd):
         if not args.args:
             for alias in sorted(aliases.keys()):
                 cmd = aliases[alias]
-                print('{}={}'.format(alias, list2cmdline([cmd])))
+                self.print('{}={}'.format(alias, list2cmdline([cmd])))
 
 
 class Unalias(Cmd):
@@ -50,7 +50,7 @@ class Echo(Cmd):
         self.parser.add_argument('args', nargs='*')
 
     def do(self, args):
-        print(' '.join(args.args))
+        self.print(*args.args)
 
 
 class EditConfig(Cmd):
@@ -99,18 +99,18 @@ class Help(Cmd):
                 cmd = get_command(args.name)
             except KeyError:
                 raise self.error('no command named "{}"'.format(args.name))
-            paginate(cmd.format_help())
+            self.print(cmd.format_help())
         else:
             for plugin in sorted(plugins.values(), key=lambda p: p.name):
                 cmds = list(plugin.cmds.values())
                 if not cmds:
                     continue
-                print('[{}]'.format(plugin.name))
+                if not plugin.name == 'core':
+                    self.print('\n[{}]'.format(plugin.name))
                 longest = max(len(cmd.name) for cmd in cmds)
                 for cmd in sorted(cmds, key=lambda cmd: cmd.name):
                     cmd_name = cmd.name.ljust(longest)
-                    print('{} - {}'.format(cmd_name, cmd.description))
-                print('')
+                    self.print('{} - {}'.format(cmd_name, cmd.description))
 
 
 class Set(Cmd):
@@ -136,11 +136,11 @@ class Set(Cmd):
             for plugin in sorted(plugins.values(), key=lambda p: p.name):
                 if not plugin.settings:
                     continue
-                print('[{}]'.format(plugin.name))
+                if not plugin.name == 'core':
+                    self.print('\n[{}]'.format(plugin.name))
                 for key in sorted(plugin.settings.keys()):
                     value = list2cmdline([plugin.settings.get_display(key)])
-                    print('{}={}'.format(key, value))
-                print('')
+                    self.print('{}={}'.format(key, value))
 
 
 class Source(Cmd):

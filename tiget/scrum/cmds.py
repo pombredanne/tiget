@@ -2,7 +2,6 @@ from functools import wraps
 
 from tiget.cmds import Cmd
 from tiget.git import transaction
-from tiget.utils import paginate
 from tiget.table import Table
 from tiget.scrum.models import Ticket, User
 
@@ -55,4 +54,4 @@ class Mine(Cmd):
         for ticket in tickets:
             values = [f.dumps(getattr(ticket, f.attname)) for f in fields]
             table.add_row(*values)
-        paginate(table.render())
+        self.print(table.render())

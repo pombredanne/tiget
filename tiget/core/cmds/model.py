@@ -1,7 +1,7 @@
 from tiget.cmds import Cmd
 from tiget.git import transaction
 from tiget.git.models import get_model
-from tiget.utils import open_in_editor, paginate
+from tiget.utils import open_in_editor
 from tiget.table import Table
 
 
@@ -74,4 +74,4 @@ class List(Cmd):
         if args.fields:
             fields = args.fields.split(',')
         table = Table.from_queryset(objs, fields=fields)
-        paginate(table.render())
+        self.print(table.render())

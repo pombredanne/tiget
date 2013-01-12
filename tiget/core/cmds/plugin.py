@@ -20,13 +20,13 @@ class Load(Cmd):
             except ImportError as e:
                 raise self.error(e)
         else:
-            print('Available plugins:')
+            self.print('Available plugins:')
             names = set(
                 ep.name for ep in pkg_resources.iter_entry_points('tiget.plugins'))
             names.update(plugins.keys())
             for name in sorted(names):
                 loaded = name in plugins
-                print('[{}] {}'.format('*' if loaded else ' ', name))
+                self.print('[{}] {}'.format('*' if loaded else ' ', name))
 
 
 class Reload(Cmd):

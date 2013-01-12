@@ -1,6 +1,8 @@
 import re
 from argparse import ArgumentParser
 
+from tiget.utils import paginate
+
 
 aliases = {
     'man': 'help',
@@ -46,6 +48,7 @@ class Cmd(metaclass=CmdBase):
 
     def __init__(self):
         self.parser = CmdArgumentParser(self)
+        self.output = ''
         self.setup()
 
     def setup(self):
@@ -60,9 +63,18 @@ class Cmd(metaclass=CmdBase):
             self.do(args)
         except CmdExit:
             return
+        self.flush()
 
     def error(self, message):
         return CmdError('{}: {}'.format(self.name, message))
+
+    def print(self, *args, sep=' ', end='\n'):
+        self.output += sep.join(args) + end
+
+    def flush(self):
+        if self.output:
+            paginate(self.output)
+        self.output = ''
 
     def do(self, args):
         raise NotImplementedError

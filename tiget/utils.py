@@ -39,7 +39,7 @@ def paginate(content):
             f.seek(0)
             os.system('{} {}'.format(settings.core.pager, f.name))
     else:
-        print(content)
+        print(content, end='')
 
 
 TerminalGeometry = namedtuple('TerminalGeometry', ('lines', 'cols'))
