@@ -1,3 +1,6 @@
+__all__ = ['Setting', 'BoolSetting', 'IntSetting', 'StrSetting']
+
+
 class Setting:
     def __init__(self, default=None, choices=None):
         self.default = default
