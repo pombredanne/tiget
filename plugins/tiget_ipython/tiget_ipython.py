@@ -4,7 +4,7 @@ from IPython.frontend import terminal
 from tiget.cmds import Cmd
 from tiget.conf import settings
 from tiget.plugins import plugins
-from tiget.plugins.api import *
+from tiget.plugins.settings import *
 
 
 class IPythonCmd(Cmd):

@@ -1,7 +1,7 @@
 import os
 import sys
 
-from tiget.plugins.api import *
+from tiget.plugins.settings import *
 from tiget.conf import settings
 from tiget.git import find_repository, GitError
 from tiget.script import Script

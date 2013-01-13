@@ -1,4 +1,4 @@
-from tiget.plugins.api import *
+from tiget.plugins.settings import *
 from tiget.git import get_config
 
 from tiget_scrumweb import views
