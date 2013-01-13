@@ -44,6 +44,7 @@ def paginate(content):
 
 TerminalGeometry = namedtuple('TerminalGeometry', ('lines', 'cols'))
 
+
 def get_termsize(fd=1):
     try:
         geometry = struct.unpack(

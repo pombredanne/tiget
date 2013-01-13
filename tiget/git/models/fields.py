@@ -41,7 +41,8 @@ class Field:
             if not self.null:
                 raise ValueError('{} must not be None'.format(self.name))
         elif not self.choices is None and not value in self.choices:
-            raise ValueError('{} must be in {}'.format(self.name, self.choices))
+            raise ValueError(
+                '{} must be in {}'.format(self.name, self.choices))
 
     def dumps(self, value):
         return value

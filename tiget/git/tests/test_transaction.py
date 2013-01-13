@@ -4,6 +4,9 @@ from tiget.testcases import GitTestCase
 from tiget.git import transaction, init_repo, GitError
 
 
+class TestException(Exception): pass
+
+
 class TestTransaction(GitTestCase):
     def test_commit(self):
         transaction.begin()
@@ -32,8 +35,6 @@ class TestTransaction(GitTestCase):
         transaction.rollback()
 
     def test_rollback(self):
-        class TestException(Exception): pass
-
         def _foo():
             with transaction.wrap():
                 trans = transaction.current(initialized=False)
@@ -69,8 +70,6 @@ class TestTransactionWrap(GitTestCase):
         self.assert_commit_count(0)
 
     def test_exception(self):
-        class TestException(Exception): pass
-
         def _foo():
             with transaction.wrap():
                 trans = transaction.current(initialized=False)

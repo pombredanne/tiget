@@ -21,8 +21,8 @@ class Load(Cmd):
                 raise self.error(e)
         else:
             self.print('Available plugins:')
-            names = set(
-                ep.name for ep in pkg_resources.iter_entry_points('tiget.plugins'))
+            entry_points = pkg_resources.iter_entry_points('tiget.plugins')
+            names = set(ep.name for ep in entry_points)
             names.update(plugins.keys())
             for name in sorted(names):
                 loaded = name in plugins

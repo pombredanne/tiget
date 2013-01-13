@@ -13,10 +13,11 @@ class Query:
                 return b
             elif isinstance(a, Inversion) and a.subquery == b:
                 return Q()
-            elif isinstance(a, Union) and not isinstance(b, Union):
-                return Union(b, *a.subqueries)
-        if isinstance(self, Union) and isinstance(other, Union):
-            return Union(*(self.subqueries | other.subqueries))
+            elif isinstance(a, Union):
+                if isinstance(b, Union):
+                    return Union(*(a.subqueries | b.subqueries))
+                else:
+                    return Union(b, *a.subqueries)
         return Union(self, other)
 
     def __and__(self, other):
@@ -27,11 +28,12 @@ class Query:
                 return a
             elif isinstance(a, Inversion) and a.subquery == b:
                 return ~Q()
-            elif isinstance(a, Intersection) and not isinstance(b, Intersection):
-                return Intersection(b, *a.subqueries)
-        if isinstance(self, Intersection) and isinstance(other, Intersection):
-            return Intersection(*(self.subqueries | other.subqueries))
-        elif isinstance(self, Q) and isinstance(other, Q):
+            elif isinstance(a, Intersection):
+                if isinstance(b, Intersection):
+                    return Intersection(*(a.subqueries | b.subqueries))
+                else:
+                    return Intersection(b, *a.subqueries)
+        if isinstance(self, Q) and isinstance(other, Q):
             q = Q()
             q.conditions = self.conditions | other.conditions
             return q
@@ -100,7 +102,8 @@ class Q(Query):
         return 'Q({})'.format(', '.join(conditions))
 
     def __eq__(self, other):
-        return (isinstance(other, self.__class__) and
+        return (
+            isinstance(other, self.__class__) and
             self.conditions == other.conditions)
 
     def __hash__(self):
@@ -129,7 +132,8 @@ class Inversion(Query):
         return '~{!r}'.format(self.subquery)
 
     def __eq__(self, other):
-        return (isinstance(other, self.__class__) and
+        return (
+            isinstance(other, self.__class__) and
             self.subquery == other.subquery)
 
     def __hash__(self):
@@ -149,7 +153,8 @@ class Intersection(Query):
         return '({})'.format(' & '.join(bits))
 
     def __eq__(self, other):
-        return (isinstance(other, self.__class__) and
+        return (
+            isinstance(other, self.__class__) and
             self.subqueries == other.subqueries)
 
     def __hash__(self):
@@ -170,7 +175,8 @@ class Union(Query):
         return '({})'.format(' | '.join(bits))
 
     def __eq__(self, other):
-        return (isinstance(other, self.__class__) and
+        return (
+            isinstance(other, self.__class__) and
             self.subqueries == other.subqueries)
 
     def __hash__(self):
@@ -197,7 +203,8 @@ class Slice(Query):
         return '{!r}[{}]'.format(self.subquery, ':'.join(bits))
 
     def __eq__(self, other):
-        return (isinstance(other, self.__class__) and
+        return (
+            isinstance(other, self.__class__) and
             self.subquery == other.subquery and self.slice == other.slice)
 
     def __hash__(self):
@@ -232,8 +239,10 @@ class Ordered(Query):
         return '{!r}.order_by({})'.format(self.subquery, ', '.join(bits))
 
     def __eq__(self, other):
-        return (isinstance(other, self.__class__) and
-            self.subquery == other.subquery and self.order_by == other.order_by)
+        return (
+            isinstance(other, self.__class__) and
+            self.subquery == other.subquery and
+            self.order_by == other.order_by)
 
     def __hash__(self):
         return hash((self.subquery, self.order_by))

@@ -30,7 +30,8 @@ class Table:
     def add_row(self, *args):
         column_count = len(self.columns)
         if not len(args) == column_count:
-            raise TypeError('expected exactly {} arguments'.format(column_count))
+            raise TypeError(
+                'expected exactly {} arguments'.format(column_count))
         args = [str(x or '') for x in args]
         self.rows.append(args)
         for i, col in enumerate(args):

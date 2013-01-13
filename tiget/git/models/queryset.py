@@ -16,7 +16,8 @@ class ObjCache:
         if not pk in self.cache:
             obj = self.model(pk=pk)
             try:
-                content = transaction.current().get_blob(obj.path).decode('utf-8')
+                trans = transaction.current()
+                content = trans.get_blob(obj.path).decode('utf-8')
             except GitError:
                 raise self.model.DoesNotExist(
                     'object with pk {} does not exist'.format(pk))
@@ -42,8 +43,9 @@ class QuerySet:
         return repr(evaluated)
 
     def __eq__(self, other):
-        return (isinstance(other, self.__class__) and
-            self.model == other.model and self.query == other.query)
+        return (
+            isinstance(other, self.__class__) and self.model == other.model and
+            self.query == other.query)
 
     def __ne__(self, other):
         return not self == other

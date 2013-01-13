@@ -87,8 +87,8 @@ class Transaction:
 
     def walk(self, reverse=False):
         sort = pygit2.GIT_SORT_TOPOLOGICAL | pygit2.GIT_SORT_TIME
-        if not reverse: # sic
-            sort |= pygit2.GIT_SORT_REVERSE
+        if not reverse:
+            sort |= pygit2.GIT_SORT_REVERSE     # sic
         # FIXME: does not work for merge transactions
         return self.repo.walk(self.parents[0], sort)
 
@@ -105,7 +105,8 @@ class Transaction:
             except KeyError:
                 continue
             if not previous_oid == entry.oid:
-                updated_at = datetime.fromtimestamp(commit.commit_time,
+                updated_at = datetime.fromtimestamp(
+                    commit.commit_time,
                     timezone(timedelta(minutes=commit.commit_time_offset)))
                 if previous_oid is None:
                     created_at = updated_at
@@ -147,9 +148,9 @@ class Transaction:
             email = self.repo.config['user.email']
         except KeyError as e:
             raise GitError('{} not found in git config'.format(e))
-        author = committer = pygit2.Signature(name, email)
+        sig = pygit2.Signature(name, email)
         self.repo.create_commit(
-            self.ref, author, committer, message, tree_id, self.parents, 'utf-8')
+            self.ref, sig, sig, message, tree_id, self.parents, 'utf-8')
 
     def rollback(self):
         self.memory_tree = {}
@@ -157,6 +158,7 @@ class Transaction:
 
 
 _transaction = None
+
 
 def begin():
     global _transaction
@@ -185,7 +187,8 @@ def current(initialized=True):
     if _transaction is None:
         raise GitError('no transaction running')
     elif initialized and not _transaction.is_initialized:
-        raise GitError('repository is not initialized; use tiget-setup-repository')
+        raise GitError(
+            'repository is not initialized; use tiget-setup-repository')
     elif not initialized and _transaction.is_initialized:
         raise GitError('repository is initialized')
     return _transaction

@@ -119,11 +119,11 @@ class Set(Cmd):
     def setup(self):
         self.parser.add_argument('args', nargs='*')
         self.parser.epilog = '''
-            Print the list of configuration variables when no argument is given.
-            String variables can be set with VAR=VALUE. Boolean variables can be
-            enabled with VAR and disabled with noVAR.
-            Variable names may be prefixed with a module name. If no module name
-            is given "core" is assumed.
+            Print the list of configuration variables when no argument is
+            given. String variables can be set with VAR=VALUE. Boolean
+            variables can be enabled with VAR and disabled with noVAR.
+            Variable names may be prefixed with a module name. If no module
+            name is given "core" is assumed.
         '''
 
     def do(self, args):

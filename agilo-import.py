@@ -13,8 +13,9 @@ from tiget.scrum.models import Milestone, Sprint, User, Ticket, Comment
 
 
 def _bar(label, cur):
-    widgets = ['Importing {} {} '.format(cur.rowcount, label),
-        Bar(), ' ', Percentage(), ' ', ETA()]
+    widgets = [
+        'Importing {} {} '.format(cur.rowcount, label), Bar(), ' ',
+        Percentage(), ' ', ETA()]
     bar = ProgressBar(widgets=widgets, maxval=cur.rowcount).start()
     for row in cur:
         yield row

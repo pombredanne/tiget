@@ -48,7 +48,8 @@ class Mine(Cmd):
         tickets = Ticket.objects.filter(owner=user)
         if not args.all:
             tickets = tickets.filter(status__in=('new', 'wtf'))
-        field_names = ('id', 'summary', 'milestone', 'sprint', 'status', 'ticket_type')
+        field_names = (
+            'id', 'summary', 'milestone', 'sprint', 'status', 'ticket_type')
         fields = [Ticket._meta.get_field(f) for f in field_names]
         table = Table(*(f.name for f in fields))
         for ticket in tickets:
