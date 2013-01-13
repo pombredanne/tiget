@@ -38,14 +38,14 @@ class BoolSetting(Setting):
 
 class IntSetting(Setting):
     def clean(self, value):
-        if not isinstance(value, int):
+        if not value is None and not isinstance(value, int):
             value = int(value)
         return super().clean(value)
 
 
 class StrSetting(Setting):
     def clean(self, value):
-        if not isinstance(value, str):
+        if not value is None and not isinstance(value, str):
             raise ValueError('value must be a string')
         return super().clean(value)
 

@@ -1,14 +1,12 @@
 from getpass import getpass
 
-import bottle
+from bottle import debug, default_app, run
 from beaker.middleware import SessionMiddleware
-from cryptacular.bcrypt import BCRYPTPasswordManager
-
 from tiget.cmds import Cmd
 from tiget.conf import settings
 from tiget.scrum.models import User
 
-from tiget_scrumweb import initialize
+from tiget_scrumweb.password import set_password
 
 
 class RunServer(Cmd):
@@ -20,17 +18,17 @@ class RunServer(Cmd):
         self.parser.add_argument('-q', '--quiet', action='store_true')
 
     def do(self, args):
-        initialize()
+        settings.scrum.current_user = None
         if settings.core.debug:
-            bottle.debug(True)
+            debug(True)
         session_opts = {
             'session.type': 'cookie',
             'session.validate_key': True,
             'session.cookie_expires': True,
             'session.timeout': 3600,    # 1 hour
         }
-        app = SessionMiddleware(bottle.default_app(), session_opts)
-        bottle.run(app=app, host=args.bind, port=args.port, quiet=args.quiet)
+        app = SessionMiddleware(default_app(), session_opts)
+        run(app=app, host=args.bind, port=args.port, quiet=args.quiet)
 
 
 class SetPassword(Cmd):
@@ -51,10 +49,4 @@ class SetPassword(Cmd):
             raise self.error('interrupted')
         if not password == password_again:
             raise self.error('passwords do not match')
-
-        manager = BCRYPTPasswordManager()
-        hashed = manager.encode(password)
-
-        conf_file = os.path.expanduser(settins.scrumweb.password_file)
-        with open(conf_file, 'a') as f:
-            f.write('{} {}'.format(user.email, password))
+        set_password(user.email, password)

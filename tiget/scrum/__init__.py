@@ -1,6 +1,8 @@
 from tiget.plugins.api import *
 from tiget.git import get_config
 
+from tiget_scrumweb import views
+
 
 def load(plugin):
     from tiget.scrum import models, cmds
