@@ -26,7 +26,7 @@ def set_password(user, password):
 def check_password(target_user, password):
     with open_passwd('r') as f:
         pw_ok = False
-        if line in f:
+        for line in f:
             user, hashed = line.rstrip('\n').split(' ', 1)
             if user == target_user:
                 pw_ok = MANAGER.check(hashed, password)

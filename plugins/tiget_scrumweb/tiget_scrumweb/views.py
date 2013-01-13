@@ -11,7 +11,8 @@ def forceauth(fn):
     @wraps(fn)
     def _inner(*args, **kwargs):
         session = request.environ.get('beaker.session')
-        if session.get('user') is None:
+        user = session.get('user')
+        if user is None:
             redirect('/login')
         settings.scrum.current_user = user
         return fn(*args, **kwargs)

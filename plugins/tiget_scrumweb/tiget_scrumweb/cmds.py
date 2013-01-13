@@ -22,7 +22,7 @@ class RunServer(Cmd):
         if settings.core.debug:
             debug(True)
         session_opts = {
-            'session.type': 'cookie',
+            'session.type': 'memory',
             'session.validate_key': True,
             'session.cookie_expires': True,
             'session.timeout': 3600,    # 1 hour
