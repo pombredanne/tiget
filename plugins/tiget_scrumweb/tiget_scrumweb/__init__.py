@@ -1,7 +1,7 @@
 from pkg_resources import Requirement, resource_filename
 
 import bottle
-from tiget.plugins.api import *
+from tiget.plugins.settings import *
 
 
 def load(plugin):
