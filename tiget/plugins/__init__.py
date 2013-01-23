@@ -63,7 +63,8 @@ class Plugin:
         if ismodule(cmds):
             cmds = _get_subclasses(cmds, Cmd)
         for cmd in cmds:
-            self.add_cmd(cmd)
+            if not cmd.abstract:
+                self.add_cmd(cmd)
 
     def add_cmd(self, cmd_class):
         cmd = cmd_class()

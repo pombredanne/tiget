@@ -40,11 +40,13 @@ class CmdBase(type):
         if parents:
             name = re.sub(r'(?!^)([A-Z])', r'-\1', cls_name).lower()
             attrs.setdefault('name', name)
+        attrs['abstract'] = attrs.get('abstract', False)
         return super().__new__(cls, cls_name, bases, attrs)
 
 
 class Cmd(metaclass=CmdBase):
     description = 'undocumented'
+    abstract = True
 
     def __init__(self):
         self.parser = CmdArgumentParser(self)
