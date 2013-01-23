@@ -22,7 +22,7 @@ def get_config(name):
     return repo.config[name]
 
 
-def init_repo(load_plugins=True):
+def init_repo():
     from tiget.version import VERSION
     from tiget.git import transaction
 
@@ -33,8 +33,6 @@ def init_repo(load_plugins=True):
         trans.set_blob(['config', 'VERSION'], version.encode('utf-8'))
 
         tigetrc = '# put your initialization code here\n'
-        if load_plugins:
-            tigetrc += 'load scrum\n'
         trans.set_blob(['config', 'tigetrc'], tigetrc.encode('utf-8'))
 
         trans.add_message('Initialize Repository')

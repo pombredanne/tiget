@@ -41,13 +41,8 @@ class Rollback(Cmd):
 class Setup(Cmd):
     description = 'set up repository for use with tiget'
 
-    def setup(self):
-        self.parser.add_argument(
-            '-n', '--no-plugins', action='store_false', dest='load_plugins',
-            default=True, help='disable loading of plugins')
-
     def do(self, args):
         try:
-            init_repo(load_plugins=args.load_plugins)
+            init_repo()
         except GitError as e:
             raise self.error(e)

@@ -4,7 +4,6 @@ from nose.tools import *
 
 from tiget.testcases import GitTestCase
 from tiget.git import transaction, init_repo
-from tiget.plugins import load_plugin, unload_plugin
 
 
 TEST_MODULE = """
@@ -28,13 +27,11 @@ class TestImporter(GitTestCase):
     def setup(self):
         super().setup()
         init_repo()
-        load_plugin('importer')
 
     def teardown(self):
         for mod in list(sys.modules.keys()):
             if mod == 'foo' or mod.startswith('foo'):
                 del sys.modules[mod]
-        unload_plugin('importer')
         super().teardown()
 
     def test_import_module(self):

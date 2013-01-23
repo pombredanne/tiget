@@ -1,2 +1,7 @@
 from tiget.plugins import load_plugin
-load_plugin('tiget.core')
+
+
+BUILTIN_PLUGINS = ('core', 'importer', 'scrum')
+
+for plugin_name in BUILTIN_PLUGINS:
+    load_plugin(plugin_name)
