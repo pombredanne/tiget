@@ -5,6 +5,7 @@ from argparse import ArgumentParser, REMAINDER
 from tiget.version import VERSION
 from tiget.script import Script, Repl
 from tiget.conf import settings
+from tiget.utils import print_error
 
 
 def load_config():
@@ -50,7 +51,7 @@ def main():
         try:
             settings.parse_and_set(var)
         except (ValueError, KeyError) as e:
-            raise self.error(e)
+            print_error(e)
 
     if args.cmd:
         script = Script.from_args(args.cmd)
