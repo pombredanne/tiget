@@ -188,7 +188,7 @@ def current(initialized=True):
         raise GitError('no transaction running')
     elif initialized and not _transaction.is_initialized:
         raise GitError(
-            'repository is not initialized; use tiget-setup-repository')
+            'repository is not initialized; use tiget setup')
     elif not initialized and _transaction.is_initialized:
         raise GitError('repository is initialized')
     return _transaction
