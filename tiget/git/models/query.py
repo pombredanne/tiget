@@ -1,8 +1,6 @@
 import re
 from itertools import islice
 
-from tiget.git import transaction
-
 
 class Query:
     def __or__(self, other):

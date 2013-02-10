@@ -5,8 +5,6 @@ from tiget.git import transaction
 from tiget.table import Table
 from tiget.scrum.models import Ticket, User
 
-from tiget.conf import settings
-
 
 def require_user(fn):
     @wraps(fn)

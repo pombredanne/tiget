@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 # requires: psycopg2, progressbar
 import sys
-import getopt
-from datetime import datetime, timezone
 
 import psycopg2
 from psycopg2.extras import RealDictCursor

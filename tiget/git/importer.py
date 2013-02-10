@@ -1,8 +1,7 @@
 import imp
 import sys
 
-import tiget
-from tiget.git import transaction, GitError
+from tiget.git import transaction
 
 
 PATH_PREFIX = 'tiget-git-import:'

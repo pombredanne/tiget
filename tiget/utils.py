@@ -80,7 +80,7 @@ def load_file(filename):
             with transaction.wrap():
                 path = filename[len('tiget:'):].strip('/').split('/')
                 content = transaction.current().get_blob(path).decode('utf-8')
-        except GitError as e:
+        except GitError:
             raise IOError('No such file: \'{}\''.format(filename))
     else:
         with open(filename) as f:
