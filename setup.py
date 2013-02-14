@@ -25,6 +25,7 @@ setup(
         'License :: OSI Approved :: ISC License (ISCL)',
         'Programming Language :: Python',
         'Programming Language :: Python :: 3.2',
+        'Programming Language :: Python :: 3.3',
         'Topic :: Utilities',
         'Topic :: System :: Shells',
         'Topic :: Software Development :: Bug Tracking',
