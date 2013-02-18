@@ -1,4 +1,5 @@
 import sys
+from importlib import import_module
 
 from nose.tools import *
 
@@ -6,21 +7,13 @@ from tiget.testcases import GitTestCase
 from tiget.git import transaction, init_repo
 
 
-TEST_MODULE = """
-def foo():
-    return 'foo'
-"""
+def import_ok(name):
+    mod = import_module(name)
+    eq_(mod.ID, name)
 
 
-TEST_PACKAGE_INIT_PY = """
-def foo():
-    return 'foo'
-"""
-
-TEST_PACKAGE_BAR_PY = """
-def bar():
-    return 'bar'
-"""
+def assert_import_fails(name):
+    assert_raises(ImportError, import_module, name)
 
 
 class TestImporter(GitTestCase):
@@ -34,73 +27,43 @@ class TestImporter(GitTestCase):
                 del sys.modules[mod]
         super().teardown()
 
-    def test_import_module(self):
+    def create_file(self, path, id_):
         with transaction.wrap():
-            assert_raises(ImportError, __import__, 'foo')
             trans = transaction.current()
-            trans.set_blob(['config', 'foo.py'], TEST_MODULE.encode('utf-8'))
-            trans.add_message('foo')
-            import foo
-            eq_(foo.foo(), 'foo')
+            trans.set_blob(
+                path.lstrip('/').split('/'),
+                'ID = {!r}'.format(id_).encode('utf-8'))
+            trans.add_message('create file {}'.format(path))
 
-    def test_import_module_separate_transaction(self):
-        with transaction.wrap():
-            assert_raises(ImportError, __import__, 'foo')
-            trans = transaction.current()
-            trans.set_blob(['config', 'foo.py'], TEST_MODULE.encode('utf-8'))
-            trans.add_message('foo')
-        import foo
-        eq_(foo.foo(), 'foo')
+    def test___import__(self):
+        assert_import_fails('foo')
+        self.create_file('/config/foo.py', 'foo')
+        import_ok('foo')
 
     def test_import_package(self):
-        with transaction.wrap():
-            assert_raises(ImportError, __import__, 'foo')
-            trans = transaction.current()
-            trans.set_blob(
-                ['config', 'foo', '__init__.py'],
-                TEST_PACKAGE_INIT_PY.encode('utf-8'))
-            trans.set_blob(
-                ['config', 'foo', 'bar.py'],
-                TEST_PACKAGE_BAR_PY.encode('utf-8'))
-            trans.add_message('foo')
-            import foo
-            eq_(foo.foo(), 'foo')
-            from foo import bar
-            eq_(bar.bar(), 'bar')
+        assert_import_fails('foo')
+        assert_import_fails('foo.bar')
+        self.create_file('/config/foo/__init__.py', 'foo')
+        self.create_file('/config/foo/bar.py', 'foo.bar')
+        import_ok('foo')
+        import_ok('foo.bar')
 
-    def test_import_package_separate_transaction(self):
-        with transaction.wrap():
-            assert_raises(ImportError, __import__, 'foo')
-            trans = transaction.current()
-            trans.set_blob(
-                ['config', 'foo', '__init__.py'],
-                TEST_PACKAGE_INIT_PY.encode('utf-8'))
-            trans.set_blob(
-                ['config', 'foo', 'bar.py'],
-                TEST_PACKAGE_BAR_PY.encode('utf-8'))
-            trans.add_message('foo')
-        import foo
-        eq_(foo.foo(), 'foo')
-        from foo import bar
-        eq_(bar.bar(), 'bar')
+    def test___import___other_path(self):
+        self.create_file('/somewhere/foo.py', 'foo')
+        assert_import_fails('foo')
+        sys.path.append('tiget-git-import:/somewhere')
+        import_ok('foo')
+        sys.path.remove('tiget-git-import:/somewhere')
 
-    def test_import_module_other_path(self):
-        with transaction.wrap():
-            assert_raises(ImportError, __import__, 'foo')
-            trans = transaction.current()
-            trans.set_blob(['foo', 'foo.py'], TEST_MODULE.encode('utf-8'))
-            trans.add_message('foo')
-            sys.path.append('tiget-git-import:/foo')
-            import foo
-            eq_(foo.foo(), 'foo')
-            sys.path.remove('tiget-git-import:/foo')
+    def test_non_existing(self):
+        assert_import_fails('nix')
 
 
 class TestImporterNotInitialized(GitTestCase):
-    def test_import_module(self):
-        with assert_raises(ImportError):
-            import doesnotexist
+    def test_non_existing(self):
+        assert_raises(ImportError, import_module, 'nix')
 
-    def test_import_package(self):
-        with assert_raises(ImportError):
-            from doesnotexist import foo
+
+class TestImporterNoRepository:
+    def test_non_existing(self):
+        assert_raises(ImportError, import_module, 'nix')
