@@ -1,14 +1,49 @@
 
-                                 -=} tiget {=-
+                                 -=} Tiget {=-
                              The Git Ticket Tracker
 
 
-WIPWIPWIP
+Tiget is a command line based bug tracking system with emphasis on
+extensibility. It creates a separate branch in an existing git repository to
+store issues, so the tickets can be distributed alongside the source code of
+the managed project. This allows bugs to be handled in a truly distributed
+manner.
 
 
-STYLE:
+HACKING:
 
-Please follow PEP 8[1].
+PEP 8[1] should be followed for every new code.
+An exception to this rule is when creating custom exceptions (no pun intended).
+The pass keyword should appear on the same line as the class keyword when no
+methods are overwritten in the subclass. So multiple custom exceptions may be
+declared without wasting screen space.
+e.g.:
+
+    class FrobnicationNotPossible(Exception): pass
+    class IDontWantToDoThis(Exception): pass
+
+Automatic style checking and detection of common errors is possible with pep8
+and pyflakes. Both tools are available on pyp.
+
+When hacking on tiget you can install it in development mode.
+
+    ./setup.py develop
+
+Development mode allows to change the source code without reinstalling the
+package.
+
+Please run the test suite before opening a pull request or committing in the
+master branch.
+
+    ./setup.py nosetests
+
+Every non-trivial code should have according tests.
+
+
+AUTHORS & CONTRIBUTORS:
+
+Martin Natano <natano@natano.net>
+Felix Erkinger <felix@erkinger.at>
 
 
 [1] http://www.python.org/dev/peps/pep-0008/
