@@ -20,6 +20,7 @@ def unload(plugin):
     sys.path_hooks.remove(GitImporter)
 
 
+# See PEP 302 for the importer protocol specification
 class GitImporter:
     def __init__(self, path):
         if not path.startswith(PATH_PREFIX):
@@ -28,7 +29,7 @@ class GitImporter:
 
     @transaction.wrap()
     def get_filename(self, fullname, prefix=PATH_PREFIX):
-        trans = transaction.current()
+        trans = transaction.current(initialized=None)
         shortname = fullname.rpartition('.')[2]
         base = '/'.join([self.path, shortname])
         for ext in ('/__init__.py', '.py'):
@@ -45,7 +46,8 @@ class GitImporter:
     @transaction.wrap()
     def get_source(self, fullname):
         path = self.get_filename(fullname, prefix=None).strip('/').split('/')
-        return transaction.current().get_blob(path).decode('utf-8') + '\n'
+        trans = transaction.current(initialized=None)
+        return trans.get_blob(path).decode('utf-8') + '\n'
 
     @transaction.wrap()
     def get_code(self, fullname):

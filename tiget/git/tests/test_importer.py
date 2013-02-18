@@ -94,3 +94,13 @@ class TestImporter(GitTestCase):
             import foo
             eq_(foo.foo(), 'foo')
             sys.path.remove('tiget-git-import:/foo')
+
+
+class TestImporterNotInitialized(GitTestCase):
+    def test_import_module(self):
+        with assert_raises(ImportError):
+            import doesnotexist
+
+    def test_import_package(self):
+        with assert_raises(ImportError):
+            from doesnotexist import foo
