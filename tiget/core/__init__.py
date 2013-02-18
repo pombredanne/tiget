@@ -9,10 +9,12 @@ from tiget.script import Script
 
 class RepositorySetting(Setting):
     def clean(self, value):
-        try:
-            return find_repository(value)
-        except GitError as e:
-            raise ValueError(e)
+        if not value is None:
+            try:
+                value = find_repository(value)
+            except GitError as e:
+                raise ValueError(e)
+        return value
 
     def load_config(self, filename):
         try:
