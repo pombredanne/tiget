@@ -1,7 +1,7 @@
 import imp
 import sys
 
-from tiget.git import transaction
+from tiget.git import transaction, GitError
 
 
 PATH_PREFIX = 'tiget-git-import:'
@@ -20,6 +20,16 @@ def unload(plugin):
     sys.path_hooks.remove(GitImporter)
 
 
+def with_transaction(fn):
+    def _inner(*args, **kwargs):
+        try:
+            with transaction.wrap():
+                return fn(*args, **kwargs)
+        except GitError:
+            raise ImportError()
+    return _inner
+
+
 # See PEP 302 for the importer protocol specification
 class GitImporter:
     def __init__(self, path):
@@ -27,7 +37,7 @@ class GitImporter:
             raise ImportError()
         self.path = path[len(PATH_PREFIX):].rstrip('/')
 
-    @transaction.wrap()
+    @with_transaction
     def get_filename(self, fullname, prefix=PATH_PREFIX):
         trans = transaction.current(initialized=None)
         shortname = fullname.rpartition('.')[2]
@@ -43,13 +53,13 @@ class GitImporter:
     def is_package(self, fullname):
         return self.get_filename(fullname).endswith('/__init__.py')
 
-    @transaction.wrap()
+    @with_transaction
     def get_source(self, fullname):
         path = self.get_filename(fullname, prefix=None).strip('/').split('/')
         trans = transaction.current(initialized=None)
         return trans.get_blob(path).decode('utf-8') + '\n'
 
-    @transaction.wrap()
+    @with_transaction
     def get_code(self, fullname):
         source = self.get_source(fullname)
         filename = self.get_filename(fullname)
