@@ -40,7 +40,8 @@ def load(plugin):
     from tiget.core import cmds
     plugin.add_cmds(cmds)
     plugin.add_settings(
-        branchname=StrSetting(default='tiget'),
+        branch=StrSetting(default='tiget'),
+        remote=StrSetting(default='origin'),
         debug=BoolSetting(default=False),
         color=BoolSetting(default=sys.stdout.isatty()),
         editor=StrSetting(default=os.environ.get('EDITOR', 'vi')),

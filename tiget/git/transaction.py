@@ -15,24 +15,17 @@ FileStat = namedtuple('FileStat', ['created_at', 'updated_at'])
 
 
 class Transaction:
-    def __init__(self):
-        repo = settings.core.repository
-        if repo is None:
-            raise GitError('core.repository is not set')
+    def __init__(self, repo, parents):
         self.repo = repo
-        self.ref = 'refs/heads/{}'.format(settings.core.branchname)
-        try:
-            previous_commit_id = repo.lookup_reference(self.ref).oid
-        except KeyError:
-            tree = []
-            self.parents = []
-            self.is_initialized = False
-        else:
-            tree = repo[previous_commit_id].tree
-            self.parents = [previous_commit_id]
-            self.is_initialized = True
-        self.has_changes = False
+
+        self.parents = parents
+        tree = []
+        if parents:
+            tree = repo[parents[0]].tree
         self.memory_tree = MemoryTree(tree, {}, {})
+
+        self.is_initialized = bool(self.parents)
+        self.has_changes = False
         self.messages = []
 
     def get_memory_tree(self, path):
@@ -89,7 +82,7 @@ class Transaction:
         sort = pygit2.GIT_SORT_TOPOLOGICAL | pygit2.GIT_SORT_TIME
         if not reverse:
             sort |= pygit2.GIT_SORT_REVERSE     # sic
-        # FIXME: does not work for merge transactions
+        # FIXME: only works for transactions with exactly one parent
         return self.repo.walk(self.parents[0], sort)
 
     def stat(self, path):
@@ -149,8 +142,9 @@ class Transaction:
         except KeyError as e:
             raise GitError('{} not found in git config'.format(e))
         sig = pygit2.Signature(name, email)
+        ref = 'refs/heads/{}'.format(settings.core.branch)
         self.repo.create_commit(
-            self.ref, sig, sig, message, tree_id, self.parents, 'utf-8')
+            ref, sig, sig, message, tree_id, self.parents, 'utf-8')
 
     def rollback(self):
         self.memory_tree = {}
@@ -164,7 +158,15 @@ def begin():
     global _transaction
     if _transaction:
         raise GitError('there is already a transaction running')
-    _transaction = Transaction()
+    repo = settings.core.repository
+    if repo is None:
+        raise GitError('core.repository is not set')
+    ref = 'refs/heads/{}'.format(settings.core.branch)
+    try:
+        parents = [repo.lookup_reference(ref).oid]
+    except KeyError:
+        parents = []
+    _transaction = Transaction(repo, parents)
 
 
 def commit(message=None):

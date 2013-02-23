@@ -12,7 +12,7 @@ class GitTestCase:
     def setup(self):
         self.repo = pygit2.init_repository(mkdtemp(), False)
         settings.core.repository = self.repo.path
-        self.branchref = 'refs/heads/{}'.format(settings.core.branchname)
+        self.branchref = 'refs/heads/{}'.format(settings.core.branch)
         self.assert_commit_count(0)
 
     def teardown(self):
