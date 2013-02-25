@@ -1,7 +1,6 @@
 from functools import wraps
 
 from tiget.cmds import Cmd
-from tiget.git import GitError
 from tiget.git import transaction, init_repo, GitError
 from tiget.git.sync import fetch, push, merge
 
