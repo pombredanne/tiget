@@ -105,12 +105,12 @@ class Help(Cmd):
                 cmds = list(plugin.cmds.values())
                 if not cmds:
                     continue
-                if not plugin.name == 'core':
-                    self.print('\n[{}]'.format(plugin.name))
+                self.print('[{}]'.format(plugin.name))
                 longest = max(len(cmd.name) for cmd in cmds)
                 for cmd in sorted(cmds, key=lambda cmd: cmd.name):
                     cmd_name = cmd.name.ljust(longest)
                     self.print('{} - {}'.format(cmd_name, cmd.description))
+                self.print()
 
 
 class Set(Cmd):
@@ -136,11 +136,11 @@ class Set(Cmd):
             for plugin in sorted(plugins.values(), key=lambda p: p.name):
                 if not plugin.settings:
                     continue
-                if not plugin.name == 'core':
-                    self.print('\n[{}]'.format(plugin.name))
+                self.print('[{}]'.format(plugin.name))
                 for key in sorted(plugin.settings.keys()):
                     value = list2cmdline([plugin.settings.get_display(key)])
                     self.print('{}={}'.format(key, value))
+                self.print()
 
 
 class Source(Cmd):
