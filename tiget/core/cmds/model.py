@@ -3,9 +3,10 @@ from tiget.git import transaction
 from tiget.git.models import get_model
 from tiget.utils import open_in_editor
 from tiget.table import Table
+from tiget.plugins import plugins
 
 
-__all__ = ['Create', 'Edit', 'List']
+__all__ = ['Create', 'Edit', 'List', 'Stats']
 
 
 def model_type(model_name):
@@ -74,4 +75,15 @@ class List(Cmd):
             objs = objs[args.slice]
         fields = args.fields.split(',') if args.fields else None
         table = Table.from_queryset(objs, fields=fields)
+        self.print(table.render())
+
+
+class Stats(Cmd):
+    description = 'display statistics for models'
+
+    def do(self, args):
+        table = Table('model', 'plugin', 'count')
+        for plugin in plugins.values():
+            for name, model in plugin.models.items():
+                table.add_row(name, plugin.name, model.objects.count())
         self.print(table.render())
