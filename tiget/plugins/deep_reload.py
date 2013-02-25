@@ -1,4 +1,3 @@
-import sys
 from imp import reload, is_builtin
 from inspect import ismodule
 
