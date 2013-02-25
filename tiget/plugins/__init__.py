@@ -10,9 +10,9 @@ plugins = OrderedDict()
 
 
 def _get_subclasses(mod, klass):
-    all_ = getattr(mod, '__all__', mod.__dict__.keys())
+    all_ = getattr(mod, '__all__', vars(mod).keys())
     for key in all_:
-        value = mod.__dict__[key]
+        value = vars(mod)[key]
         if key.startswith('_') or value == klass:
             continue
         if isclass(value) and issubclass(value, klass):
