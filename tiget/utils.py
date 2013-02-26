@@ -4,6 +4,7 @@ import fcntl
 import termios
 import struct
 import traceback
+from importlib import import_module
 from collections import namedtuple
 from tempfile import NamedTemporaryFile
 
@@ -64,7 +65,7 @@ def post_mortem():
     traceback.print_exc()
     if settings.core.debug:
         try:
-            pdb = __import__(settings.core.pdb_module)
+            pdb = import_module(settings.core.pdb_module)
         except ImportError as e:
             print_error(e)
         else:
