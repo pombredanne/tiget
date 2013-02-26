@@ -3,6 +3,7 @@ from subprocess import list2cmdline
 from tiget.conf import settings
 from tiget.plugins import plugins
 from tiget.cmds import get_command, aliases, Cmd
+from tiget.cmds.types import dict_type
 from tiget.utils import open_in_editor
 from tiget.git import transaction, GitError
 
@@ -14,16 +15,11 @@ class Alias(Cmd):
     description = 'define or list aliases'
 
     def setup(self):
-        self.parser.add_argument('args', nargs='*')
+        self.parser.add_argument('aliases', nargs='*', type=dict_type)
 
     def do(self, args):
-        for arg in args.args:
-            try:
-                alias, cmd = arg.split('=', 1)
-            except ValueError:
-                raise self.error('"=" not found in "{}"'.format(arg))
-            aliases[alias] = cmd
-        if not args.args:
+        aliases.update(args.aliases)
+        if not args.aliases:
             for alias in sorted(aliases.keys()):
                 cmd = aliases[alias]
                 self.print('{}={}'.format(alias, list2cmdline([cmd])))

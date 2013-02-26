@@ -1,20 +1,12 @@
 from tiget.cmds import Cmd
+from tiget.cmds.types import model_type, dict_type
 from tiget.git import transaction
-from tiget.git.models import get_model
 from tiget.utils import open_in_editor
 from tiget.table import Table
 from tiget.plugins import plugins
 
 
-__all__ = ['Create', 'Edit', 'List', 'Stats']
-
-
-def model_type(model_name):
-    try:
-        model = get_model(model_name)
-    except KeyError:
-        raise TypeError
-    return model
+__all__ = ['Create', 'Edit', 'Update', 'List', 'Stats']
 
 
 class Create(Cmd):
@@ -50,6 +42,29 @@ class Edit(Cmd):
         try:
             s = open_in_editor(instance.dumps())
             instance.loads(s)
+            instance.save()
+        except args.model.InvalidObject as e:
+            raise self.error(e)
+
+
+class Update(Cmd):
+    description = 'update model instance'
+
+    def setup(self):
+        self.parser.add_argument('model', type=model_type)
+        self.parser.add_argument('pk')
+        self.parser.add_argument('args', nargs='+', type=dict_type)
+
+    @transaction.wrap()
+    def do(self, args):
+        try:
+            instance = args.model.objects.get(pk__startswith=args.pk)
+        except (args.model.DoesNotExist, args.model.MultipleObjectsReturned) as e:
+            raise self.error(e)
+
+        data = dict(ars.args)
+        try:
+            instance.load_data(data)
             instance.save()
         except args.model.InvalidObject as e:
             raise self.error(e)

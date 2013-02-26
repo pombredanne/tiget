@@ -116,6 +116,12 @@ class Model(metaclass=ModelBase):
     def loads(self, serialized):
         try:
             data = serializer.loads(serialized)
+        except (ValueError, KeyError) as e:
+            raise self.InvalidObject(e)
+        self.load_data(data)
+
+    def load_data(self, data):
+        try:
             for field_name, value in data.items():
                 field = self._meta.get_field(field_name)
                 setattr(self, field.attname, field.loads(value))
