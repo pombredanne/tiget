@@ -6,7 +6,7 @@ from tiget.table import Table
 from tiget.plugins import plugins
 
 
-__all__ = ['Create', 'Edit', 'Update', 'List', 'Stats']
+__all__ = ['Create', 'Edit', 'List', 'Stats']
 
 
 class Create(Cmd):
@@ -14,11 +14,13 @@ class Create(Cmd):
 
     def setup(self):
         self.parser.add_argument('model', type=model_type)
+        self.parser.add_argument('fields', nargs='*', type=dict_type)
 
     @transaction.wrap()
     def do(self, args):
         try:
             instance = args.model()
+            instance.loads(dict(args.fields))
             s = open_in_editor(instance.dumps())
             instance.loads(s)
             instance.save()
@@ -32,6 +34,7 @@ class Edit(Cmd):
     def setup(self):
         self.parser.add_argument('model', type=model_type)
         self.parser.add_argument('pk')
+        self.parser.add_argument('fields', nargs='*', type=dict_type)
 
     @transaction.wrap()
     def do(self, args):
@@ -40,31 +43,8 @@ class Edit(Cmd):
         except (args.model.DoesNotExist, args.model.MultipleObjectsReturned) as e:
             raise self.error(e)
         try:
-            s = open_in_editor(instance.dumps())
-            instance.loads(s)
-            instance.save()
-        except args.model.InvalidObject as e:
-            raise self.error(e)
-
-
-class Update(Cmd):
-    description = 'update model instance'
-
-    def setup(self):
-        self.parser.add_argument('model', type=model_type)
-        self.parser.add_argument('pk')
-        self.parser.add_argument('args', nargs='+', type=dict_type)
-
-    @transaction.wrap()
-    def do(self, args):
-        try:
-            instance = args.model.objects.get(pk__startswith=args.pk)
-        except (args.model.DoesNotExist, args.model.MultipleObjectsReturned) as e:
-            raise self.error(e)
-
-        data = dict(ars.args)
-        try:
-            instance.load_data(data)
+            data = dict(args.fields) or open_in_editor(instance.dumps())
+            instance.loads(data)
             instance.save()
         except args.model.InvalidObject as e:
             raise self.error(e)

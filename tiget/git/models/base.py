@@ -113,15 +113,10 @@ class Model(metaclass=ModelBase):
             data[field.name] = field.dumps(value)
         return serializer.dumps(data)
 
-    def loads(self, serialized):
+    def loads(self, data):
         try:
-            data = serializer.loads(serialized)
-        except (ValueError, KeyError) as e:
-            raise self.InvalidObject(e)
-        self.load_data(data)
-
-    def load_data(self, data):
-        try:
+            if not hasattr(data, 'items'):
+                data = serializer.loads(data)
             for field_name, value in data.items():
                 field = self._meta.get_field(field_name)
                 setattr(self, field.attname, field.loads(value))
