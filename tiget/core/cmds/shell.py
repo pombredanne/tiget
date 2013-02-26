@@ -29,10 +29,10 @@ class Unalias(Cmd):
     description = 'remove aliases'
 
     def setup(self):
-        self.parser.add_argument('args', nargs='*')
+        self.parser.add_argument('aliases', nargs='*')
 
     def do(self, args):
-        for alias in args.args:
+        for alias in args.aliases:
             try:
                 del aliases[alias]
             except KeyError:
