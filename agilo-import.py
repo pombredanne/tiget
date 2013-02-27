@@ -83,7 +83,7 @@ def main():
                summary,
                description,
                case milestone when '' then null else milestone end as milestone,
-               case type when 'task' then 'feature' else type end as ticket_type,
+               case type when 'task' then 'feature' else type end as type,
                case when status in ('assigned', 'accepted', 'reopened') then 'new'
                     when status in ('info_needed', 'undecided') then 'wtf'
                     when status = 'closed' then

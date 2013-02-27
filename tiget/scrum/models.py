@@ -87,7 +87,7 @@ class Ticket(models.Model):
     reporter = models.ForeignKey(User, default=get_current_user)
     owner = models.ForeignKey(User, null=True)
     status = models.TextField(choices=STATUS_CHOICES, default='new')
-    ticket_type = models.TextField(choices=TYPE_CHOICES, default='bug')
+    type = models.TextField(choices=TYPE_CHOICES, default='bug')
 
 
 class Comment(models.Model):
