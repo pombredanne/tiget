@@ -35,6 +35,7 @@ setup(
     entry_points={
         'console_scripts': [
             'tiget = tiget.main:main',
+            'tiget-setup = tiget.setup:main',
         ],
         'nose.plugins.0.10': [
             'tiget_nose_config = tiget.nose_config:NoseConfig',

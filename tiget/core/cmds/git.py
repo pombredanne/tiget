@@ -1,11 +1,11 @@
 from functools import wraps
 
 from tiget.cmds import Cmd
-from tiget.git import transaction, init_repo, GitError
+from tiget.git import transaction, GitError
 from tiget.git.sync import fetch, push, merge
 
 
-__all__ = ['Begin', 'Commit', 'Rollback', 'Setup', 'Fetch', 'Push', 'Merge']
+__all__ = ['Begin', 'Commit', 'Rollback', 'Fetch', 'Push', 'Merge']
 
 
 def catch_git_error(fn):
@@ -43,14 +43,6 @@ class Rollback(Cmd):
     @catch_git_error
     def do(self, args):
         transaction.rollback()
-
-
-class Setup(Cmd):
-    description = 'set up repository for use with tiget'
-
-    @catch_git_error
-    def do(self, args):
-        init_repo()
 
 
 class Fetch(Cmd):
