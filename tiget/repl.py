@@ -1,6 +1,7 @@
 import os
 import sys
 import readline
+from string import whitespace
 
 from colors import blue
 
@@ -31,6 +32,7 @@ class Repl:
         if settings.core.color:
             prompt = blue(prompt)
         readline.set_completer(self.complete)
+        readline.set_completer_delims(whitespace)
         try:
             line = input(prompt).strip()
         except KeyboardInterrupt:
