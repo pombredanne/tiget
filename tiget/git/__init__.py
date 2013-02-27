@@ -1,3 +1,5 @@
+import pkg_resources
+
 import pygit2
 
 from tiget.conf import settings
@@ -27,7 +29,7 @@ def init_repo():
 
     with transaction.wrap():
         trans = transaction.current(initialized=False)
-        tigetrc = '# put your initialization code here\n'
-        trans.set_blob(['config', 'tigetrc'], tigetrc.encode('utf-8'))
+        tigetrc = pkg_resources.resource_string('tiget', 'data/tigetrc')
+        trans.set_blob(['config', 'tigetrc'], tigetrc)
         trans.add_message('Initialize Repository')
         trans.is_initialized = True
