@@ -1,17 +1,20 @@
 import os
 import sys
 
+from pygit2 import discover_repository, Repository
+
 from tiget.plugins.settings import *
-from tiget.git import find_repository, GitError
+from tiget.git import GitError
 
 
 class RepositorySetting(Setting):
     def clean(self, value):
         if not value is None:
             try:
-                value = find_repository(value)
-            except GitError as e:
-                raise ValueError(e)
+                path = discover_repository(value)
+            except KeyError:
+                raise ValueError('no repository found in "{}"'.format(value))
+            value = Repository(path)
         return value
 
     def format(self, repo):

@@ -1,20 +1,9 @@
 import pkg_resources
 
-import pygit2
-
 from tiget.conf import settings
 
 
-class GitError(Exception):
-    pass
-
-
-def find_repository(cwd='.'):
-    try:
-        path = pygit2.discover_repository(cwd)
-        return pygit2.Repository(path)
-    except KeyError:
-        raise GitError('no repository found in "{}"'.format(cwd))
+class GitError(Exception): pass
 
 
 def get_config(name):
