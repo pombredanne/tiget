@@ -2,9 +2,9 @@ from subprocess import list2cmdline
 
 from tiget.conf import settings
 from tiget.plugins import plugins
-from tiget.cmds import get_command, aliases, Cmd
+from tiget.cmds import get_command, aliases, Cmd, cmd_execfile
 from tiget.cmds.types import dict_type
-from tiget.utils import open_in_editor
+from tiget.utils import open_in_editor, load_file
 from tiget.git import transaction, GitError
 
 
@@ -146,9 +146,8 @@ class Source(Cmd):
         self.parser.add_argument('filename')
 
     def do(self, args):
-        from tiget.script import Script
         try:
-            script = Script.from_file(args.filename)
+            f = load_file(args.filename)
         except IOError as e:
             raise self.error(e)
-        script.run()
+        cmd_execfile(f)

@@ -4,7 +4,8 @@ import sys
 from tiget.plugins.settings import *
 from tiget.conf import settings
 from tiget.git import find_repository, GitError
-from tiget.script import Script
+from tiget.utils import load_file
+from tiget.cmds import cmd_execfile
 
 
 class RepositorySetting(Setting):
@@ -18,11 +19,11 @@ class RepositorySetting(Setting):
 
     def load_config(self, filename):
         try:
-            script = Script.from_file(filename)
+            f = load_file(filename)
         except IOError:
             pass
         else:
-            script.run()
+            cmd_execfile(f)
 
     def changed(self, repo):
         if repo:

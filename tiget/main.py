@@ -3,9 +3,10 @@ import sys
 from argparse import ArgumentParser, REMAINDER
 
 from tiget.version import VERSION
-from tiget.script import Script, Repl
+from tiget.repl import Repl
 from tiget.conf import settings
-from tiget.utils import print_error
+from tiget.utils import print_error, load_file, post_mortem
+from tiget.cmds import cmd_execfile, cmd_execv
 
 
 def load_config():
@@ -15,11 +16,11 @@ def load_config():
     ]
     for filename in files:
         try:
-            script = Script.from_file(filename)
+            f = load_file(filename)
         except IOError:
             pass
         else:
-            script.run()
+            cmd_execfile(f)
 
 
 def main():
@@ -44,19 +45,26 @@ def main():
         print('tiget {}'.format(VERSION))
         return
 
-    if args.load_config:
-        load_config()
+    try:
+        if args.load_config:
+            load_config()
 
-    for var in args.options:
-        try:
-            settings.parse_and_set(var)
-        except (ValueError, KeyError) as e:
-            print_error(e)
+        for var in args.options:
+            try:
+                settings.parse_and_set(var)
+            except (ValueError, KeyError) as e:
+                print_error(e)
 
-    if args.cmd:
-        script = Script.from_args(args.cmd)
-    elif args.interactive:
-        script = Repl()
-    else:
-        script = Script.from_file(sys.stdin)
-    return script.run()
+        if args.cmd:
+            cmd_execv(args.cmd)
+        elif args.interactive:
+            Repl().run()
+        else:
+            cmd_execfile(sys.stdin)
+    except CmdError as e:
+        print_error(e)
+        sys.exit(1)
+    except Exception as e:
+        print_error('internal error (see traceback)')
+        post_mortem()
+        sys.exit(1)

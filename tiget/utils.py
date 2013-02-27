@@ -4,6 +4,7 @@ import fcntl
 import termios
 import struct
 import traceback
+from io import StringIO
 from importlib import import_module
 from collections import namedtuple
 from tempfile import NamedTemporaryFile
@@ -83,7 +84,7 @@ def load_file(filename):
                 content = transaction.current().get_blob(path).decode('utf-8')
         except GitError:
             raise IOError('No such file: \'{}\''.format(filename))
-    else:
-        with open(filename) as f:
-            content = f.read()
-    return content
+        f = StringIO(content)
+        f.name = filename
+        return f
+    return open(filename)
