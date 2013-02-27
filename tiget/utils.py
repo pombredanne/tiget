@@ -88,4 +88,4 @@ def load_file(filename):
         f = StringIO(content)
         f.name = filename
         return f
-    return open(filename)
+    return open(os.path.expanduser(filename))
