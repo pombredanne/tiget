@@ -6,7 +6,7 @@ from tiget.version import VERSION
 from tiget.repl import Repl
 from tiget.conf import settings
 from tiget.utils import print_error, load_file, post_mortem
-from tiget.cmds import cmd_execfile, cmd_execv
+from tiget.cmds import CmdError, cmd_execfile, cmd_execv
 
 
 def load_config():
