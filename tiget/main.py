@@ -3,6 +3,7 @@ import sys
 from argparse import ArgumentParser, REMAINDER
 
 from tiget import __version__
+from tiget.git import transaction
 from tiget.repl import Repl
 from tiget.conf import settings
 from tiget.utils import print_error, load_file, post_mortem
@@ -11,10 +12,10 @@ from tiget.plugins import load_plugin
 
 
 def load_config():
-    files = [
-        '/etc/tigetrc',
-        os.path.expanduser('~/.tigetrc'),
-    ]
+    files = ['/etc/tigetrc', '~/.tigetrc', 'tiget:/config/tigetrc']
+    repo = settings.core.repository
+    if repo and repo.workdir:
+        files.append(os.path.join(repo.workdir, '.tigetrc'))
     for filename in files:
         try:
             f = load_file(filename)

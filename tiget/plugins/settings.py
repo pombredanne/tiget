@@ -11,9 +11,6 @@ class Setting:
             raise ValueError('value must be in {}'.format(self.choices))
         return value
 
-    def changed(self, value):
-        pass
-
     def format(self, value):
         if value is None:
             return '<null>'
@@ -83,7 +80,6 @@ class Settings:
         except KeyError:
             raise KeyError('invalid setting "{}"'.format(key))
         self.data[key] = variable.clean(value)
-        variable.changed(self.data[key])
 
     def __len__(self):
         return len(self.variables)
