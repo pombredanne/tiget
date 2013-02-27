@@ -2,7 +2,7 @@ import shutil
 import stat
 from tempfile import mkdtemp
 
-from nose.tools import *
+from nose.tools import eq_, ok_, assert_in
 import pygit2
 
 from tiget.conf import settings
