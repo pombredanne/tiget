@@ -12,7 +12,7 @@ class TestInitRepo(GitTestCase):
         except KeyError:
             self.fail('{} does not exist'.format(self.branchref))
         self.assert_commit_count(1)
-        self.assert_file_exists('config/VERSION')
+        self.assert_file_exists('config/tigetrc')
 
     def test_already_initialized(self):
         init_repo()

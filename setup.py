@@ -8,7 +8,7 @@ import multiprocessing
 
 setup(
     name='tiget',
-    version='0.1a0',
+    version=__import__('tiget').__version__,
     author='Martin Natano',
     author_email='natano@natano.net',
     description='ticketing system with git backend',
@@ -35,6 +35,9 @@ setup(
     entry_points={
         'console_scripts': [
             'tiget = tiget.main:main',
+        ],
+        'nose.plugins.0.10': [
+            'tiget_nose_config = tiget.nose_config:NoseConfig',
         ],
         'tiget.plugins': [
             'core = tiget.core',

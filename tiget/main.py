@@ -2,11 +2,12 @@ import os
 import sys
 from argparse import ArgumentParser, REMAINDER
 
-from tiget.version import VERSION
+from tiget import __version__
 from tiget.repl import Repl
 from tiget.conf import settings
 from tiget.utils import print_error, load_file, post_mortem
 from tiget.cmds import CmdError, cmd_execfile, cmd_execv
+from tiget.plugins import load_plugin
 
 
 def load_config():
@@ -42,8 +43,10 @@ def main():
     args = parser.parse_args()
 
     if args.print_version:
-        print('tiget {}'.format(VERSION))
+        print('tiget {}'.format(__version__))
         return
+
+    load_plugin('tiget.core')
 
     try:
         if args.load_config:

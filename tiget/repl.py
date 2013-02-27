@@ -5,7 +5,7 @@ from string import whitespace
 
 from colors import blue
 
-from tiget.version import VERSION
+from tiget import __version__
 from tiget.conf import settings
 from tiget.plugins import plugins
 from tiget.cmds import CmdError, aliases, cmd_exec
@@ -15,7 +15,6 @@ from tiget.utils import print_error, post_mortem
 class Repl:
     def __init__(self):
         self.instream = sys.stdin
-        self.infile = '<repl>'
         self.lineno = 0
 
     def complete(self, text, state):
@@ -52,10 +51,10 @@ class Repl:
         return os.path.expanduser(settings.core.history_file)
 
     def print_error(self, e):
-        print_error('"{}", line {}: {}'.format(self.infile, self.lineno, e))
+        print_error('"<repl>", line {}: {}'.format(self.lineno, e))
 
     def run(self):
-        print('tiget {}'.format(VERSION))
+        print('tiget {}'.format(__version__))
         print('Type "help" for help')
         print('')
         readline.parse_and_bind('tab: complete')

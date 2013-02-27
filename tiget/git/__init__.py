@@ -23,17 +23,11 @@ def get_config(name):
 
 
 def init_repo():
-    from tiget.version import VERSION
     from tiget.git import transaction
 
     with transaction.wrap():
         trans = transaction.current(initialized=False)
-
-        version = '{}\n'.format(VERSION)
-        trans.set_blob(['config', 'VERSION'], version.encode('utf-8'))
-
         tigetrc = '# put your initialization code here\n'
         trans.set_blob(['config', 'tigetrc'], tigetrc.encode('utf-8'))
-
         trans.add_message('Initialize Repository')
         trans.is_initialized = True

@@ -5,6 +5,15 @@ from nose.tools import *
 
 from tiget.testcases import GitTestCase
 from tiget.git import transaction, init_repo
+from tiget.plugins import load_plugin, unload_plugin
+
+
+def setup_module():
+    load_plugin('tiget.git.importer')
+
+
+def teardown_module():
+    unload_plugin('importer')
 
 
 def import_ok(name):
