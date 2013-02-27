@@ -50,9 +50,6 @@ class Repl:
     def histfile(self):
         return os.path.expanduser(settings.core.history_file)
 
-    def print_error(self, e):
-        print_error('"<repl>", line {}: {}'.format(self.lineno, e))
-
     def run(self):
         print('tiget {}'.format(__version__))
         print('Type "help" for help')
@@ -75,9 +72,8 @@ class Repl:
             try:
                 cmd_exec(line)
             except CmdError as e:
-                self.print_error(e)
+                print_error('"<repl>", line {}: {}'.format(self.lineno, e))
             except:
-                self.print_error('internal error (see traceback)')
                 post_mortem()
         readline.set_history_length(settings.core.history_limit)
         readline.write_history_file(self.histfile)

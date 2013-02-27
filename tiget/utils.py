@@ -63,6 +63,7 @@ def print_error(line):
 
 
 def post_mortem():
+    print_error('internal error (see traceback)')
     traceback.print_exc()
     if settings.core.debug:
         try:

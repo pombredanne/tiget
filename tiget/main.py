@@ -68,6 +68,5 @@ def main():
         print_error(e)
         sys.exit(1)
     except Exception as e:
-        print_error('internal error (see traceback)')
         post_mortem()
         sys.exit(1)
