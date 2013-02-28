@@ -2,10 +2,10 @@ import os
 import shlex
 
 from tiget.cmds.base import aliases, CmdError, Cmd
+from tiget.plugins import plugins
 
 
 def get_command(name):
-    from tiget.plugins import plugins
     for plugin in plugins.values():
         try:
             cmd = plugin.cmds[name]
@@ -37,8 +37,12 @@ def cmd_exec(line):
             raise CmdError(
                 'shell returned with exit status {}'.format(status % 255))
     elif line.startswith('%'):
+        ns = {}
+        for plugin in plugins.values():
+            models = plugin.models
+            ns.update({model.__name__: model for model in models.values()})
         code = compile(line[1:], '<exec>', 'single')
-        exec(code, {})
+        exec(code, ns)
     else:
         try:
             line = shlex.split(line)
