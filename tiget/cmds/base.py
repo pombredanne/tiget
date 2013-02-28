@@ -39,7 +39,7 @@ class CmdBase(type):
         parents = [b for b in bases if isinstance(b, CmdBase)]
         if parents:
             name = re.sub(r'(?!^)([A-Z])', r'-\1', cls_name).lower()
-            attrs.setdefault('name', name)
+            attrs.setdefault('names', (name,))
         attrs['abstract'] = attrs.get('abstract', False)
         return super().__new__(cls, cls_name, bases, attrs)
 
@@ -48,7 +48,8 @@ class Cmd(metaclass=CmdBase):
     description = 'undocumented'
     abstract = True
 
-    def __init__(self):
+    def __init__(self, name):
+        self.name = name
         self.parser = CmdArgumentParser(self)
         self.output = ''
         self.setup()

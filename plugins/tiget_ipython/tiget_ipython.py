@@ -8,8 +8,8 @@ from tiget.plugins.settings import *
 
 
 class IPythonCmd(Cmd):
-    name = 'ipython'
     description = 'start embedded ipython shell'
+    names = ('ipython',)
 
     def do(self, args):
         ns = {}

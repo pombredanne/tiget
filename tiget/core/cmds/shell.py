@@ -95,13 +95,12 @@ class Help(Cmd):
             self.print(cmd.format_help())
         else:
             for plugin in sorted(plugins.values(), key=lambda p: p.name):
-                cmds = list(plugin.cmds.values())
-                if not cmds:
+                if not plugin.cmds:
                     continue
                 self.print('[{}]'.format(plugin.name))
-                longest = max(len(cmd.name) for cmd in cmds)
-                for cmd in sorted(cmds, key=lambda cmd: cmd.name):
-                    cmd_name = cmd.name.ljust(longest)
+                longest = max(len(name) for name in plugin.cmds.keys())
+                for name, cmd in sorted(plugin.cmds.items()):
+                    cmd_name = name.ljust(longest)
                     self.print('{} - {}'.format(cmd_name, cmd.description))
                 self.print()
 

@@ -67,8 +67,8 @@ class Plugin:
                 self.add_cmd(cmd)
 
     def add_cmd(self, cmd_class):
-        cmd = cmd_class()
-        self.cmds[cmd.name] = cmd
+        for name in cmd_class.names:
+            self.cmds[name] = cmd_class(name)
 
     def add_settings(self, **kwargs):
         for name, variable in kwargs.items():
