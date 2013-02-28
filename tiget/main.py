@@ -3,7 +3,7 @@ import sys
 from argparse import ArgumentParser, REMAINDER
 
 from tiget import __version__
-from tiget.git import transaction
+from tiget.git import transaction, is_repo_initialized
 from tiget.repl import Repl
 from tiget.conf import settings
 from tiget.utils import print_error, load_file, post_mortem
@@ -48,6 +48,10 @@ def main():
         return
 
     load_plugin('tiget.core')
+
+    if not is_repo_initialized():
+        print_error('repository is not initialized; use tiget-setup')
+        sys.exit(1)
 
     try:
         if args.load_config:

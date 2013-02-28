@@ -4,7 +4,7 @@ from importlib import import_module
 from nose.tools import *
 
 from tiget.testcases import GitTestCase
-from tiget.git import transaction, init_repo
+from tiget.git import transaction
 from tiget.plugins import load_plugin, unload_plugin
 
 
@@ -26,10 +26,6 @@ def assert_import_fails(name):
 
 
 class TestImporter(GitTestCase):
-    def setup(self):
-        super().setup()
-        init_repo()
-
     def teardown(self):
         for mod in list(sys.modules.keys()):
             if mod == 'foo' or mod.startswith('foo'):
@@ -37,8 +33,7 @@ class TestImporter(GitTestCase):
         super().teardown()
 
     def create_file(self, path, id_):
-        with transaction.wrap():
-            trans = transaction.current()
+        with transaction.wrap() as trans:
             trans.set_blob(
                 path.lstrip('/').split('/'),
                 'ID = {!r}'.format(id_).encode('utf-8'))

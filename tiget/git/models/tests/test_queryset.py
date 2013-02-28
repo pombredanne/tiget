@@ -2,7 +2,7 @@ from nose.tools import *
 from mock import Mock, MagicMock, patch
 
 from tiget.testcases import GitTestCase
-from tiget.git import models, init_repo
+from tiget.git import models
 from tiget.git.models import Q
 from tiget.git.models.queryset import QuerySet
 
@@ -13,10 +13,6 @@ class X(models.Model):
 
 
 class TestRepr(GitTestCase):
-    def setup(self):
-        super().setup()
-        init_repo()
-
     def test_repr(self):
         qs = QuerySet(X)
         qs.REPR_MAXLEN = 2

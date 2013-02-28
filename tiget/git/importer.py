@@ -39,7 +39,7 @@ class GitImporter:
 
     @with_transaction
     def get_filename(self, fullname, prefix=PATH_PREFIX):
-        trans = transaction.current(initialized=None)
+        trans = transaction.current()
         shortname = fullname.rpartition('.')[2]
         base = '/'.join([self.path, shortname])
         for ext in ('/__init__.py', '.py'):
@@ -56,7 +56,7 @@ class GitImporter:
     @with_transaction
     def get_source(self, fullname):
         path = self.get_filename(fullname, prefix=None).strip('/').split('/')
-        trans = transaction.current(initialized=None)
+        trans = transaction.current()
         return trans.get_blob(path).decode('utf-8') + '\n'
 
     @with_transaction

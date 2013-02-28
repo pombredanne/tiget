@@ -2,7 +2,7 @@ from nose.tools import *
 from nose.plugins.skip import SkipTest
 
 from tiget.testcases import GitTestCase
-from tiget.git import models, init_repo
+from tiget.git import models
 from tiget.git.models import Q
 
 
@@ -15,10 +15,6 @@ class User(models.Model):
 
 
 class TestModelBase(GitTestCase):
-    def setup(self):
-        super().setup()
-        init_repo()
-
     def test_exceptions(self):
         for exc_class in models.base.MODEL_EXCEPTIONS:
             model_exc_class = getattr(Ticket, exc_class.__name__)
@@ -62,19 +58,19 @@ class TestModelBase(GitTestCase):
         eq_(ticket.path, ['tickets', ticket.id])
 
     def test_save(self):
-        self.assert_commit_count(1)
+        self.assert_commit_count(0)
         ticket = Ticket(title='')
-        self.assert_commit_count(1)
+        self.assert_commit_count(0)
         ticket.save()
         # TODO: test validations
-        self.assert_commit_count(2)
+        self.assert_commit_count(1)
         self.assert_file_exists('/'.join(ticket.path))
 
     def test_delete(self):
         raise SkipTest('not implemented yet')
 
     def test_create(self):
-        self.assert_commit_count(1)
+        self.assert_commit_count(0)
         ticket = Ticket.create(title='')
-        self.assert_commit_count(2)
+        self.assert_commit_count(1)
         self.assert_file_exists('/'.join(ticket.path))

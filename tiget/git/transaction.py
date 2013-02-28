@@ -24,7 +24,6 @@ class Transaction:
             tree = repo[parents[0]].tree
         self.memory_tree = MemoryTree(tree, {}, {})
 
-        self.is_initialized = bool(self.parents)
         self.has_changes = False
         self.messages = []
 
@@ -160,7 +159,7 @@ def begin():
         raise GitError('there is already a transaction running')
     repo = settings.core.repository
     if repo is None:
-        raise GitError('core.repository is not set')
+        raise GitError('no repository found')
     ref = 'refs/heads/{}'.format(settings.core.branch)
     try:
         parents = [repo.lookup_reference(ref).oid]
@@ -185,16 +184,9 @@ def rollback():
     _transaction = None
 
 
-def current(initialized=True):
+def current():
     if _transaction is None:
         raise GitError('no transaction running')
-    elif initialized is None:
-        pass
-    elif initialized and not _transaction.is_initialized:
-        raise GitError(
-            'repository is not initialized; use tiget-setup')
-    elif not initialized and _transaction.is_initialized:
-        raise GitError('repository is initialized')
     return _transaction
 
 

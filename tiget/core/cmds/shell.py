@@ -61,10 +61,7 @@ class EditConfig(Cmd):
         path = args.filename.lstrip('/').split('/')
         if not args.filename.startswith('/'):
             path.insert(0, 'config')
-        try:
-            trans = transaction.current()
-        except GitError as e:
-            raise self.error(e)
+        trans = transaction.current()
         try:
             current_content = trans.get_blob(path).decode('utf-8')
         except GitError as e:

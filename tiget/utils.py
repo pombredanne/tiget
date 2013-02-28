@@ -80,9 +80,9 @@ def post_mortem():
 def load_file(filename):
     if filename.startswith('tiget:'):
         try:
-            with transaction.wrap():
+            with transaction.wrap() as trans:
                 path = filename[len('tiget:'):].strip('/').split('/')
-                content = transaction.current().get_blob(path).decode('utf-8')
+                content = trans.get_blob(path).decode('utf-8')
         except GitError:
             raise IOError('No such file: \'{}\''.format(filename))
         f = StringIO(content)
