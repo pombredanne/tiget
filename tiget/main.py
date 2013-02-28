@@ -20,9 +20,8 @@ def load_config():
         try:
             f = load_file(filename)
         except IOError:
-            pass
-        else:
-            cmd_execfile(f)
+            continue
+        cmd_execfile(f)
 
 
 def main():
@@ -33,9 +32,6 @@ def main():
     parser.add_argument(
         '-n', '--no-config', action='store_false', dest='load_config',
         default=True, help='prevent loading of default configuration files')
-    parser.add_argument(
-        '-o', '--add-option', action='append', dest='options',
-        default=[], help='set an option for this session')
     parser.add_argument(
         '-v', '--version', action='store_true', dest='print_version',
         default=False, help='print version information')
@@ -56,12 +52,6 @@ def main():
     try:
         if args.load_config:
             load_config()
-
-        for var in args.options:
-            try:
-                settings.parse_and_set(var)
-            except (ValueError, KeyError) as e:
-                print_error(e)
 
         if args.cmd:
             cmd_execv(args.cmd)
