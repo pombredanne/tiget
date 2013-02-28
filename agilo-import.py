@@ -133,4 +133,5 @@ def main():
 
 if __name__ == '__main__':
     load_plugin('tiget.core')
+    load_plugin('tiget.scrum')
     main()
