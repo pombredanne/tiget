@@ -12,9 +12,12 @@ MATCH_ITEM = re.compile(r'''
     ''', re.MULTILINE | re.DOTALL | re.VERBOSE).match
 
 
-def dumps(data):
+def dumps(data, comments={}):
     s = ''
     for k, v in data.items():
+        comment = comments.get(k, None)
+        if comment:
+            s += '# ' + '\n  '.join(comment.splitlines()) + '\n'
         value = v or ''
         s += '{}: {}\n'.format(k, value.replace('\n', '\n    '))
     return s
