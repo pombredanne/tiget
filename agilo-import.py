@@ -8,7 +8,7 @@ from progressbar import ProgressBar, Percentage, ETA, Bar
 
 from tiget.plugins import load_plugin
 from tiget.git import transaction
-from tiget.scrum.models import Milestone, Sprint, User, Ticket, Comment
+from tiget.scrum.models import Sprint, User, Ticket, Comment
 
 
 def _bar(label, cur):
@@ -60,17 +60,6 @@ def main():
     cur.execute('''
         select name,
                description,
-               to_timestamp(due) as due,
-               to_timestamp(completed) as completed_at
-        from milestone
-    ''')
-    for row in _bar('milestones', cur):
-        Milestone.create(**row)
-
-    cur.execute('''
-        select name,
-               description,
-               case milestone when '' then null else milestone end as milestone,
                to_timestamp(start) as start,
                to_timestamp(sprint_end) as end
         from agilo_sprint
@@ -82,7 +71,6 @@ def main():
         select id,
                summary,
                description,
-               case milestone when '' then null else milestone end as milestone,
                case type when 'task' then 'feature' else type end as type,
                case when status in ('assigned', 'accepted', 'reopened') then 'new'
                     when status in ('info_needed', 'undecided') then 'wtf'

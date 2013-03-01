@@ -48,7 +48,7 @@ class Mine(Cmd):
         if not args.all:
             tickets = tickets.filter(status__in=('new', 'wtf'))
         table = Table.from_queryset(tickets, fields=(
-            'id', 'summary', 'milestone', 'sprint', 'status', 'type'))
+            'id', 'summary', 'sprint', 'status', 'type'))
         self.print(table.render())
 
 

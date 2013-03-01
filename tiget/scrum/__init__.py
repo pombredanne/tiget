@@ -9,6 +9,5 @@ def load(plugin):
 
     plugin.add_settings(
         current_user=StrSetting(default=get_config('user.email')),
-        current_milestone=StrSetting(),
         current_sprint=StrSetting(),
     )

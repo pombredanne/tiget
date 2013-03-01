@@ -16,22 +16,9 @@ class User(models.Model):
         return user
 
 
-class Milestone(models.Model):
-    name = models.TextField(primary_key=True)
-    description = models.TextField(null=True)
-    due = models.DateTimeField(null=True)
-    completed_at = models.DateTimeField(null=True)
-
-    @classmethod
-    def current(cls):
-        name = settings.scrum.current_milestone
-        return cls.objects.get(name=name) if name else None
-
-
 class Sprint(models.Model):
     name = models.TextField(primary_key=True)
     description = models.TextField(null=True)
-    milestone = models.ForeignKey(Milestone, null=True)
     start = models.DateTimeField()
     end = models.DateTimeField()
 
@@ -46,12 +33,6 @@ def get_current_user():
     except User.DoesNotExist:
         return None
 
-
-def get_current_milestone():
-    try:
-        return Milestone.current()
-    except Milestone.DoesNotExist:
-        return None
 
 def get_current_sprint():
     try:
@@ -81,8 +62,6 @@ class Ticket(models.Model):
     )
     summary = models.TextField()
     description = models.TextField(null=True)
-    milestone = models.ForeignKey(
-        Milestone, null=True, default=get_current_milestone)
     sprint = models.ForeignKey(Sprint, null=True, default=get_current_sprint)
     reporter = models.ForeignKey(User, default=get_current_user)
     owner = models.ForeignKey(User, null=True)
