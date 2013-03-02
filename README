@@ -10,9 +10,18 @@ the managed project. This allows bugs to be handled in a truly distributed
 manner.
 
 
+INSTALLATION:
+
+Compile libgit2[1] from source or install it via your distributions package
+manager. Currently tiget is tested with libgit2 version 0.17.0.
+Afterwards execute the setup script (root permissions might be needed):
+
+    $ ./setup.py install
+
+
 HACKING:
 
-PEP 8[1] should be followed for every new code.
+PEP 8[2] should be followed for every new code.
 An exception to this rule is when creating custom exceptions (no pun intended).
 The pass keyword should appear on the same line as the class keyword when no
 methods are overwritten in the subclass. So multiple custom exceptions may be
@@ -27,7 +36,7 @@ and pyflakes. Both tools are available on pyp.
 
 When hacking on tiget you can install it in development mode.
 
-    ./setup.py develop
+    $ ./setup.py develop
 
 Development mode allows to change the source code without reinstalling the
 package.
@@ -35,7 +44,7 @@ package.
 Please run the test suite before opening a pull request or committing in the
 master branch.
 
-    ./setup.py nosetests
+    $ ./setup.py nosetests
 
 Every non-trivial code should have according tests.
 
@@ -46,4 +55,5 @@ Martin Natano <natano@natano.net>
 Felix Erkinger <felix@erkinger.at>
 
 
-[1] http://www.python.org/dev/peps/pep-0008/
+[1] https://github.com/libgit2/libgit2
+[2] http://www.python.org/dev/peps/pep-0008/
