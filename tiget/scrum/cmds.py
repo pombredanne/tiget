@@ -52,16 +52,16 @@ class Mine(Cmd):
         self.print(table.render())
 
 
-class CreateTicket(Cmd):
-    names = Ticket.TYPE_CHOICES
+class New(Cmd):
+    description = 'create new ticket'
 
-    @property
-    def description(self):
-        return 'create ticket of type {}'.format(self.name)
+    def setup(self):
+        self.parser.add_argument(
+            'type', nargs='?', default=Ticket._meta.get_field('type').default)
 
-    def run(self, *argv):
+    def do(self, args):
         try:
-            ticket = Ticket(type=self.name)
+            ticket = Ticket(type=args.type)
             s = open_in_editor(ticket.dumps())
             ticket.loads(s)
             ticket.save()
