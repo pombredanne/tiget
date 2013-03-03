@@ -1,0 +1,13 @@
+ * parsing errors should be shown as comments in editor but do not throw away changes
+ * truncate ticket id to shortest unique prefix in table view
+ * ticket types should be configurable
+ * tagging / custom fields
+ * implement merging
+ * create show cmd for tickets with related tickets,comments,history
+ * ticket drafts
+ * filtering & batch edit
+ * pdf reports
+ * shell with code.interact
+ * i18n
+ * increase test coverage (doctests?)
+ * think about ticket comments
