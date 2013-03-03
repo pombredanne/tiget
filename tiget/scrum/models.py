@@ -27,6 +27,7 @@ class Sprint(models.Model):
         name = settings.scrum.current_sprint
         return cls.objects.get(name=name) if name else None
 
+
 def get_current_user():
     try:
         return User.current()

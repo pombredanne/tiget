@@ -12,6 +12,7 @@ def get_config(name):
         raise GitError('no repository found')
     return repo.config[name]
 
+
 def is_repo_initialized():
     repo = settings.core.repository
     if repo is None:
@@ -22,6 +23,7 @@ def is_repo_initialized():
     except KeyError:
         return False
     return True
+
 
 def init_repo():
     from tiget.git import transaction

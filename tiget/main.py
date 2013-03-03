@@ -3,7 +3,7 @@ import sys
 from argparse import ArgumentParser, REMAINDER
 
 from tiget import __version__
-from tiget.git import transaction, is_repo_initialized
+from tiget.git import is_repo_initialized
 from tiget.repl import Repl
 from tiget.conf import settings
 from tiget.utils import print_error, load_file, post_mortem

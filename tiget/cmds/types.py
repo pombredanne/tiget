@@ -15,4 +15,3 @@ def dict_type(arg):
     except ValueError:
         raise TypeError('"=" not found in "{}"'.format(arg))
     return (key, value)
-
