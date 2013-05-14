@@ -32,7 +32,7 @@ e.g.:
     class IDontWantToDoThis(Exception): pass
 
 Automatic style checking and detection of common errors is possible with pep8
-and pyflakes. Both tools are available on pyp.
+and pyflakes. Both tools are available on pypi.
 
 When hacking on tiget you can install it in development mode.
 
