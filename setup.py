@@ -46,7 +46,7 @@ setup(
             'scrum = tiget.scrum',
         ],
     },
-    install_requires=['pygit2', 'ansicolors', 'distribute'],
+    install_requires=['pygit2==0.17.3', 'ansicolors', 'distribute'],
     tests_require=['nose', 'mock'],
     test_suite='nose.collector',
 )
