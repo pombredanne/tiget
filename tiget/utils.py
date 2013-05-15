@@ -10,9 +10,9 @@ from collections import namedtuple
 from tempfile import NamedTemporaryFile
 
 from colors import red
+from git_orm import transaction, GitError
 
 from tiget.conf import settings
-from tiget.git import transaction, GitError
 
 __all__ = [
     'open_in_editor', 'paginate', 'get_termsize', 'print_error', 'post_mortem',

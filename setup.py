@@ -42,11 +42,11 @@ setup(
         ],
         'tiget.plugins': [
             'core = tiget.core',
-            'importer = tiget.git.importer',
+            'importer = tiget.importer',
             'scrum = tiget.scrum',
         ],
     },
-    install_requires=['pygit2==0.17.3', 'ansicolors', 'distribute'],
+    install_requires=['git-orm', 'ansicolors', 'distribute'],
     tests_require=['nose', 'mock'],
     test_suite='nose.collector',
 )

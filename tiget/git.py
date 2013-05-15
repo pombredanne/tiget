@@ -26,7 +26,7 @@ def is_repo_initialized():
 
 
 def init_repo():
-    from tiget.git import transaction
+    from git_orm import transaction
 
     if is_repo_initialized():
         raise GitError('repository is already initialized')

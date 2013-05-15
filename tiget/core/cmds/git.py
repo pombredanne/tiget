@@ -1,8 +1,9 @@
 from functools import wraps
 
+from git_orm import transaction, GitError
+from git_orm.sync import fetch, push, merge
+
 from tiget.cmds import Cmd
-from tiget.git import transaction, GitError
-from tiget.git.sync import fetch, push, merge
 
 
 __all__ = ['Begin', 'Commit', 'Rollback', 'Fetch', 'Push', 'Merge']

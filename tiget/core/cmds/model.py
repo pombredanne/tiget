@@ -1,6 +1,7 @@
+from git_orm import transaction
+
 from tiget.cmds import Cmd
 from tiget.cmds.types import model_type, dict_type
-from tiget.git import transaction
 from tiget.utils import open_in_editor
 from tiget.table import Table
 from tiget.plugins import plugins

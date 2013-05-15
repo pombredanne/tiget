@@ -1,12 +1,13 @@
-from tiget.git.models import get_model
+from tiget.plugins import plugins
 
 
 def model_type(model_name):
-    try:
-        model = get_model(model_name)
-    except KeyError:
-        raise TypeError
-    return model
+    for plugin in plugins.values():
+        try:
+            return plugin.models[name.lower()]
+        except KeyError:
+            pass
+    raise TypeError
 
 
 def dict_type(arg):

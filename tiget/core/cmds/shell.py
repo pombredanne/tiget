@@ -1,11 +1,12 @@
 from subprocess import list2cmdline
 
+from git_orm import transaction, GitError
+
 from tiget.conf import settings
 from tiget.plugins import plugins
 from tiget.cmds import get_command, aliases, Cmd, cmd_execfile
 from tiget.cmds.types import dict_type
 from tiget.utils import open_in_editor, load_file
-from tiget.git import transaction, GitError
 
 
 __all__ = ['Alias', 'Unalias', 'Echo', 'EditConfig', 'Help', 'Set', 'Source']

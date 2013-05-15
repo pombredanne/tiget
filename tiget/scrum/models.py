@@ -1,5 +1,6 @@
+from git_orm import models
+
 from tiget.conf import settings
-from tiget.git import models
 
 
 class User(models.Model):

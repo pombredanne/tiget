@@ -49,7 +49,7 @@ class Plugin:
         self.load()
 
     def add_models(self, models):
-        from tiget.git.models import Model
+        from git_orm.models import Model
         if ismodule(models):
             models = _get_subclasses(models, Model)
         for model in models:

@@ -1,7 +1,8 @@
 from functools import wraps
 
+from git_orm import transaction
+
 from tiget.cmds import Cmd
-from tiget.git import transaction
 from tiget.table import Table
 from tiget.scrum.models import Ticket, User
 from tiget.utils import open_in_editor

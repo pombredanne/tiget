@@ -1,10 +1,10 @@
 from nose.tools import *
+from tiget.testcases import TigetTestCase
 
-from tiget.testcases import GitTestCase
 from tiget.git import init_repo, GitError
 
 
-class TestInitRepo(GitTestCase):
+class TestInitRepo(TigetTestCase):
     def test_init_repo(self):
         init_repo()
         try:
@@ -16,4 +16,5 @@ class TestInitRepo(GitTestCase):
 
     def test_already_initialized(self):
         init_repo()
+        print(self.repo.path)
         assert_raises(GitError, init_repo)
