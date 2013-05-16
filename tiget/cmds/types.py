@@ -1,7 +1,7 @@
 from tiget.plugins import plugins
 
 
-def model_type(model_name):
+def model_type(name):
     for plugin in plugins.values():
         try:
             return plugin.models[name.lower()]
