@@ -5,9 +5,9 @@ import sys
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from progressbar import ProgressBar, Percentage, ETA, Bar
+from git_orm import transaction
 
 from tiget.plugins import load_plugin
-from tiget.git import transaction
 from tiget.scrum.models import Sprint, User, Ticket, Comment
 
 
