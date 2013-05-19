@@ -23,7 +23,15 @@ class Table:
             fields = [queryset.model._meta.get_field(f) for f in fields]
         table = cls(*(f.name for f in fields))
         for instance in queryset:
-            values = (f.dumps(getattr(instance, f.attname)) for f in fields)
+            values = []
+            for f in fields:
+                try:
+                    fn = getattr(instance, 'get_{}_display'.format(f.name))
+                except AttributeError:
+                    value = f.dumps(getattr(instance, f.attname))
+                else:
+                    value = fn()
+                values.append(value)
             table.add_row(*values)
         return table
 
