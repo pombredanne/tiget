@@ -46,7 +46,7 @@ setup(
             'scrum = tiget.scrum',
         ],
     },
-    install_requires=['git-orm', 'ansicolors', 'distribute'],
+    install_requires=['git-orm', 'ansicolors'],
     tests_require=['nose', 'mock'],
     test_suite='nose.collector',
 )
